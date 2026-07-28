@@ -1,5 +1,5 @@
 {
-  "status": "PASS_COD_001",
+  "status": "PARTIAL_COD_001",
   "checks": {
     "python_compile": true,
     "pyproject_parse": true,
@@ -8,19 +8,31 @@
     "repository_contract": true,
     "repository_contract_tests": 5,
     "git_monorepo": true,
-    "github_branch_protection": true,
+    "github_branch_protection": false,
+    "github_repository": "https://github.com/jerry317395616/ione_hrp",
+    "github_commit": "e5ac08a9884ef56b24816ff775c04bac3724f773",
     "modules_txt_matches_registry": true,
     "doctype_catalog_count": 398,
     "field_catalog_count": 10036,
     "blueprint_count": 398,
     "single_app_catalog": [
       "ione_hrp"
-    ]
+    ],
+    "press_build": "golc2jiqdo",
+    "press_deploy_candidate": "deploy-0002-000022",
+    "press_bench": "bench-0002-000022-f1",
+    "press_site": "manager.myyr.top",
+    "press_site_installation": true,
+    "installed_module_defs": 36,
+    "installed_module_settings": 36,
+    "installed_core_roles": 4,
+    "health_api_status": "ok",
+    "post_install_error_log_count": 0
   },
   "not_run": [
     "bench init against live GitHub develop",
-    "Frappe site installation and migrate",
-    "ERPNext/HRMS integration tests"
+    "ERPNext/HRMS integration tests",
+    "GitHub branch protection enforcement"
   ],
-  "reason_not_run": "COD-001 is repository governance only. Live Bench installation and pinned upstream integration belong to COD-002 and later vertical slices."
+  "reason_not_run": "The application was built and installed on the existing Press-managed manager.myyr.top site. Pinned upstream integration belongs to COD-002. GitHub rejected branch protection for this private repository with HTTP 403 because the account requires GitHub Pro or a public repository; the repository was not made public without explicit approval."
 }

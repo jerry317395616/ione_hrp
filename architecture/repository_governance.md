@@ -19,6 +19,10 @@ Python 包表达。`frappe`、`erpnext`、`hrms` 是锁定提交的上游依赖�
 `.github/branch-protection.json` 是机器可读的保护策略；GitHub 中的实际规则
 必须与该文件保持一致。仓库管理员也受同一规则约束。
 
+当前 GitHub 仓库为私有仓库，GitHub Free 对分支保护 API 返回 HTTP 403。
+在升级 GitHub Pro 或明确批准公开仓库之前，策略文件只表示期望状态，不能
+声明远端规则已经生效。禁止为了通过验证而擅自公开仓库。
+
 COD-005 建立 CI 流水线后，再把对应状态检查加入分支保护。本任务不提前实现
 COD-005。
 
