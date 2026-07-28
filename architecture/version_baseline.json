@@ -1,0 +1,37 @@
+{
+  "as_of": "2026-07-28",
+  "source_policy": "latest GitHub develop at bootstrap time; then pin exact SHA",
+  "release_family": "v17 nightly/develop",
+  "repositories": {
+    "frappe": {
+      "url": "https://github.com/frappe/frappe.git",
+      "branch": "develop",
+      "version_marker": "17.0.0-dev",
+      "commit": "RESOLVE_AT_BOOTSTRAP"
+    },
+    "erpnext": {
+      "url": "https://github.com/frappe/erpnext.git",
+      "branch": "develop",
+      "version_marker": "17.0.0-dev",
+      "commit": "RESOLVE_AT_BOOTSTRAP"
+    },
+    "hrms": {
+      "url": "https://github.com/frappe/hrms.git",
+      "branch": "develop",
+      "version_marker": "17.0.0-dev",
+      "commit": "RESOLVE_AT_BOOTSTRAP"
+    },
+    "ione_hrp": {
+      "path": ".",
+      "branch": "project-defined",
+      "version_marker": "0.1.0",
+      "commit": "RESOLVE_AFTER_GIT_INIT"
+    }
+  },
+  "runtime": {
+    "python": ">=3.10,<3.15",
+    "node": "follow the selected Frappe develop branch",
+    "database": "MariaDB by default"
+  },
+  "warning": "develop is not a stable production branch. Promotion requires a tested and immutable commit lock."
+}

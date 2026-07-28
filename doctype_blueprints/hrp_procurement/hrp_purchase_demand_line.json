@@ -1,0 +1,188 @@
+{
+  "doctype": "DocType",
+  "name": "HRP Purchase Demand Line",
+  "module": "HRP Procurement",
+  "custom": 0,
+  "engine": "InnoDB",
+  "autoname": "",
+  "title_field": "",
+  "is_submittable": 0,
+  "istable": 1,
+  "issingle": 0,
+  "track_changes": 0,
+  "allow_rename": 0,
+  "editable_grid": 1,
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "index_web_pages_for_search": 0,
+  "description": "采购执行领域的HRP采购需求明细对象；用于支撑业务闭环、权限、审计与对账。",
+  "fields": [
+    {
+      "fieldname": "sequence_no",
+      "label": "序号",
+      "fieldtype": "Int",
+      "default": "1",
+      "in_list_view": 1,
+      "description": "序号"
+    },
+    {
+      "fieldname": "reference_doctype",
+      "label": "引用类型",
+      "fieldtype": "Link",
+      "options": "DocType",
+      "description": "引用类型"
+    },
+    {
+      "fieldname": "reference_name",
+      "label": "引用单据",
+      "fieldtype": "Dynamic Link",
+      "options": "reference_doctype",
+      "search_index": 1,
+      "description": "引用单据"
+    },
+    {
+      "fieldname": "description",
+      "label": "说明",
+      "fieldtype": "Small Text",
+      "description": "说明"
+    },
+    {
+      "fieldname": "quantity",
+      "label": "数量",
+      "fieldtype": "Float",
+      "precision": "6",
+      "description": "数量"
+    },
+    {
+      "fieldname": "rate",
+      "label": "单价",
+      "fieldtype": "Currency",
+      "options": "currency",
+      "precision": "6",
+      "description": "单价"
+    },
+    {
+      "fieldname": "amount",
+      "label": "金额",
+      "fieldtype": "Currency",
+      "options": "currency",
+      "read_only": 1,
+      "in_list_view": 1,
+      "precision": "2",
+      "description": "金额"
+    },
+    {
+      "fieldname": "dimension_json",
+      "label": "核算维度",
+      "fieldtype": "Code",
+      "options": "JSON",
+      "description": "核算维度"
+    },
+    {
+      "fieldname": "procurement_category",
+      "label": "采购分类",
+      "fieldtype": "Link",
+      "options": "HRP Procurement Category",
+      "search_index": 1,
+      "description": "采购分类"
+    },
+    {
+      "fieldname": "procurement_method",
+      "label": "采购方式",
+      "fieldtype": "Select",
+      "options": "Public Tender\nInvitation\nCompetitive Negotiation\nInquiry\nSingle Source\nFramework\nEmergency",
+      "search_index": 1,
+      "description": "采购方式"
+    },
+    {
+      "fieldname": "supplier",
+      "label": "供应商",
+      "fieldtype": "Link",
+      "options": "Supplier",
+      "search_index": 1,
+      "description": "供应商"
+    },
+    {
+      "fieldname": "item_code",
+      "label": "物资编码",
+      "fieldtype": "Link",
+      "options": "Item",
+      "search_index": 1,
+      "description": "物资编码"
+    },
+    {
+      "fieldname": "uom",
+      "label": "单位",
+      "fieldtype": "Link",
+      "options": "UOM",
+      "description": "单位"
+    },
+    {
+      "fieldname": "delivery_date",
+      "label": "要求交付日期",
+      "fieldtype": "Date",
+      "description": "要求交付日期"
+    },
+    {
+      "fieldname": "warehouse",
+      "label": "仓库",
+      "fieldtype": "Link",
+      "options": "Warehouse",
+      "description": "仓库"
+    },
+    {
+      "fieldname": "contract",
+      "label": "合同",
+      "fieldtype": "Link",
+      "options": "HRP Contract",
+      "search_index": 1,
+      "description": "合同"
+    },
+    {
+      "fieldname": "budget_reservation",
+      "label": "预算预占",
+      "fieldtype": "Link",
+      "options": "HRP Budget Reservation",
+      "search_index": 1,
+      "description": "预算预占"
+    }
+  ],
+  "permissions": [
+    {
+      "role": "HRP Procurement User",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 0,
+      "submit": 0,
+      "cancel": 0,
+      "amend": 0
+    },
+    {
+      "role": "HRP Supply Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 0,
+      "submit": 0,
+      "cancel": 0,
+      "amend": 0
+    }
+  ],
+  "links": [],
+  "actions": [],
+  "x_hrp": {
+    "app": "ione_hrp",
+    "retention_years": 10,
+    "data_classification": "内部",
+    "key_indexes": [
+      "company",
+      "organization_unit"
+    ],
+    "standard_references": [
+      "Purchase Order"
+    ],
+    "domain_group": "Supply",
+    "module_package": "hrp_procurement"
+  }
+}

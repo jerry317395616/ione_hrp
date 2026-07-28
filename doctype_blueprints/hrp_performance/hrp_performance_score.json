@@ -1,0 +1,186 @@
+{
+  "doctype": "DocType",
+  "name": "HRP Performance Score",
+  "module": "HRP Performance",
+  "custom": 0,
+  "engine": "InnoDB",
+  "autoname": "",
+  "title_field": "",
+  "is_submittable": 0,
+  "istable": 1,
+  "issingle": 0,
+  "track_changes": 0,
+  "allow_rename": 0,
+  "editable_grid": 1,
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "index_web_pages_for_search": 0,
+  "description": "绩效奖金领域的HRP绩效评分对象；用于支撑业务闭环、权限、审计与对账。",
+  "fields": [
+    {
+      "fieldname": "sequence_no",
+      "label": "序号",
+      "fieldtype": "Int",
+      "default": "1",
+      "in_list_view": 1,
+      "description": "序号"
+    },
+    {
+      "fieldname": "reference_doctype",
+      "label": "引用类型",
+      "fieldtype": "Link",
+      "options": "DocType",
+      "description": "引用类型"
+    },
+    {
+      "fieldname": "reference_name",
+      "label": "引用单据",
+      "fieldtype": "Dynamic Link",
+      "options": "reference_doctype",
+      "search_index": 1,
+      "description": "引用单据"
+    },
+    {
+      "fieldname": "description",
+      "label": "说明",
+      "fieldtype": "Small Text",
+      "description": "说明"
+    },
+    {
+      "fieldname": "quantity",
+      "label": "数量",
+      "fieldtype": "Float",
+      "precision": "6",
+      "description": "数量"
+    },
+    {
+      "fieldname": "rate",
+      "label": "单价",
+      "fieldtype": "Currency",
+      "options": "currency",
+      "precision": "6",
+      "description": "单价"
+    },
+    {
+      "fieldname": "amount",
+      "label": "金额",
+      "fieldtype": "Currency",
+      "options": "currency",
+      "read_only": 1,
+      "in_list_view": 1,
+      "precision": "2",
+      "description": "金额"
+    },
+    {
+      "fieldname": "dimension_json",
+      "label": "核算维度",
+      "fieldtype": "Code",
+      "options": "JSON",
+      "description": "核算维度"
+    },
+    {
+      "fieldname": "performance_cycle",
+      "label": "绩效周期",
+      "fieldtype": "Link",
+      "options": "HRP Performance Cycle",
+      "search_index": 1,
+      "description": "绩效周期"
+    },
+    {
+      "fieldname": "performance_unit",
+      "label": "绩效单元",
+      "fieldtype": "Link",
+      "options": "HRP Performance Unit",
+      "search_index": 1,
+      "description": "绩效单元"
+    },
+    {
+      "fieldname": "indicator",
+      "label": "指标",
+      "fieldtype": "Link",
+      "options": "HRP Indicator Library",
+      "search_index": 1,
+      "description": "指标"
+    },
+    {
+      "fieldname": "target_value",
+      "label": "目标值",
+      "fieldtype": "Float",
+      "precision": "6",
+      "description": "目标值"
+    },
+    {
+      "fieldname": "actual_value",
+      "label": "实际值",
+      "fieldtype": "Float",
+      "precision": "6",
+      "description": "实际值"
+    },
+    {
+      "fieldname": "weight",
+      "label": "权重",
+      "fieldtype": "Percent",
+      "precision": "4",
+      "description": "权重"
+    },
+    {
+      "fieldname": "score",
+      "label": "得分",
+      "fieldtype": "Float",
+      "read_only": 1,
+      "precision": "4",
+      "description": "得分"
+    },
+    {
+      "fieldname": "bonus_amount",
+      "label": "奖金金额",
+      "fieldtype": "Currency",
+      "options": "currency",
+      "precision": "2",
+      "description": "奖金金额"
+    },
+    {
+      "fieldname": "calculation_trace",
+      "label": "计算追溯",
+      "fieldtype": "Long Text",
+      "read_only": 1,
+      "description": "计算追溯"
+    }
+  ],
+  "permissions": [
+    {
+      "role": "HRP HR User",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 0,
+      "submit": 0,
+      "cancel": 0,
+      "amend": 0
+    },
+    {
+      "role": "HRP Performance Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 0,
+      "submit": 0,
+      "cancel": 0,
+      "amend": 0
+    }
+  ],
+  "links": [],
+  "actions": [],
+  "x_hrp": {
+    "app": "ione_hrp",
+    "retention_years": 10,
+    "data_classification": "内部",
+    "key_indexes": [
+      "company",
+      "organization_unit"
+    ],
+    "standard_references": [],
+    "domain_group": "People",
+    "module_package": "hrp_performance"
+  }
+}

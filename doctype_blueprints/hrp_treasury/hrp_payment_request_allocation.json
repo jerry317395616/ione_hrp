@@ -1,0 +1,172 @@
+{
+  "doctype": "DocType",
+  "name": "HRP Payment Request Allocation",
+  "module": "HRP Treasury",
+  "custom": 0,
+  "engine": "InnoDB",
+  "autoname": "",
+  "title_field": "",
+  "is_submittable": 0,
+  "istable": 1,
+  "issingle": 0,
+  "track_changes": 0,
+  "allow_rename": 0,
+  "editable_grid": 1,
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "index_web_pages_for_search": 0,
+  "description": "资金管理领域的HRP付款申请分摊对象；用于支撑业务闭环、权限、审计与对账。",
+  "fields": [
+    {
+      "fieldname": "sequence_no",
+      "label": "序号",
+      "fieldtype": "Int",
+      "default": "1",
+      "in_list_view": 1,
+      "description": "序号"
+    },
+    {
+      "fieldname": "reference_doctype",
+      "label": "引用类型",
+      "fieldtype": "Link",
+      "options": "DocType",
+      "description": "引用类型"
+    },
+    {
+      "fieldname": "reference_name",
+      "label": "引用单据",
+      "fieldtype": "Dynamic Link",
+      "options": "reference_doctype",
+      "search_index": 1,
+      "description": "引用单据"
+    },
+    {
+      "fieldname": "description",
+      "label": "说明",
+      "fieldtype": "Small Text",
+      "description": "说明"
+    },
+    {
+      "fieldname": "quantity",
+      "label": "数量",
+      "fieldtype": "Float",
+      "precision": "6",
+      "description": "数量"
+    },
+    {
+      "fieldname": "rate",
+      "label": "单价",
+      "fieldtype": "Currency",
+      "options": "currency",
+      "precision": "6",
+      "description": "单价"
+    },
+    {
+      "fieldname": "amount",
+      "label": "金额",
+      "fieldtype": "Currency",
+      "options": "currency",
+      "read_only": 1,
+      "in_list_view": 1,
+      "precision": "2",
+      "description": "金额"
+    },
+    {
+      "fieldname": "dimension_json",
+      "label": "核算维度",
+      "fieldtype": "Code",
+      "options": "JSON",
+      "description": "核算维度"
+    },
+    {
+      "fieldname": "payee_type",
+      "label": "收款方类型",
+      "fieldtype": "Select",
+      "options": "Supplier\nEmployee\nOther",
+      "description": "收款方类型"
+    },
+    {
+      "fieldname": "payee",
+      "label": "收款方",
+      "fieldtype": "Dynamic Link",
+      "options": "payee_type",
+      "description": "收款方"
+    },
+    {
+      "fieldname": "bank_account",
+      "label": "银行账户",
+      "fieldtype": "Link",
+      "options": "Bank Account",
+      "search_index": 1,
+      "description": "银行账户"
+    },
+    {
+      "fieldname": "payment_date",
+      "label": "付款日期",
+      "fieldtype": "Date",
+      "search_index": 1,
+      "description": "付款日期"
+    },
+    {
+      "fieldname": "payment_amount",
+      "label": "付款金额",
+      "fieldtype": "Currency",
+      "options": "currency",
+      "in_list_view": 1,
+      "precision": "2",
+      "description": "付款金额"
+    },
+    {
+      "fieldname": "payment_entry",
+      "label": "付款单",
+      "fieldtype": "Link",
+      "options": "Payment Entry",
+      "description": "付款单"
+    },
+    {
+      "fieldname": "bank_reference_no",
+      "label": "银行流水号",
+      "fieldtype": "Data",
+      "search_index": 1,
+      "description": "银行流水号"
+    }
+  ],
+  "permissions": [
+    {
+      "role": "HRP Finance User",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 0,
+      "submit": 0,
+      "cancel": 0,
+      "amend": 0
+    },
+    {
+      "role": "HRP Budget Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 0,
+      "submit": 0,
+      "cancel": 0,
+      "amend": 0
+    }
+  ],
+  "links": [],
+  "actions": [],
+  "x_hrp": {
+    "app": "ione_hrp",
+    "retention_years": 30,
+    "data_classification": "敏感",
+    "key_indexes": [
+      "company",
+      "organization_unit"
+    ],
+    "standard_references": [
+      "Payment Entry"
+    ],
+    "domain_group": "Finance",
+    "module_package": "hrp_treasury"
+  }
+}

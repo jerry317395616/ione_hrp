@@ -1,0 +1,28 @@
+rule_code,rule_name,rule,control,implementation_note
+BR-BUD-001,预算可用额,available = approved + adjustment_in - adjustment_out - reserved - committed - actual + released,Hard,Atomic lock by budget key
+BR-BUD-002,预算粒度键,company+hosp+org+fiscal_year+budget_subject+funding_source+project+period,Hard,All ledger entries must carry full key
+BR-BUD-003,预算并发,同一预算键采用数据库行锁或原子更新；禁止先查后写,Hard,Retry on deadlock
+BR-BUD-004,预算冲销,已过账台账不更新；以等额反向记录冲销,Hard,reversal_of required
+BR-EXP-001,发票唯一性,invoice_code+invoice_no+seller_tax_id+amount+date生成规范化哈希,Hard,Duplicate blocked unless exception approved
+BR-PAY-001,付款职责分离,制单人不能是复核人或最终审批人,Hard,SOD rule
+BR-PAY-002,付款上限,累计付款不得超过合同可付金额与验收合格金额较小值,Hard,Configurable tolerance
+BR-PRO-001,采购方式,金额、分类、资金来源、紧急程度共同决定采购方式,Hard,Approval matrix versioned
+BR-PRO-002,拆单识别,同科室同供应商同品类滚动窗口内金额聚合超过阈值预警,Alert,Window configurable
+BR-SUP-001,供应商准入,关键证照未验证或过期时禁止下单,Hard,Emergency exception requires approval
+BR-CON-001,合同承诺,合同生效时形成预算承诺；变更按增减额调整,Hard,Idempotent by contract version
+BR-CON-002,合同付款,付款计划+里程碑+验收+发票+预算共同校验,Hard,No single condition bypass
+BR-STK-001,近效期先出,批次拣货按有效期升序，再按入库时间升序,Hard,FEFO
+BR-STK-002,高值追溯,患者消耗必须有UDI、患者标识、执行科室、操作人和时间,Hard,No anonymous posting
+BR-STK-003,寄售结算,仅实际消耗且收费/确认通过的寄售耗材进入结算,Hard,Reconciliation required
+BR-AST-001,资产建卡,验收合格且资产分类满足资本化条件才创建Asset,Hard,No direct DB writes
+BR-EQP-001,设备可用性,计量/质控/资质失效的设备自动标记受限并阻断排程接口,Hard,Override audited
+BR-HR-001,临床权限,员工、资质、机构、专业范围和有效期全部满足才允许,Hard,Real-time check
+BR-ROSTER-001,排班冲突,时间重叠、连续工时、休息间隔和资质要求同时校验,Hard,Rules parameterized
+BR-PERF-001,绩效可追溯,每个得分保存来源值、公式版本、参数、舍入和人工调整,Hard,Immutable trace
+BR-COST-001,成本守恒,每一分摊步骤分出金额之和=分入金额之和，允许舍入差进入指定对象,Hard,Tolerance <= 0.01
+BR-COST-002,成本冻结,发布后的成本结果只允许版本化重算，不允许覆盖,Hard,Versioned run
+BR-AUD-001,审计证据,证据文件必须有哈希、来源、采集时间和保留策略,Hard,Chain of custody
+BR-INT-001,接口幂等,所有写接口必须接受Idempotency-Key并保存响应快照,Hard,Unique index
+BR-INT-002,消息投递,领域事件至少一次投递，消费者按event_id去重,Hard,Inbox table
+BR-AI-001,AI权限继承,AI只能在调用用户已有权限范围内检索和执行,Hard,Never elevate
+BR-AI-002,高风险动作,付款、记账、审批、主数据变更必须人工确认且记录确认令牌,Hard,No autonomous execution

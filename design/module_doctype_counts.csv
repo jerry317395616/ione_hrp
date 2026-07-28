@@ -1,0 +1,37 @@
+module,package,domain_group,doctype_count
+HRP Foundation,hrp_foundation,Core,12
+HRP Organization,hrp_organization,Core,12
+HRP Master Data,hrp_master_data,Core,12
+HRP Workflow Authorization,hrp_workflow_authorization,Core,12
+HRP Budget,hrp_budget,Finance,20
+HRP Expense,hrp_expense,Finance,14
+HRP Treasury,hrp_treasury,Finance,12
+HRP Accounting Bridge,hrp_accounting_bridge,Finance,8
+HRP Cost,hrp_cost,Finance,14
+HRP Supplier,hrp_supplier,Supply,12
+HRP Sourcing Tender,hrp_sourcing_tender,Supply,18
+HRP Procurement,hrp_procurement,Supply,16
+HRP Contract,hrp_contract,Supply,14
+HRP Inventory SPD,hrp_inventory_spd,Supply,18
+HRP Asset,hrp_asset,Asset,14
+HRP Equipment,hrp_equipment,Asset,18
+HRP Logistics Facilities,hrp_logistics_facilities,Asset,10
+HRP Archive,hrp_archive,Asset,6
+HRP Credential,hrp_credential,People,12
+HRP Roster Attendance,hrp_roster_attendance,People,12
+HRP Workforce,hrp_workforce,People,8
+HRP Performance,hrp_performance,People,14
+HRP Program Project,hrp_program_project,Project,10
+HRP Research,hrp_research,Project,8
+HRP Teaching,hrp_teaching,Project,6
+HRP Capital,hrp_capital,Project,5
+HRP IT,hrp_it,Project,5
+HRP Internal Control,hrp_internal_control,Governance,10
+HRP Risk,hrp_risk,Governance,7
+HRP Audit,hrp_audit,Governance,10
+HRP Compliance Policy,hrp_compliance_policy,Governance,7
+HRP Integration,hrp_integration,Platform,12
+HRP Data Metric,hrp_data_metric,Platform,8
+HRP AI,hrp_ai,Platform,8
+HRP Portal,hrp_portal,Portal,8
+HRP Service,hrp_service,Portal,6

@@ -1,0 +1,213 @@
+{
+  "doctype": "DocType",
+  "name": "HRP AI Invocation Log",
+  "module": "HRP AI",
+  "custom": 0,
+  "engine": "InnoDB",
+  "autoname": "format:PLT-.YYYY.-.#####",
+  "title_field": "subject",
+  "is_submittable": 0,
+  "istable": 0,
+  "issingle": 0,
+  "track_changes": 0,
+  "allow_rename": 0,
+  "editable_grid": 0,
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "index_web_pages_for_search": 0,
+  "description": "人工智能领域的HRPAI调用日志对象；用于支撑业务闭环、权限、审计与对账。",
+  "fields": [
+    {
+      "fieldname": "event_time",
+      "label": "发生时间",
+      "fieldtype": "Datetime",
+      "reqd": 1,
+      "search_index": 1,
+      "in_list_view": 1,
+      "description": "发生时间"
+    },
+    {
+      "fieldname": "status",
+      "label": "状态",
+      "fieldtype": "Select",
+      "options": "Pending\nProcessing\nSuccess\nFailed\nIgnored",
+      "reqd": 1,
+      "search_index": 1,
+      "in_list_view": 1,
+      "description": "状态"
+    },
+    {
+      "fieldname": "correlation_id",
+      "label": "关联ID",
+      "fieldtype": "Data",
+      "search_index": 1,
+      "in_list_view": 1,
+      "description": "关联ID"
+    },
+    {
+      "fieldname": "idempotency_key",
+      "label": "幂等键",
+      "fieldtype": "Data",
+      "search_index": 1,
+      "description": "幂等键"
+    },
+    {
+      "fieldname": "reference_doctype",
+      "label": "引用类型",
+      "fieldtype": "Link",
+      "options": "DocType",
+      "description": "引用类型"
+    },
+    {
+      "fieldname": "reference_name",
+      "label": "引用单据",
+      "fieldtype": "Dynamic Link",
+      "options": "reference_doctype",
+      "search_index": 1,
+      "description": "引用单据"
+    },
+    {
+      "fieldname": "payload_hash",
+      "label": "报文哈希",
+      "fieldtype": "Data",
+      "description": "报文哈希"
+    },
+    {
+      "fieldname": "payload",
+      "label": "报文",
+      "fieldtype": "Long Text",
+      "description": "报文"
+    },
+    {
+      "fieldname": "error_code",
+      "label": "错误码",
+      "fieldtype": "Data",
+      "description": "错误码"
+    },
+    {
+      "fieldname": "error_message",
+      "label": "错误信息",
+      "fieldtype": "Long Text",
+      "description": "错误信息"
+    },
+    {
+      "fieldname": "retry_count",
+      "label": "重试次数",
+      "fieldtype": "Int",
+      "default": "0",
+      "description": "重试次数"
+    },
+    {
+      "fieldname": "next_retry_at",
+      "label": "下次重试",
+      "fieldtype": "Datetime",
+      "description": "下次重试"
+    },
+    {
+      "fieldname": "provider",
+      "label": "模型提供方",
+      "fieldtype": "Link",
+      "options": "HRP AI Provider",
+      "description": "模型提供方"
+    },
+    {
+      "fieldname": "model",
+      "label": "模型",
+      "fieldtype": "Link",
+      "options": "HRP AI Model",
+      "description": "模型"
+    },
+    {
+      "fieldname": "risk_level",
+      "label": "风险等级",
+      "fieldtype": "Select",
+      "options": "Low\nMedium\nHigh\nProhibited",
+      "search_index": 1,
+      "description": "风险等级"
+    },
+    {
+      "fieldname": "prompt_template",
+      "label": "提示词模板",
+      "fieldtype": "Link",
+      "options": "HRP Prompt Template",
+      "description": "提示词模板"
+    },
+    {
+      "fieldname": "input_hash",
+      "label": "输入哈希",
+      "fieldtype": "Data",
+      "search_index": 1,
+      "description": "输入哈希"
+    },
+    {
+      "fieldname": "input_payload",
+      "label": "输入",
+      "fieldtype": "Long Text",
+      "description": "输入"
+    },
+    {
+      "fieldname": "output_payload",
+      "label": "输出",
+      "fieldtype": "Long Text",
+      "description": "输出"
+    },
+    {
+      "fieldname": "token_usage",
+      "label": "Token用量",
+      "fieldtype": "Int",
+      "description": "Token用量"
+    },
+    {
+      "fieldname": "human_confirmation_required",
+      "label": "需要人工确认",
+      "fieldtype": "Check",
+      "default": "1",
+      "description": "需要人工确认"
+    },
+    {
+      "fieldname": "confirmed_by",
+      "label": "确认人",
+      "fieldtype": "Link",
+      "options": "User",
+      "description": "确认人"
+    }
+  ],
+  "permissions": [
+    {
+      "role": "HRP Integration Operator",
+      "read": 1,
+      "write": 0,
+      "create": 0,
+      "delete": 0,
+      "submit": 0,
+      "cancel": 0,
+      "amend": 0
+    },
+    {
+      "role": "HRP Data Analyst",
+      "read": 1,
+      "write": 0,
+      "create": 0,
+      "delete": 0,
+      "submit": 0,
+      "cancel": 0,
+      "amend": 0
+    }
+  ],
+  "links": [],
+  "actions": [],
+  "x_hrp": {
+    "app": "ione_hrp",
+    "retention_years": 10,
+    "data_classification": "敏感",
+    "key_indexes": [
+      "company",
+      "organization_unit",
+      "status",
+      "posting_date"
+    ],
+    "standard_references": [],
+    "domain_group": "Platform",
+    "module_package": "hrp_ai"
+  }
+}

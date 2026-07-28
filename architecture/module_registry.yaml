@@ -1,0 +1,256 @@
+app: ione_hrp
+title: 美妍伊人医院 HRP
+module_count: 36
+modules:
+- sequence: 10
+  module: HRP Foundation
+  package: hrp_foundation
+  domain_group: Core
+  label_cn: 基础平台
+  enabled_by_default: true
+  description: 系统设置、模块注册、特性开关、公共字典、编号、规则与通用能力。
+- sequence: 11
+  module: HRP Organization
+  package: hrp_organization
+  domain_group: Core
+  label_cn: 组织管理
+  enabled_by_default: true
+  description: 医疗集团、法人、医院、院区、科室、护理单元、病区和岗位组织模型。
+- sequence: 12
+  module: HRP Master Data
+  package: hrp_master_data
+  domain_group: Core
+  label_cn: 主数据管理
+  enabled_by_default: true
+  description: 主数据申请、审核、发布、映射、版本、质量与数据责任体系。
+- sequence: 13
+  module: HRP Workflow Authorization
+  package: hrp_workflow_authorization
+  domain_group: Core
+  label_cn: 流程与授权
+  enabled_by_default: true
+  description: 审批矩阵、金额权限、委托、SLA、不相容岗位和数据权限。
+- sequence: 14
+  module: HRP Budget
+  package: hrp_budget
+  domain_group: Finance
+  label_cn: 全面预算
+  enabled_by_default: true
+  description: 预算目标、编制、批复、占用、承诺、执行、调整、预测与绩效。
+- sequence: 15
+  module: HRP Expense
+  package: hrp_expense
+  domain_group: Finance
+  label_cn: 报账费用
+  enabled_by_default: true
+  description: 事前申请、借款、报销、发票、费用标准、付款申请与电子档案。
+- sequence: 16
+  module: HRP Treasury
+  package: hrp_treasury
+  domain_group: Finance
+  label_cn: 资金管理
+  enabled_by_default: true
+  description: 账户、资金计划、付款、银企直联、回单、对账和现金流预测。
+- sequence: 17
+  module: HRP Accounting Bridge
+  package: hrp_accounting_bridge
+  domain_group: Finance
+  label_cn: 会计桥接
+  enabled_by_default: true
+  description: 业务单据到ERPNext会计单据的规则映射、凭证追溯和业财对账。
+- sequence: 18
+  module: HRP Cost
+  package: hrp_cost
+  domain_group: Finance
+  label_cn: 成本核算
+  enabled_by_default: true
+  description: 科室、项目、服务项目、病种、DRG/DIP、设备和作业成本核算。
+- sequence: 19
+  module: HRP Supplier
+  package: hrp_supplier
+  domain_group: Supply
+  label_cn: 供应商管理
+  enabled_by_default: true
+  description: 供应商注册、准入、证照、分级、评价、黑名单与协同门户。
+- sequence: 20
+  module: HRP Sourcing Tender
+  package: hrp_sourcing_tender
+  domain_group: Supply
+  label_cn: 寻源招标
+  enabled_by_default: true
+  description: 采购方式、询价、招标、专家、评标、定标、公示和采购档案。
+- sequence: 21
+  module: HRP Procurement
+  package: hrp_procurement
+  domain_group: Supply
+  label_cn: 采购管理
+  enabled_by_default: true
+  description: 采购需求、计划、订单、到货、验收、退货、结算与价格分析。
+- sequence: 22
+  module: HRP Contract
+  package: hrp_contract
+  domain_group: Supply
+  label_cn: 合同管理
+  enabled_by_default: true
+  description: 合同起草、审查、审批、签署、履约、收付款、变更、预警和归档。
+- sequence: 23
+  module: HRP Inventory SPD
+  package: hrp_inventory_spd
+  domain_group: Supply
+  label_cn: 库存与SPD
+  enabled_by_default: true
+  description: 中心库、二级库、批号、效期、UDI、寄售、高值耗材和智能柜。
+- sequence: 24
+  module: HRP Asset
+  package: hrp_asset
+  domain_group: Asset
+  label_cn: 固定资产
+  enabled_by_default: true
+  description: 资产申请、采购、验收、建卡、领用、调拨、盘点、折旧和处置。
+- sequence: 25
+  module: HRP Equipment
+  package: hrp_equipment
+  domain_group: Asset
+  label_cn: 医疗设备
+  enabled_by_default: true
+  description: 设备档案、安装、维保、维修、计量、质控、停机和效益分析。
+- sequence: 26
+  module: HRP Logistics Facilities
+  package: hrp_logistics_facilities
+  domain_group: Asset
+  label_cn: 后勤设施
+  enabled_by_default: true
+  description: 服务目录、工单、空间、能源、车辆、设施与后勤SLA。
+- sequence: 27
+  module: HRP Archive
+  package: hrp_archive
+  domain_group: Asset
+  label_cn: 运营档案
+  enabled_by_default: true
+  description: 会计、合同、采购、资产、项目和运营电子档案管理。
+- sequence: 28
+  module: HRP Credential
+  package: hrp_credential
+  domain_group: People
+  label_cn: 人员资质
+  enabled_by_default: true
+  description: 医师、护士、药师、技师等资格、执业范围、授权和到期预警。
+- sequence: 29
+  module: HRP Roster Attendance
+  package: hrp_roster_attendance
+  domain_group: People
+  label_cn: 排班考勤
+  enabled_by_default: true
+  description: 班次、排班、值班、考勤、调班、请假和工时归集。
+- sequence: 30
+  module: HRP Workforce
+  package: hrp_workforce
+  domain_group: People
+  label_cn: 人力规划
+  enabled_by_default: true
+  description: 编制、岗位、人员计划、招聘、入转调离、培训和能力模型。
+- sequence: 31
+  module: HRP Performance
+  package: hrp_performance
+  domain_group: People
+  label_cn: 绩效奖金
+  enabled_by_default: true
+  description: 指标、目标、计分、奖金池、科室分配、个人分配、公示和申诉。
+- sequence: 32
+  module: HRP Program Project
+  package: hrp_program_project
+  domain_group: Project
+  label_cn: 项目管理
+  enabled_by_default: true
+  description: 项目申报、立项、WBS、预算、里程碑、风险、验收、决算和结题。
+- sequence: 33
+  module: HRP Research
+  package: hrp_research
+  domain_group: Project
+  label_cn: 科研管理
+  enabled_by_default: true
+  description: 课题、伦理、科研经费、成果、论文、专利和成果转化。
+- sequence: 34
+  module: HRP Teaching
+  package: hrp_teaching
+  domain_group: Project
+  label_cn: 教学管理
+  enabled_by_default: true
+  description: 教学项目、培训计划、学员、课程、经费、学分和评价。
+- sequence: 35
+  module: HRP Capital
+  package: hrp_capital
+  domain_group: Project
+  label_cn: 基建项目
+  enabled_by_default: true
+  description: 可研、概算、招标、施工、签证、工程付款、验收和决算。
+- sequence: 36
+  module: HRP IT
+  package: hrp_it
+  domain_group: Project
+  label_cn: 信息化项目
+  enabled_by_default: true
+  description: 信息化需求、立项、采购、交付、上线、验收和效益评价。
+- sequence: 37
+  module: HRP Internal Control
+  package: hrp_internal_control
+  domain_group: Governance
+  label_cn: 内部控制
+  enabled_by_default: true
+  description: 控制矩阵、关键控制点、不相容岗位、例外事项和内控自评。
+- sequence: 38
+  module: HRP Risk
+  package: hrp_risk
+  domain_group: Governance
+  label_cn: 风险管理
+  enabled_by_default: true
+  description: 风险识别、分级、处置、监控、预警和风险事件闭环。
+- sequence: 39
+  module: HRP Audit
+  package: hrp_audit
+  domain_group: Governance
+  label_cn: 审计管理
+  enabled_by_default: true
+  description: 审计计划、项目、底稿、证据、问题、整改和跟踪。
+- sequence: 40
+  module: HRP Compliance Policy
+  package: hrp_compliance_policy
+  domain_group: Governance
+  label_cn: 合规制度
+  enabled_by_default: true
+  description: 制度、政策、合规义务、控制要求、培训和证据链。
+- sequence: 41
+  module: HRP Integration
+  package: hrp_integration
+  domain_group: Platform
+  label_cn: 集成平台
+  enabled_by_default: true
+  description: API、接口配置、Outbox/Inbox、重试、对账、映射与运行监控。
+- sequence: 42
+  module: HRP Data Metric
+  package: hrp_data_metric
+  domain_group: Platform
+  label_cn: 数据指标
+  enabled_by_default: true
+  description: ODS、指标、口径、维度、快照、数据质量和运营分析。
+- sequence: 43
+  module: HRP AI
+  package: hrp_ai
+  domain_group: Platform
+  label_cn: AI与Agent
+  enabled_by_default: true
+  description: RAG、提示词、工具、Agent、审批确认、评测、安全与审计。
+- sequence: 44
+  module: HRP Portal
+  package: hrp_portal
+  domain_group: Portal
+  label_cn: 统一门户
+  enabled_by_default: true
+  description: 员工、管理者和供应商统一入口、待办、消息、快捷服务与移动端。
+- sequence: 45
+  module: HRP Service
+  package: hrp_service
+  domain_group: Portal
+  label_cn: 服务中心
+  enabled_by_default: true
+  description: 服务目录、服务申请、工单协同、评价、知识和SLA。

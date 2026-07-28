@@ -1,0 +1,98 @@
+{
+  "actions": [],
+  "creation": "2026-07-28 00:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "general_section",
+    "enabled",
+    "release_channel",
+    "default_company",
+    "default_hospital",
+    "security_section",
+    "strict_data_scope",
+    "require_human_confirmation_for_ai",
+    "integration_section",
+    "integration_timeout_seconds"
+  ],
+  "fields": [
+    {
+      "fieldname": "general_section",
+      "fieldtype": "Section Break",
+      "label": "General"
+    },
+    {
+      "default": "1",
+      "fieldname": "enabled",
+      "fieldtype": "Check",
+      "label": "Enabled"
+    },
+    {
+      "default": "develop",
+      "fieldname": "release_channel",
+      "fieldtype": "Select",
+      "label": "Release Channel",
+      "options": "develop\nlocked-develop\nstable"
+    },
+    {
+      "fieldname": "default_company",
+      "fieldtype": "Link",
+      "label": "Default Company",
+      "options": "Company"
+    },
+    {
+      "fieldname": "default_hospital",
+      "fieldtype": "Data",
+      "label": "Default Hospital"
+    },
+    {
+      "fieldname": "security_section",
+      "fieldtype": "Section Break",
+      "label": "Security"
+    },
+    {
+      "default": "1",
+      "fieldname": "strict_data_scope",
+      "fieldtype": "Check",
+      "label": "Strict Data Scope"
+    },
+    {
+      "default": "1",
+      "fieldname": "require_human_confirmation_for_ai",
+      "fieldtype": "Check",
+      "label": "Require Human Confirmation for AI Actions"
+    },
+    {
+      "fieldname": "integration_section",
+      "fieldtype": "Section Break",
+      "label": "Integration"
+    },
+    {
+      "default": "30",
+      "fieldname": "integration_timeout_seconds",
+      "fieldtype": "Int",
+      "label": "Integration Timeout (Seconds)",
+      "non_negative": 1
+    }
+  ],
+  "issingle": 1,
+  "links": [],
+  "modified": "2026-07-28 00:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "HRP Foundation",
+  "name": "HRP System Settings",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "create": 1,
+      "delete": 1,
+      "read": 1,
+      "write": 1,
+      "role": "System Manager"
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1
+}

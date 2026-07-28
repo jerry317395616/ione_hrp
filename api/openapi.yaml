@@ -1,0 +1,3139 @@
+openapi: 3.1.0
+info:
+  title: 美妍伊人医院HRP API
+  version: 3.0.0
+  description: Frappe v16 based Hospital Resource Planning API contract.
+servers:
+- url: https://{host}
+  variables:
+    host:
+      default: hrp.example.com
+paths:
+  /api/method/ione_hrp_core.api.v1.scope.resolve:
+    post:
+      operationId: core_001
+      summary: 解析当前用户组织/数据权限
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: Authenticated User
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: user,doctype,action
+              additionalProperties: true
+  /api/method/ione_hrp_core.api.v1.approval.evaluate:
+    post:
+      operationId: core_002
+      summary: 计算动态审批链
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Applicant
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: doctype,docname,amount,dimensions
+              additionalProperties: true
+  /api/method/ione_hrp_core.api.v1.sod.validate:
+    post:
+      operationId: core_003
+      summary: 校验不相容职责
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP System Manager
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: user,action,doctype,docname
+              additionalProperties: true
+  /api/method/ione_hrp_core.api.v1.master.get_mapping:
+    get:
+      operationId: core_004
+      summary: 查询外部编码映射
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: filters
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Integration User
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Not applicable
+  /api/method/ione_hrp_core.api.v1.master.submit_change:
+    post:
+      operationId: core_005
+      summary: 提交主数据变更
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Data Steward
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: domain,operation,payload
+              additionalProperties: true
+  /api/method/ione_hrp_core.api.v1.numbering.next:
+    post:
+      operationId: core_006
+      summary: 取得受控业务编号
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP System User
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: scheme,dimensions,date
+              additionalProperties: true
+  /api/method/ione_hrp_core.api.v1.inbox.list:
+    get:
+      operationId: core_007
+      summary: 查询统一待办
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: filters
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: Authenticated User
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Not applicable
+  /api/method/ione_hrp_core.api.v1.delegation.create:
+    post:
+      operationId: core_008
+      summary: 创建审批委托
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Department Manager
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: from_user,to_user,scope,start,end
+              additionalProperties: true
+  /api/method/ione_hrp_finance.api.v1.budget.check:
+    post:
+      operationId: fin_001
+      summary: 预算可用性校验
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Budget User
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: dimensions,amount,as_of_date
+              additionalProperties: true
+  /api/method/ione_hrp_finance.api.v1.budget.reserve:
+    post:
+      operationId: fin_002
+      summary: 创建预算预占
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Budget User
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: source_doctype,source_name,lines
+              additionalProperties: true
+  /api/method/ione_hrp_finance.api.v1.budget.release:
+    post:
+      operationId: fin_003
+      summary: 释放预算预占
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Budget User
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: reservation_name,amount,reason
+              additionalProperties: true
+  /api/method/ione_hrp_finance.api.v1.budget.commit:
+    post:
+      operationId: fin_004
+      summary: 预占转承诺
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Budget Manager
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: reservation_name,contract_or_order,amount
+              additionalProperties: true
+  /api/method/ione_hrp_finance.api.v1.budget.actualize:
+    post:
+      operationId: fin_005
+      summary: 承诺转实际
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Finance User
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: commitment_name,invoice_or_payment,amount
+              additionalProperties: true
+  /api/method/ione_hrp_finance.api.v1.budget.transfer:
+    post:
+      operationId: fin_006
+      summary: 执行预算调剂
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Budget Manager
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: from_dimensions,to_dimensions,amount,approval
+              additionalProperties: true
+  /api/method/ione_hrp_finance.api.v1.expense.validate:
+    post:
+      operationId: fin_007
+      summary: 校验费用标准和事前申请
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Expense User
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: employee,expense_lines,preapproval
+              additionalProperties: true
+  /api/method/ione_hrp_finance.api.v1.invoice.verify:
+    post:
+      operationId: fin_008
+      summary: 发票验真查重
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Expense User
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: invoice_image,invoice_fields
+              additionalProperties: true
+  /api/method/ione_hrp_finance.api.v1.payment.create_batch:
+    post:
+      operationId: fin_009
+      summary: 生成付款批次
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Treasury Manager
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: approved_requests,bank_account
+              additionalProperties: true
+  /api/method/ione_hrp_finance.api.v1.payment.send_bank:
+    post:
+      operationId: fin_010
+      summary: 发送银行付款指令
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Treasury Manager
+      x-transaction-boundary: Outbox transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: batch,signature
+              additionalProperties: true
+  /api/method/ione_hrp_finance.api.v1.bank.callback:
+    post:
+      operationId: fin_011
+      summary: 接收银行回执
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Bank Integration
+      x-transaction-boundary: Inbox transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: submission_id,status,reference,signature
+              additionalProperties: true
+  /api/method/ione_hrp_finance.api.v1.accounting.generate_voucher:
+    post:
+      operationId: fin_012
+      summary: 根据规则生成ERPNext凭证
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Finance Manager
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: source_doctype,source_name,rule_code
+              additionalProperties: true
+  /api/method/ione_hrp_finance.api.v1.cost.run:
+    post:
+      operationId: fin_013
+      summary: 启动成本核算
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Cost Manager
+      x-transaction-boundary: Job orchestration
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: period,scheme,scope
+              additionalProperties: true
+  /api/method/ione_hrp_supply.api.v1.supplier.register:
+    post:
+      operationId: sup_001
+      summary: 供应商门户注册
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: Supplier Portal User
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: company_info,contacts,certificates
+              additionalProperties: true
+  /api/method/ione_hrp_supply.api.v1.supplier.qualify:
+    post:
+      operationId: sup_002
+      summary: 供应商准入结论
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Supplier Manager
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: registration,checks,decision
+              additionalProperties: true
+  /api/method/ione_hrp_supply.api.v1.supplier.certificate_callback:
+    post:
+      operationId: sup_003
+      summary: 外部证照校验回调
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Supplier Integration
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: certificate,status,details
+              additionalProperties: true
+  /api/method/ione_hrp_supply.api.v1.tender.publish:
+    post:
+      operationId: sup_004
+      summary: 发布招标项目
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Tender Manager
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: tender_project,channels
+              additionalProperties: true
+  /api/method/ione_hrp_supply.api.v1.tender.register_bid:
+    post:
+      operationId: sup_005
+      summary: 登记供应商投标
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: Supplier Portal User
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: tender_package,supplier,bid_hash
+              additionalProperties: true
+  /api/method/ione_hrp_supply.api.v1.tender.submit_score:
+    post:
+      operationId: sup_006
+      summary: 提交专家评分
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Evaluation Expert
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: evaluation,expert,scores,signature
+              additionalProperties: true
+  /api/method/ione_hrp_supply.api.v1.award.approve:
+    post:
+      operationId: sup_007
+      summary: 确认定标
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Hospital Executive
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: award_decision,approval_token
+              additionalProperties: true
+  /api/method/ione_hrp_supply.api.v1.purchase.check_price:
+    post:
+      operationId: sup_008
+      summary: 采购价格合规校验
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Procurement User
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: item,supplier,qty,rate,date
+              additionalProperties: true
+  /api/method/ione_hrp_supply.api.v1.purchase.create_order:
+    post:
+      operationId: sup_009
+      summary: 从批准需求创建ERPNext采购订单
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Procurement Manager
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: approved_demands,supplier,terms
+              additionalProperties: true
+  /api/method/ione_hrp_supply.api.v1.receipt.accept:
+    post:
+      operationId: sup_010
+      summary: 执行到货/质量验收
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Warehouse User
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: purchase_receipt,acceptance_lines
+              additionalProperties: true
+  /api/method/ione_hrp_supply.api.v1.match.three_way:
+    post:
+      operationId: sup_011
+      summary: 执行订单-入库-发票三单匹配
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Accounts Payable User
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: purchase_invoice
+              additionalProperties: true
+  /api/method/ione_hrp_supply.api.v1.contract.submit:
+    post:
+      operationId: sup_012
+      summary: 提交合同审批并创建预算承诺
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Contract User
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: contract,attachments
+              additionalProperties: true
+  /api/method/ione_hrp_supply.api.v1.contract.fulfill_obligation:
+    post:
+      operationId: sup_013
+      summary: 登记合同义务履行
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Contract User
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: obligation,evidence,actual_date
+              additionalProperties: true
+  /api/method/ione_hrp_supply.api.v1.spd.consume:
+    post:
+      operationId: sup_014
+      summary: 登记科室/患者耗材消耗
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP SPD Integration
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: cabinet,udi,patient,procedure,qty
+              additionalProperties: true
+  /api/method/ione_hrp_asset.api.v1.asset.acquire:
+    post:
+      operationId: ast_001
+      summary: 从验收创建资产卡片
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Asset Manager
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: acceptance,lines
+              additionalProperties: true
+  /api/method/ione_hrp_asset.api.v1.asset.accept:
+    post:
+      operationId: ast_002
+      summary: 完成资产验收
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Asset User
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: request,receipt,inspection
+              additionalProperties: true
+  /api/method/ione_hrp_asset.api.v1.asset.transfer:
+    post:
+      operationId: ast_003
+      summary: 执行资产调拨
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Asset Manager
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: asset,from,to,custodian,approval
+              additionalProperties: true
+  /api/method/ione_hrp_asset.api.v1.equipment.generate_pm_orders:
+    post:
+      operationId: ast_004
+      summary: 生成预防性维护工单
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Equipment Manager
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: plan,through_date
+              additionalProperties: true
+  /api/method/ione_hrp_asset.api.v1.equipment.report_fault:
+    post:
+      operationId: ast_005
+      summary: 上报设备故障
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Equipment User
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: equipment,severity,symptom,attachments
+              additionalProperties: true
+  /api/method/ione_hrp_asset.api.v1.equipment.complete_maintenance:
+    post:
+      operationId: ast_006
+      summary: 完成维护工单
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Equipment Engineer
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: work_order,labor,parts,result
+              additionalProperties: true
+  /api/method/ione_hrp_asset.api.v1.calibration.import_result:
+    post:
+      operationId: ast_007
+      summary: 导入计量校准结果
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Metrology User
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: equipment,certificate,result,valid_until
+              additionalProperties: true
+  /api/method/ione_hrp_asset.api.v1.logistics.create_work_order:
+    post:
+      operationId: ast_008
+      summary: 由服务申请生成工单
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Service Desk
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: service_request,assignment
+              additionalProperties: true
+  /api/method/ione_hrp_people.api.v1.credential.verify:
+    post:
+      operationId: peo_001
+      summary: 验证职业资质
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Credential Reviewer
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: credential,source
+              additionalProperties: true
+  /api/method/ione_hrp_people.api.v1.privilege.check:
+    post:
+      operationId: peo_002
+      summary: 校验员工可执行的临床权限
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: Authenticated Clinical System
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Not applicable
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: employee,procedure,date
+              additionalProperties: true
+  /api/method/ione_hrp_people.api.v1.roster.generate:
+    post:
+      operationId: peo_003
+      summary: 根据模板生成排班
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Roster Manager
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: cycle,unit,template
+              additionalProperties: true
+  /api/method/ione_hrp_people.api.v1.roster.change:
+    post:
+      operationId: peo_004
+      summary: 提交并应用调班
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Employee
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: assignment,from_employee,to_employee,reason
+              additionalProperties: true
+  /api/method/ione_hrp_people.api.v1.attendance.import:
+    post:
+      operationId: peo_005
+      summary: 导入考勤源数据
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Attendance Integration
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: source,batch,records
+              additionalProperties: true
+  /api/method/ione_hrp_people.api.v1.performance.collect:
+    post:
+      operationId: peo_006
+      summary: 采集绩效指标
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Performance Integration
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: cycle,indicator,source_payload
+              additionalProperties: true
+  /api/method/ione_hrp_people.api.v1.bonus.calculate:
+    post:
+      operationId: peo_007
+      summary: 计算绩效奖金
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Performance Manager
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: cycle,unit,scheme
+              additionalProperties: true
+  /api/method/ione_hrp_people.api.v1.bonus.publish:
+    post:
+      operationId: peo_008
+      summary: 发布奖金到HRMS薪资
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP HR Director
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: calculation,payroll_period,approval
+              additionalProperties: true
+  /api/method/ione_hrp_project.api.v1.project.propose:
+    post:
+      operationId: prj_001
+      summary: 提交项目申报
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Project User
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: proposal,documents
+              additionalProperties: true
+  /api/method/ione_hrp_project.api.v1.project.stage_gate:
+    post:
+      operationId: prj_002
+      summary: 执行项目阶段闸门
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Project Office
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: project,gate,evidence,decision
+              additionalProperties: true
+  /api/method/ione_hrp_project.api.v1.research.import_output:
+    post:
+      operationId: prj_003
+      summary: 导入科研成果
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Research User
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: research_project,outputs
+              additionalProperties: true
+  /api/method/ione_hrp_project.api.v1.capital.progress:
+    post:
+      operationId: prj_004
+      summary: 登记基建进度与工程量
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Capital Manager
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: capital_project,period,progress,quantity
+              additionalProperties: true
+  /api/method/ione_hrp_project.api.v1.project.close:
+    post:
+      operationId: prj_005
+      summary: 项目结题与余额处理
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Project Office
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: project,acceptance,settlement
+              additionalProperties: true
+  /api/method/ione_hrp_governance.api.v1.control.test:
+    post:
+      operationId: gov_001
+      summary: 执行控制测试
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Internal Control Tester
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: control,test_plan,sample,evidence
+              additionalProperties: true
+  /api/method/ione_hrp_governance.api.v1.risk.recalculate:
+    post:
+      operationId: gov_002
+      summary: 重算风险评分
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Risk Manager
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: risk_register,assessment_date
+              additionalProperties: true
+  /api/method/ione_hrp_governance.api.v1.audit.create_sample:
+    post:
+      operationId: gov_003
+      summary: 按规则生成审计样本
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Internal Auditor
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: audit_project,population,method,size
+              additionalProperties: true
+  /api/method/ione_hrp_governance.api.v1.finding.issue:
+    post:
+      operationId: gov_004
+      summary: 下发审计发现
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Internal Auditor
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: audit_project,finding,owner,due_date
+              additionalProperties: true
+  /api/method/ione_hrp_governance.api.v1.remediation.verify:
+    post:
+      operationId: gov_005
+      summary: 验证整改
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Internal Auditor
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: remediation,evidence,decision
+              additionalProperties: true
+  /api/method/ione_hrp_platform.api.v1.integration.receive:
+    post:
+      operationId: plt_001
+      summary: 统一入站接口
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: Integration Client
+      x-transaction-boundary: Inbox transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: interface_code,headers,payload
+              additionalProperties: true
+  /api/method/ione_hrp_platform.api.v1.integration.publish:
+    post:
+      operationId: plt_002
+      summary: 发布领域事件/外发消息
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Integration Publisher
+      x-transaction-boundary: Outbox transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: event_type,aggregate,payload
+              additionalProperties: true
+  /api/method/ione_hrp_platform.api.v1.integration.retry:
+    post:
+      operationId: plt_003
+      summary: 重试失败消息
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Integration Operator
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: message_id,reason
+              additionalProperties: true
+  /api/method/ione_hrp_platform.api.v1.reconciliation.run:
+    post:
+      operationId: plt_004
+      summary: 执行跨系统对账
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Reconciliation Operator
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: job,date_range,scope
+              additionalProperties: true
+  /api/method/ione_hrp_platform.api.v1.metric.refresh:
+    post:
+      operationId: plt_005
+      summary: 刷新指标
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP Data Operator
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: metric,date_range,dimensions
+              additionalProperties: true
+  /api/method/ione_hrp_platform.api.v1.ai.invoke:
+    post:
+      operationId: plt_006
+      summary: 受控调用AI能力
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: HRP AI User
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: agent,task,context,confirmation_token
+              additionalProperties: true
+  /api/method/ione_hrp_portal.api.v1.home.get:
+    get:
+      operationId: por_001
+      summary: 获取个性化门户首页
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: filters
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: Authenticated User
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Not applicable
+  /api/method/ione_hrp_portal.api.v1.service.submit:
+    post:
+      operationId: por_002
+      summary: 提交统一服务表单
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict / duplicate request
+        '422':
+          description: Business validation error
+        '500':
+          description: Internal error
+      x-required-role: Authenticated User
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: service_form,payload,attachments
+              additionalProperties: true
+components:
+  securitySchemes:
+    tokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: token api_key:api_secret or OAuth2 bearer
+  schemas:
+    FrappeResponse:
+      type: object
+      properties:
+        message: {}
+        correlation_id:
+          type: string
+        warnings:
+          type: array
+          items:
+            type: string
+    Problem:
+      type: object
+      required:
+      - code
+      - message
+      - correlation_id
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details: {}
+        correlation_id:
+          type: string

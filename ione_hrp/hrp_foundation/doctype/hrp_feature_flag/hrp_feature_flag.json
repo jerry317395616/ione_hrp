@@ -1,0 +1,82 @@
+{
+  "actions": [],
+  "allow_rename": 0,
+  "autoname": "field:feature_key",
+  "creation": "2026-07-28 00:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "feature_key",
+    "enabled",
+    "module_name",
+    "environment",
+    "description"
+  ],
+  "fields": [
+    {
+      "fieldname": "feature_key",
+      "fieldtype": "Data",
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "label": "Feature Key",
+      "reqd": 1,
+      "unique": 1
+    },
+    {
+      "default": "0",
+      "fieldname": "enabled",
+      "fieldtype": "Check",
+      "in_list_view": 1,
+      "label": "Enabled"
+    },
+    {
+      "fieldname": "module_name",
+      "fieldtype": "Link",
+      "in_standard_filter": 1,
+      "label": "Module",
+      "options": "Module Def",
+      "reqd": 1
+    },
+    {
+      "default": "All",
+      "fieldname": "environment",
+      "fieldtype": "Select",
+      "label": "Environment",
+      "options": "All\nDevelopment\nTest\nStaging\nProduction"
+    },
+    {
+      "fieldname": "description",
+      "fieldtype": "Small Text",
+      "label": "Description"
+    }
+  ],
+  "links": [],
+  "modified": "2026-07-28 00:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "HRP Foundation",
+  "name": "HRP Feature Flag",
+  "naming_rule": "By fieldname",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "create": 1,
+      "delete": 1,
+      "read": 1,
+      "report": 1,
+      "role": "System Manager",
+      "select": 1,
+      "write": 1
+    },
+    {
+      "read": 1,
+      "report": 1,
+      "role": "All",
+      "select": 1
+    }
+  ],
+  "show_name_in_global_search": 1,
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1
+}

@@ -1,0 +1,36 @@
+HRP Foundation
+HRP Organization
+HRP Master Data
+HRP Workflow Authorization
+HRP Budget
+HRP Expense
+HRP Treasury
+HRP Accounting Bridge
+HRP Cost
+HRP Supplier
+HRP Sourcing Tender
+HRP Procurement
+HRP Contract
+HRP Inventory SPD
+HRP Asset
+HRP Equipment
+HRP Logistics Facilities
+HRP Archive
+HRP Credential
+HRP Roster Attendance
+HRP Workforce
+HRP Performance
+HRP Program Project
+HRP Research
+HRP Teaching
+HRP Capital
+HRP IT
+HRP Internal Control
+HRP Risk
+HRP Audit
+HRP Compliance Policy
+HRP Integration
+HRP Data Metric
+HRP AI
+HRP Portal
+HRP Service

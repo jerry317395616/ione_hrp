@@ -1,0 +1,62 @@
+from __future__ import annotations
+
+import csv
+import json
+import sys
+import tomllib
+from pathlib import Path
+
+import yaml
+
+ROOT = Path(__file__).resolve().parents[1]
+APP = ROOT
+PKG = ROOT / "ione_hrp"
+
+
+def fail(message: str) -> None:
+    raise AssertionError(message)
+
+
+def main() -> None:
+    pyproject = tomllib.loads((APP / "pyproject.toml").read_text(encoding="utf-8"))
+    if pyproject["project"]["name"] != "ione_hrp":
+        fail("pyproject project name mismatch")
+
+    registry = yaml.safe_load((ROOT / "architecture" / "module_registry.yaml").read_text(encoding="utf-8"))
+    modules = [line.strip() for line in (PKG / "modules.txt").read_text(encoding="utf-8").splitlines() if line.strip()]
+    registry_names = [row["module"] for row in registry["modules"]]
+    if modules != registry_names:
+        fail("modules.txt and module_registry.yaml order/content mismatch")
+    for row in registry["modules"]:
+        package = PKG / row["package"]
+        if not package.is_dir() or not (package / "__init__.py").exists():
+            fail(f"missing module package: {package}")
+        for sub in ("doctype", "report", "page", "workspace", "services", "api", "tests"):
+            if not (package / sub / "__init__.py").exists():
+                fail(f"missing module subpackage: {package / sub}")
+
+    for json_file in PKG.rglob("*.json"):
+        json.loads(json_file.read_text(encoding="utf-8"))
+    for yaml_file in ROOT.rglob("*.yaml"):
+        yaml.safe_load(yaml_file.read_text(encoding="utf-8"))
+
+    with (ROOT / "design" / "doctype_catalog.csv").open(encoding="utf-8-sig", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    if len(rows) != 398:
+        fail(f"expected 398 design DocTypes, got {len(rows)}")
+    if {row["app"] for row in rows} != {"ione_hrp"}:
+        fail("doctype catalog contains non-single-app values")
+
+    blueprint_files = list((ROOT / "doctype_blueprints").rglob("*.json"))
+    if len(blueprint_files) != 398:
+        fail(f"expected 398 blueprint files, got {len(blueprint_files)}")
+
+    print(json.dumps({"status": "ok", "modules": len(modules), "doctypes": len(rows), "blueprints": len(blueprint_files)}, ensure_ascii=False))
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception as exc:
+        print(f"VALIDATION FAILED: {exc}", file=sys.stderr)
+        raise

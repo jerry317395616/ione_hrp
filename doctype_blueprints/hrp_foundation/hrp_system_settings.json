@@ -1,0 +1,92 @@
+{
+  "doctype": "DocType",
+  "name": "HRP System Settings",
+  "module": "HRP Foundation",
+  "custom": 0,
+  "engine": "InnoDB",
+  "autoname": "",
+  "title_field": "",
+  "is_submittable": 0,
+  "istable": 0,
+  "issingle": 1,
+  "track_changes": 1,
+  "allow_rename": 0,
+  "editable_grid": 0,
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "index_web_pages_for_search": 0,
+  "description": "基础设置领域的HRP系统设置对象；用于支撑业务闭环、权限、审计与对账。",
+  "fields": [
+    {
+      "fieldname": "enabled",
+      "label": "启用",
+      "fieldtype": "Check",
+      "default": "1",
+      "in_list_view": 1,
+      "description": "启用"
+    },
+    {
+      "fieldname": "default_company",
+      "label": "默认法人",
+      "fieldtype": "Link",
+      "options": "Company",
+      "description": "默认法人"
+    },
+    {
+      "fieldname": "default_hospital",
+      "label": "默认医院",
+      "fieldtype": "Link",
+      "options": "HRP Hospital",
+      "description": "默认医院"
+    },
+    {
+      "fieldname": "configuration_json",
+      "label": "扩展配置",
+      "fieldtype": "Code",
+      "options": "JSON",
+      "description": "扩展配置"
+    },
+    {
+      "fieldname": "remarks",
+      "label": "说明",
+      "fieldtype": "Small Text",
+      "description": "说明"
+    }
+  ],
+  "permissions": [
+    {
+      "role": "HRP System Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 0,
+      "submit": 0,
+      "cancel": 0,
+      "amend": 0
+    },
+    {
+      "role": "HRP Data Steward",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 0,
+      "submit": 0,
+      "cancel": 0,
+      "amend": 0
+    }
+  ],
+  "links": [],
+  "actions": [],
+  "x_hrp": {
+    "app": "ione_hrp",
+    "retention_years": 10,
+    "data_classification": "内部",
+    "key_indexes": [
+      "company",
+      "organization_unit"
+    ],
+    "standard_references": [],
+    "domain_group": "Core",
+    "module_package": "hrp_foundation"
+  }
+}

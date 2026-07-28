@@ -1,0 +1,1404 @@
+- workflow_name: HRP Master Data Change Workflow
+  doctype: HRP Master Data Request
+  app: ione_hrp
+  domain_group: Core
+  is_active: 1
+  send_email_alert: 1
+  states:
+  - state: Draft
+    doc_status: 0
+    allow_edit: true
+  - state: Department Review
+    doc_status: 0
+    allow_edit: false
+  - state: Functional Review
+    doc_status: 0
+    allow_edit: false
+  - state: Executive Approval
+    doc_status: 0
+    allow_edit: false
+  - state: Approved
+    doc_status: 1
+    allow_edit: false
+  - state: Returned
+    doc_status: 0
+    allow_edit: true
+  - state: Rejected
+    doc_status: 0
+    allow_edit: false
+  - state: Cancelled
+    doc_status: 2
+    allow_edit: false
+  transitions:
+  - state: Draft
+    action: Submit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: doc.docstatus == 0
+  - state: Department Review
+    action: Approve
+    next_state: Functional Review
+    role: HRP Department Manager
+    condition: ''
+  - state: Department Review
+    action: Return
+    next_state: Returned
+    role: HRP Department Manager
+    condition: ''
+  - state: Returned
+    action: Resubmit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: ''
+  - state: Functional Review
+    action: Approve
+    next_state: Executive Approval
+    role: HRP Data Steward
+    condition: ''
+  - state: Functional Review
+    action: Return
+    next_state: Returned
+    role: HRP Data Steward
+    condition: ''
+  - state: Executive Approval
+    action: Approve
+    next_state: Approved
+    role: HRP System Manager
+    condition: ''
+  - state: Executive Approval
+    action: Reject
+    next_state: Rejected
+    role: HRP System Manager
+    condition: ''
+  - state: Approved
+    action: Cancel
+    next_state: Cancelled
+    role: HRP System Manager
+    condition: doc.docstatus == 1
+  notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
+- workflow_name: HRP Budget Plan Workflow
+  doctype: HRP Budget Plan
+  app: ione_hrp
+  domain_group: Finance
+  is_active: 1
+  send_email_alert: 1
+  states:
+  - state: Draft
+    doc_status: 0
+    allow_edit: true
+  - state: Department Review
+    doc_status: 0
+    allow_edit: false
+  - state: Functional Review
+    doc_status: 0
+    allow_edit: false
+  - state: Executive Approval
+    doc_status: 0
+    allow_edit: false
+  - state: Approved
+    doc_status: 1
+    allow_edit: false
+  - state: Returned
+    doc_status: 0
+    allow_edit: true
+  - state: Rejected
+    doc_status: 0
+    allow_edit: false
+  - state: Cancelled
+    doc_status: 2
+    allow_edit: false
+  transitions:
+  - state: Draft
+    action: Submit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: doc.docstatus == 0
+  - state: Department Review
+    action: Approve
+    next_state: Functional Review
+    role: HRP Department Manager
+    condition: ''
+  - state: Department Review
+    action: Return
+    next_state: Returned
+    role: HRP Department Manager
+    condition: ''
+  - state: Returned
+    action: Resubmit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: ''
+  - state: Functional Review
+    action: Approve
+    next_state: Executive Approval
+    role: HRP Budget Manager
+    condition: ''
+  - state: Functional Review
+    action: Return
+    next_state: Returned
+    role: HRP Budget Manager
+    condition: ''
+  - state: Executive Approval
+    action: Approve
+    next_state: Approved
+    role: HRP Hospital Executive
+    condition: ''
+  - state: Executive Approval
+    action: Reject
+    next_state: Rejected
+    role: HRP Hospital Executive
+    condition: ''
+  - state: Approved
+    action: Cancel
+    next_state: Cancelled
+    role: HRP Hospital Executive
+    condition: doc.docstatus == 1
+  notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
+- workflow_name: HRP Budget Adjustment Workflow
+  doctype: HRP Budget Adjustment
+  app: ione_hrp
+  domain_group: Finance
+  is_active: 1
+  send_email_alert: 1
+  states:
+  - state: Draft
+    doc_status: 0
+    allow_edit: true
+  - state: Department Review
+    doc_status: 0
+    allow_edit: false
+  - state: Functional Review
+    doc_status: 0
+    allow_edit: false
+  - state: Executive Approval
+    doc_status: 0
+    allow_edit: false
+  - state: Approved
+    doc_status: 1
+    allow_edit: false
+  - state: Returned
+    doc_status: 0
+    allow_edit: true
+  - state: Rejected
+    doc_status: 0
+    allow_edit: false
+  - state: Cancelled
+    doc_status: 2
+    allow_edit: false
+  transitions:
+  - state: Draft
+    action: Submit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: doc.docstatus == 0
+  - state: Department Review
+    action: Approve
+    next_state: Functional Review
+    role: HRP Department Manager
+    condition: ''
+  - state: Department Review
+    action: Return
+    next_state: Returned
+    role: HRP Department Manager
+    condition: ''
+  - state: Returned
+    action: Resubmit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: ''
+  - state: Functional Review
+    action: Approve
+    next_state: Executive Approval
+    role: HRP Budget Manager
+    condition: doc.total_amount > 0
+  - state: Functional Review
+    action: Return
+    next_state: Returned
+    role: HRP Budget Manager
+    condition: ''
+  - state: Executive Approval
+    action: Approve
+    next_state: Approved
+    role: HRP CFO
+    condition: ''
+  - state: Executive Approval
+    action: Reject
+    next_state: Rejected
+    role: HRP CFO
+    condition: ''
+  - state: Approved
+    action: Cancel
+    next_state: Cancelled
+    role: HRP CFO
+    condition: doc.docstatus == 1
+  notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
+- workflow_name: HRP Expense Preapproval Workflow
+  doctype: HRP Expense Preapproval
+  app: ione_hrp
+  domain_group: Finance
+  is_active: 1
+  send_email_alert: 1
+  states:
+  - state: Draft
+    doc_status: 0
+    allow_edit: true
+  - state: Department Review
+    doc_status: 0
+    allow_edit: false
+  - state: Functional Review
+    doc_status: 0
+    allow_edit: false
+  - state: Executive Approval
+    doc_status: 0
+    allow_edit: false
+  - state: Approved
+    doc_status: 1
+    allow_edit: false
+  - state: Returned
+    doc_status: 0
+    allow_edit: true
+  - state: Rejected
+    doc_status: 0
+    allow_edit: false
+  - state: Cancelled
+    doc_status: 2
+    allow_edit: false
+  transitions:
+  - state: Draft
+    action: Submit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: doc.docstatus == 0
+  - state: Department Review
+    action: Approve
+    next_state: Functional Review
+    role: HRP Department Manager
+    condition: ''
+  - state: Department Review
+    action: Return
+    next_state: Returned
+    role: HRP Department Manager
+    condition: ''
+  - state: Returned
+    action: Resubmit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: ''
+  - state: Functional Review
+    action: Approve
+    next_state: Executive Approval
+    role: HRP Finance Reviewer
+    condition: ''
+  - state: Functional Review
+    action: Return
+    next_state: Returned
+    role: HRP Finance Reviewer
+    condition: ''
+  - state: Executive Approval
+    action: Approve
+    next_state: Approved
+    role: HRP CFO
+    condition: ''
+  - state: Executive Approval
+    action: Reject
+    next_state: Rejected
+    role: HRP CFO
+    condition: ''
+  - state: Approved
+    action: Cancel
+    next_state: Cancelled
+    role: HRP CFO
+    condition: doc.docstatus == 1
+  notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
+- workflow_name: HRP Payment Request Workflow
+  doctype: HRP Payment Request
+  app: ione_hrp
+  domain_group: Finance
+  is_active: 1
+  send_email_alert: 1
+  states:
+  - state: Draft
+    doc_status: 0
+    allow_edit: true
+  - state: Department Review
+    doc_status: 0
+    allow_edit: false
+  - state: Functional Review
+    doc_status: 0
+    allow_edit: false
+  - state: Executive Approval
+    doc_status: 0
+    allow_edit: false
+  - state: Approved
+    doc_status: 1
+    allow_edit: false
+  - state: Returned
+    doc_status: 0
+    allow_edit: true
+  - state: Rejected
+    doc_status: 0
+    allow_edit: false
+  - state: Cancelled
+    doc_status: 2
+    allow_edit: false
+  transitions:
+  - state: Draft
+    action: Submit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: doc.docstatus == 0
+  - state: Department Review
+    action: Approve
+    next_state: Functional Review
+    role: HRP Department Manager
+    condition: ''
+  - state: Department Review
+    action: Return
+    next_state: Returned
+    role: HRP Department Manager
+    condition: ''
+  - state: Returned
+    action: Resubmit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: ''
+  - state: Functional Review
+    action: Approve
+    next_state: Executive Approval
+    role: HRP Treasury Reviewer
+    condition: ''
+  - state: Functional Review
+    action: Return
+    next_state: Returned
+    role: HRP Treasury Reviewer
+    condition: ''
+  - state: Executive Approval
+    action: Approve
+    next_state: Approved
+    role: HRP CFO
+    condition: ''
+  - state: Executive Approval
+    action: Reject
+    next_state: Rejected
+    role: HRP CFO
+    condition: ''
+  - state: Approved
+    action: Cancel
+    next_state: Cancelled
+    role: HRP CFO
+    condition: doc.docstatus == 1
+  notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
+- workflow_name: HRP Supplier Registration Workflow
+  doctype: HRP Supplier Registration
+  app: ione_hrp
+  domain_group: Supply
+  is_active: 1
+  send_email_alert: 1
+  states:
+  - state: Draft
+    doc_status: 0
+    allow_edit: true
+  - state: Department Review
+    doc_status: 0
+    allow_edit: false
+  - state: Functional Review
+    doc_status: 0
+    allow_edit: false
+  - state: Executive Approval
+    doc_status: 0
+    allow_edit: false
+  - state: Approved
+    doc_status: 1
+    allow_edit: false
+  - state: Returned
+    doc_status: 0
+    allow_edit: true
+  - state: Rejected
+    doc_status: 0
+    allow_edit: false
+  - state: Cancelled
+    doc_status: 2
+    allow_edit: false
+  transitions:
+  - state: Draft
+    action: Submit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: doc.docstatus == 0
+  - state: Department Review
+    action: Approve
+    next_state: Functional Review
+    role: HRP Department Manager
+    condition: ''
+  - state: Department Review
+    action: Return
+    next_state: Returned
+    role: HRP Department Manager
+    condition: ''
+  - state: Returned
+    action: Resubmit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: ''
+  - state: Functional Review
+    action: Approve
+    next_state: Executive Approval
+    role: HRP Supplier Manager
+    condition: ''
+  - state: Functional Review
+    action: Return
+    next_state: Returned
+    role: HRP Supplier Manager
+    condition: ''
+  - state: Executive Approval
+    action: Approve
+    next_state: Approved
+    role: HRP Procurement Manager
+    condition: ''
+  - state: Executive Approval
+    action: Reject
+    next_state: Rejected
+    role: HRP Procurement Manager
+    condition: ''
+  - state: Approved
+    action: Cancel
+    next_state: Cancelled
+    role: HRP Procurement Manager
+    condition: doc.docstatus == 1
+  notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
+- workflow_name: HRP Purchase Demand Workflow
+  doctype: HRP Purchase Demand
+  app: ione_hrp
+  domain_group: Supply
+  is_active: 1
+  send_email_alert: 1
+  states:
+  - state: Draft
+    doc_status: 0
+    allow_edit: true
+  - state: Department Review
+    doc_status: 0
+    allow_edit: false
+  - state: Functional Review
+    doc_status: 0
+    allow_edit: false
+  - state: Executive Approval
+    doc_status: 0
+    allow_edit: false
+  - state: Approved
+    doc_status: 1
+    allow_edit: false
+  - state: Returned
+    doc_status: 0
+    allow_edit: true
+  - state: Rejected
+    doc_status: 0
+    allow_edit: false
+  - state: Cancelled
+    doc_status: 2
+    allow_edit: false
+  transitions:
+  - state: Draft
+    action: Submit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: doc.docstatus == 0
+  - state: Department Review
+    action: Approve
+    next_state: Functional Review
+    role: HRP Department Manager
+    condition: ''
+  - state: Department Review
+    action: Return
+    next_state: Returned
+    role: HRP Department Manager
+    condition: ''
+  - state: Returned
+    action: Resubmit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: ''
+  - state: Functional Review
+    action: Approve
+    next_state: Executive Approval
+    role: HRP Procurement Reviewer
+    condition: ''
+  - state: Functional Review
+    action: Return
+    next_state: Returned
+    role: HRP Procurement Reviewer
+    condition: ''
+  - state: Executive Approval
+    action: Approve
+    next_state: Approved
+    role: HRP Procurement Manager
+    condition: ''
+  - state: Executive Approval
+    action: Reject
+    next_state: Rejected
+    role: HRP Procurement Manager
+    condition: ''
+  - state: Approved
+    action: Cancel
+    next_state: Cancelled
+    role: HRP Procurement Manager
+    condition: doc.docstatus == 1
+  notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
+- workflow_name: HRP Tender Project Workflow
+  doctype: HRP Tender Project
+  app: ione_hrp
+  domain_group: Supply
+  is_active: 1
+  send_email_alert: 1
+  states:
+  - state: Draft
+    doc_status: 0
+    allow_edit: true
+  - state: Department Review
+    doc_status: 0
+    allow_edit: false
+  - state: Functional Review
+    doc_status: 0
+    allow_edit: false
+  - state: Executive Approval
+    doc_status: 0
+    allow_edit: false
+  - state: Approved
+    doc_status: 1
+    allow_edit: false
+  - state: Returned
+    doc_status: 0
+    allow_edit: true
+  - state: Rejected
+    doc_status: 0
+    allow_edit: false
+  - state: Cancelled
+    doc_status: 2
+    allow_edit: false
+  transitions:
+  - state: Draft
+    action: Submit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: doc.docstatus == 0
+  - state: Department Review
+    action: Approve
+    next_state: Functional Review
+    role: HRP Department Manager
+    condition: ''
+  - state: Department Review
+    action: Return
+    next_state: Returned
+    role: HRP Department Manager
+    condition: ''
+  - state: Returned
+    action: Resubmit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: ''
+  - state: Functional Review
+    action: Approve
+    next_state: Executive Approval
+    role: HRP Tender Manager
+    condition: ''
+  - state: Functional Review
+    action: Return
+    next_state: Returned
+    role: HRP Tender Manager
+    condition: ''
+  - state: Executive Approval
+    action: Approve
+    next_state: Approved
+    role: HRP Hospital Executive
+    condition: ''
+  - state: Executive Approval
+    action: Reject
+    next_state: Rejected
+    role: HRP Hospital Executive
+    condition: ''
+  - state: Approved
+    action: Cancel
+    next_state: Cancelled
+    role: HRP Hospital Executive
+    condition: doc.docstatus == 1
+  notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
+- workflow_name: HRP Award Decision Workflow
+  doctype: HRP Award Decision
+  app: ione_hrp
+  domain_group: Supply
+  is_active: 1
+  send_email_alert: 1
+  states:
+  - state: Draft
+    doc_status: 0
+    allow_edit: true
+  - state: Department Review
+    doc_status: 0
+    allow_edit: false
+  - state: Functional Review
+    doc_status: 0
+    allow_edit: false
+  - state: Executive Approval
+    doc_status: 0
+    allow_edit: false
+  - state: Awarded
+    doc_status: 1
+    allow_edit: false
+  - state: Returned
+    doc_status: 0
+    allow_edit: true
+  - state: Rejected
+    doc_status: 0
+    allow_edit: false
+  - state: Cancelled
+    doc_status: 2
+    allow_edit: false
+  transitions:
+  - state: Draft
+    action: Submit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: doc.docstatus == 0
+  - state: Department Review
+    action: Approve
+    next_state: Functional Review
+    role: HRP Department Manager
+    condition: ''
+  - state: Department Review
+    action: Return
+    next_state: Returned
+    role: HRP Department Manager
+    condition: ''
+  - state: Returned
+    action: Resubmit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: ''
+  - state: Functional Review
+    action: Approve
+    next_state: Executive Approval
+    role: HRP Tender Manager
+    condition: ''
+  - state: Functional Review
+    action: Return
+    next_state: Returned
+    role: HRP Tender Manager
+    condition: ''
+  - state: Executive Approval
+    action: Approve
+    next_state: Awarded
+    role: HRP Hospital Executive
+    condition: ''
+  - state: Executive Approval
+    action: Reject
+    next_state: Rejected
+    role: HRP Hospital Executive
+    condition: ''
+  - state: Awarded
+    action: Cancel
+    next_state: Cancelled
+    role: HRP Hospital Executive
+    condition: doc.docstatus == 1
+  notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
+- workflow_name: HRP Contract Workflow
+  doctype: HRP Contract
+  app: ione_hrp
+  domain_group: Supply
+  is_active: 1
+  send_email_alert: 1
+  states:
+  - state: Draft
+    doc_status: 0
+    allow_edit: true
+  - state: Department Review
+    doc_status: 0
+    allow_edit: false
+  - state: Functional Review
+    doc_status: 0
+    allow_edit: false
+  - state: Executive Approval
+    doc_status: 0
+    allow_edit: false
+  - state: Effective
+    doc_status: 1
+    allow_edit: false
+  - state: Returned
+    doc_status: 0
+    allow_edit: true
+  - state: Rejected
+    doc_status: 0
+    allow_edit: false
+  - state: Cancelled
+    doc_status: 2
+    allow_edit: false
+  transitions:
+  - state: Draft
+    action: Submit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: doc.docstatus == 0
+  - state: Department Review
+    action: Approve
+    next_state: Functional Review
+    role: HRP Department Manager
+    condition: ''
+  - state: Department Review
+    action: Return
+    next_state: Returned
+    role: HRP Department Manager
+    condition: ''
+  - state: Returned
+    action: Resubmit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: ''
+  - state: Functional Review
+    action: Approve
+    next_state: Executive Approval
+    role: HRP Contract Reviewer
+    condition: ''
+  - state: Functional Review
+    action: Return
+    next_state: Returned
+    role: HRP Contract Reviewer
+    condition: ''
+  - state: Executive Approval
+    action: Approve
+    next_state: Effective
+    role: HRP Hospital Executive
+    condition: ''
+  - state: Executive Approval
+    action: Reject
+    next_state: Rejected
+    role: HRP Hospital Executive
+    condition: ''
+  - state: Effective
+    action: Cancel
+    next_state: Cancelled
+    role: HRP Hospital Executive
+    condition: doc.docstatus == 1
+  notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
+- workflow_name: HRP High Value Usage Workflow
+  doctype: HRP High Value Usage
+  app: ione_hrp
+  domain_group: Supply
+  is_active: 1
+  send_email_alert: 1
+  states:
+  - state: Draft
+    doc_status: 0
+    allow_edit: true
+  - state: Department Review
+    doc_status: 0
+    allow_edit: false
+  - state: Functional Review
+    doc_status: 0
+    allow_edit: false
+  - state: Executive Approval
+    doc_status: 0
+    allow_edit: false
+  - state: Completed
+    doc_status: 1
+    allow_edit: false
+  - state: Returned
+    doc_status: 0
+    allow_edit: true
+  - state: Rejected
+    doc_status: 0
+    allow_edit: false
+  - state: Cancelled
+    doc_status: 2
+    allow_edit: false
+  transitions:
+  - state: Draft
+    action: Submit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: doc.docstatus == 0
+  - state: Department Review
+    action: Approve
+    next_state: Functional Review
+    role: HRP Department Manager
+    condition: ''
+  - state: Department Review
+    action: Return
+    next_state: Returned
+    role: HRP Department Manager
+    condition: ''
+  - state: Returned
+    action: Resubmit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: ''
+  - state: Functional Review
+    action: Approve
+    next_state: Executive Approval
+    role: HRP Supply Reviewer
+    condition: ''
+  - state: Functional Review
+    action: Return
+    next_state: Returned
+    role: HRP Supply Reviewer
+    condition: ''
+  - state: Executive Approval
+    action: Approve
+    next_state: Completed
+    role: HRP Supply Manager
+    condition: ''
+  - state: Executive Approval
+    action: Reject
+    next_state: Rejected
+    role: HRP Supply Manager
+    condition: ''
+  - state: Completed
+    action: Cancel
+    next_state: Cancelled
+    role: HRP Supply Manager
+    condition: doc.docstatus == 1
+  notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
+- workflow_name: HRP Asset Acquisition Workflow
+  doctype: HRP Asset Acquisition Request
+  app: ione_hrp
+  domain_group: Asset
+  is_active: 1
+  send_email_alert: 1
+  states:
+  - state: Draft
+    doc_status: 0
+    allow_edit: true
+  - state: Department Review
+    doc_status: 0
+    allow_edit: false
+  - state: Functional Review
+    doc_status: 0
+    allow_edit: false
+  - state: Executive Approval
+    doc_status: 0
+    allow_edit: false
+  - state: Approved
+    doc_status: 1
+    allow_edit: false
+  - state: Returned
+    doc_status: 0
+    allow_edit: true
+  - state: Rejected
+    doc_status: 0
+    allow_edit: false
+  - state: Cancelled
+    doc_status: 2
+    allow_edit: false
+  transitions:
+  - state: Draft
+    action: Submit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: doc.docstatus == 0
+  - state: Department Review
+    action: Approve
+    next_state: Functional Review
+    role: HRP Department Manager
+    condition: ''
+  - state: Department Review
+    action: Return
+    next_state: Returned
+    role: HRP Department Manager
+    condition: ''
+  - state: Returned
+    action: Resubmit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: ''
+  - state: Functional Review
+    action: Approve
+    next_state: Executive Approval
+    role: HRP Asset Reviewer
+    condition: ''
+  - state: Functional Review
+    action: Return
+    next_state: Returned
+    role: HRP Asset Reviewer
+    condition: ''
+  - state: Executive Approval
+    action: Approve
+    next_state: Approved
+    role: HRP Hospital Executive
+    condition: ''
+  - state: Executive Approval
+    action: Reject
+    next_state: Rejected
+    role: HRP Hospital Executive
+    condition: ''
+  - state: Approved
+    action: Cancel
+    next_state: Cancelled
+    role: HRP Hospital Executive
+    condition: doc.docstatus == 1
+  notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
+- workflow_name: HRP Equipment Maintenance Workflow
+  doctype: HRP Corrective Maintenance Order
+  app: ione_hrp
+  domain_group: Asset
+  is_active: 1
+  send_email_alert: 1
+  states:
+  - state: Draft
+    doc_status: 0
+    allow_edit: true
+  - state: Department Review
+    doc_status: 0
+    allow_edit: false
+  - state: Functional Review
+    doc_status: 0
+    allow_edit: false
+  - state: Executive Approval
+    doc_status: 0
+    allow_edit: false
+  - state: Completed
+    doc_status: 1
+    allow_edit: false
+  - state: Returned
+    doc_status: 0
+    allow_edit: true
+  - state: Rejected
+    doc_status: 0
+    allow_edit: false
+  - state: Cancelled
+    doc_status: 2
+    allow_edit: false
+  transitions:
+  - state: Draft
+    action: Submit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: doc.docstatus == 0
+  - state: Department Review
+    action: Approve
+    next_state: Functional Review
+    role: HRP Department Manager
+    condition: ''
+  - state: Department Review
+    action: Return
+    next_state: Returned
+    role: HRP Department Manager
+    condition: ''
+  - state: Returned
+    action: Resubmit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: ''
+  - state: Functional Review
+    action: Approve
+    next_state: Executive Approval
+    role: HRP Equipment Reviewer
+    condition: ''
+  - state: Functional Review
+    action: Return
+    next_state: Returned
+    role: HRP Equipment Reviewer
+    condition: ''
+  - state: Executive Approval
+    action: Approve
+    next_state: Completed
+    role: HRP Equipment Manager
+    condition: ''
+  - state: Executive Approval
+    action: Reject
+    next_state: Rejected
+    role: HRP Equipment Manager
+    condition: ''
+  - state: Completed
+    action: Cancel
+    next_state: Cancelled
+    role: HRP Equipment Manager
+    condition: doc.docstatus == 1
+  notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
+- workflow_name: HRP Credential Application Workflow
+  doctype: HRP Credential Application
+  app: ione_hrp
+  domain_group: People
+  is_active: 1
+  send_email_alert: 1
+  states:
+  - state: Draft
+    doc_status: 0
+    allow_edit: true
+  - state: Department Review
+    doc_status: 0
+    allow_edit: false
+  - state: Functional Review
+    doc_status: 0
+    allow_edit: false
+  - state: Executive Approval
+    doc_status: 0
+    allow_edit: false
+  - state: Verified
+    doc_status: 1
+    allow_edit: false
+  - state: Returned
+    doc_status: 0
+    allow_edit: true
+  - state: Rejected
+    doc_status: 0
+    allow_edit: false
+  - state: Cancelled
+    doc_status: 2
+    allow_edit: false
+  transitions:
+  - state: Draft
+    action: Submit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: doc.docstatus == 0
+  - state: Department Review
+    action: Approve
+    next_state: Functional Review
+    role: HRP Department Manager
+    condition: ''
+  - state: Department Review
+    action: Return
+    next_state: Returned
+    role: HRP Department Manager
+    condition: ''
+  - state: Returned
+    action: Resubmit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: ''
+  - state: Functional Review
+    action: Approve
+    next_state: Executive Approval
+    role: HRP Credential Reviewer
+    condition: ''
+  - state: Functional Review
+    action: Return
+    next_state: Returned
+    role: HRP Credential Reviewer
+    condition: ''
+  - state: Executive Approval
+    action: Approve
+    next_state: Verified
+    role: HRP Medical Affairs Manager
+    condition: ''
+  - state: Executive Approval
+    action: Reject
+    next_state: Rejected
+    role: HRP Medical Affairs Manager
+    condition: ''
+  - state: Verified
+    action: Cancel
+    next_state: Cancelled
+    role: HRP Medical Affairs Manager
+    condition: doc.docstatus == 1
+  notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
+- workflow_name: HRP Performance Plan Workflow
+  doctype: HRP Performance Plan
+  app: ione_hrp
+  domain_group: People
+  is_active: 1
+  send_email_alert: 1
+  states:
+  - state: Draft
+    doc_status: 0
+    allow_edit: true
+  - state: Department Review
+    doc_status: 0
+    allow_edit: false
+  - state: Functional Review
+    doc_status: 0
+    allow_edit: false
+  - state: Executive Approval
+    doc_status: 0
+    allow_edit: false
+  - state: Approved
+    doc_status: 1
+    allow_edit: false
+  - state: Returned
+    doc_status: 0
+    allow_edit: true
+  - state: Rejected
+    doc_status: 0
+    allow_edit: false
+  - state: Cancelled
+    doc_status: 2
+    allow_edit: false
+  transitions:
+  - state: Draft
+    action: Submit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: doc.docstatus == 0
+  - state: Department Review
+    action: Approve
+    next_state: Functional Review
+    role: HRP Department Manager
+    condition: ''
+  - state: Department Review
+    action: Return
+    next_state: Returned
+    role: HRP Department Manager
+    condition: ''
+  - state: Returned
+    action: Resubmit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: ''
+  - state: Functional Review
+    action: Approve
+    next_state: Executive Approval
+    role: HRP Performance Reviewer
+    condition: ''
+  - state: Functional Review
+    action: Return
+    next_state: Returned
+    role: HRP Performance Reviewer
+    condition: ''
+  - state: Executive Approval
+    action: Approve
+    next_state: Approved
+    role: HRP HR Director
+    condition: ''
+  - state: Executive Approval
+    action: Reject
+    next_state: Rejected
+    role: HRP HR Director
+    condition: ''
+  - state: Approved
+    action: Cancel
+    next_state: Cancelled
+    role: HRP HR Director
+    condition: doc.docstatus == 1
+  notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
+- workflow_name: HRP Research Project Workflow
+  doctype: HRP Research Project
+  app: ione_hrp
+  domain_group: Project
+  is_active: 1
+  send_email_alert: 1
+  states:
+  - state: Draft
+    doc_status: 0
+    allow_edit: true
+  - state: Department Review
+    doc_status: 0
+    allow_edit: false
+  - state: Functional Review
+    doc_status: 0
+    allow_edit: false
+  - state: Executive Approval
+    doc_status: 0
+    allow_edit: false
+  - state: Approved
+    doc_status: 1
+    allow_edit: false
+  - state: Returned
+    doc_status: 0
+    allow_edit: true
+  - state: Rejected
+    doc_status: 0
+    allow_edit: false
+  - state: Cancelled
+    doc_status: 2
+    allow_edit: false
+  transitions:
+  - state: Draft
+    action: Submit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: doc.docstatus == 0
+  - state: Department Review
+    action: Approve
+    next_state: Functional Review
+    role: HRP Department Manager
+    condition: ''
+  - state: Department Review
+    action: Return
+    next_state: Returned
+    role: HRP Department Manager
+    condition: ''
+  - state: Returned
+    action: Resubmit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: ''
+  - state: Functional Review
+    action: Approve
+    next_state: Executive Approval
+    role: HRP Research Reviewer
+    condition: ''
+  - state: Functional Review
+    action: Return
+    next_state: Returned
+    role: HRP Research Reviewer
+    condition: ''
+  - state: Executive Approval
+    action: Approve
+    next_state: Approved
+    role: HRP Research Director
+    condition: ''
+  - state: Executive Approval
+    action: Reject
+    next_state: Rejected
+    role: HRP Research Director
+    condition: ''
+  - state: Approved
+    action: Cancel
+    next_state: Cancelled
+    role: HRP Research Director
+    condition: doc.docstatus == 1
+  notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
+- workflow_name: HRP Audit Finding Remediation Workflow
+  doctype: HRP Remediation Plan
+  app: ione_hrp
+  domain_group: Governance
+  is_active: 1
+  send_email_alert: 1
+  states:
+  - state: Draft
+    doc_status: 0
+    allow_edit: true
+  - state: Department Review
+    doc_status: 0
+    allow_edit: false
+  - state: Functional Review
+    doc_status: 0
+    allow_edit: false
+  - state: Executive Approval
+    doc_status: 0
+    allow_edit: false
+  - state: Verified
+    doc_status: 1
+    allow_edit: false
+  - state: Returned
+    doc_status: 0
+    allow_edit: true
+  - state: Rejected
+    doc_status: 0
+    allow_edit: false
+  - state: Cancelled
+    doc_status: 2
+    allow_edit: false
+  transitions:
+  - state: Draft
+    action: Submit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: doc.docstatus == 0
+  - state: Department Review
+    action: Approve
+    next_state: Functional Review
+    role: HRP Department Manager
+    condition: ''
+  - state: Department Review
+    action: Return
+    next_state: Returned
+    role: HRP Department Manager
+    condition: ''
+  - state: Returned
+    action: Resubmit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: ''
+  - state: Functional Review
+    action: Approve
+    next_state: Executive Approval
+    role: HRP Internal Auditor
+    condition: ''
+  - state: Functional Review
+    action: Return
+    next_state: Returned
+    role: HRP Internal Auditor
+    condition: ''
+  - state: Executive Approval
+    action: Approve
+    next_state: Verified
+    role: HRP Chief Audit Executive
+    condition: ''
+  - state: Executive Approval
+    action: Reject
+    next_state: Rejected
+    role: HRP Chief Audit Executive
+    condition: ''
+  - state: Verified
+    action: Cancel
+    next_state: Cancelled
+    role: HRP Chief Audit Executive
+    condition: doc.docstatus == 1
+  notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。
+- workflow_name: HRP Service Submission Workflow
+  doctype: HRP Service Submission
+  app: ione_hrp
+  domain_group: Portal
+  is_active: 1
+  send_email_alert: 1
+  states:
+  - state: Draft
+    doc_status: 0
+    allow_edit: true
+  - state: Department Review
+    doc_status: 0
+    allow_edit: false
+  - state: Functional Review
+    doc_status: 0
+    allow_edit: false
+  - state: Executive Approval
+    doc_status: 0
+    allow_edit: false
+  - state: Completed
+    doc_status: 1
+    allow_edit: false
+  - state: Returned
+    doc_status: 0
+    allow_edit: true
+  - state: Rejected
+    doc_status: 0
+    allow_edit: false
+  - state: Cancelled
+    doc_status: 2
+    allow_edit: false
+  transitions:
+  - state: Draft
+    action: Submit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: doc.docstatus == 0
+  - state: Department Review
+    action: Approve
+    next_state: Functional Review
+    role: HRP Department Manager
+    condition: ''
+  - state: Department Review
+    action: Return
+    next_state: Returned
+    role: HRP Department Manager
+    condition: ''
+  - state: Returned
+    action: Resubmit
+    next_state: Department Review
+    role: HRP Applicant
+    condition: ''
+  - state: Functional Review
+    action: Approve
+    next_state: Executive Approval
+    role: HRP Service Manager
+    condition: ''
+  - state: Functional Review
+    action: Return
+    next_state: Returned
+    role: HRP Service Manager
+    condition: ''
+  - state: Executive Approval
+    action: Approve
+    next_state: Completed
+    role: HRP Portal Manager
+    condition: ''
+  - state: Executive Approval
+    action: Reject
+    next_state: Rejected
+    role: HRP Portal Manager
+    condition: ''
+  - state: Completed
+    action: Cancel
+    next_state: Cancelled
+    role: HRP Portal Manager
+    condition: doc.docstatus == 1
+  notes: 金额、组织、资金来源和采购方式分支由HRP Approval Matrix动态解析。

@@ -1,0 +1,966 @@
+- api_code: CORE-001
+  app: ione_hrp
+  domain_group: Core
+  method: POST
+  path: /api/method/ione_hrp.api.v1.core.scope.resolve
+  description: 解析当前用户组织/数据权限
+  request_schema: user,doctype,action
+  response_schema: scopes,filters,masking
+  required_role: Authenticated User
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: CORE-002
+  app: ione_hrp
+  domain_group: Core
+  method: POST
+  path: /api/method/ione_hrp.api.v1.core.approval.evaluate
+  description: 计算动态审批链
+  request_schema: doctype,docname,amount,dimensions
+  response_schema: approvers,steps,policy_version
+  required_role: HRP Applicant
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: CORE-003
+  app: ione_hrp
+  domain_group: Core
+  method: POST
+  path: /api/method/ione_hrp.api.v1.core.sod.validate
+  description: 校验不相容职责
+  request_schema: user,action,doctype,docname
+  response_schema: allowed,conflicts
+  required_role: HRP System Manager
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: CORE-004
+  app: ione_hrp
+  domain_group: Core
+  method: GET
+  path: /api/method/ione_hrp.api.v1.core.master.get_mapping
+  description: 查询外部编码映射
+  request_schema: domain,external_system,external_code
+  response_schema: internal_doctype,internal_name
+  required_role: HRP Integration User
+  idempotency: Not applicable
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: CORE-005
+  app: ione_hrp
+  domain_group: Core
+  method: POST
+  path: /api/method/ione_hrp.api.v1.core.master.submit_change
+  description: 提交主数据变更
+  request_schema: domain,operation,payload
+  response_schema: request_name,workflow_state
+  required_role: HRP Data Steward
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: CORE-006
+  app: ione_hrp
+  domain_group: Core
+  method: POST
+  path: /api/method/ione_hrp.api.v1.core.numbering.next
+  description: 取得受控业务编号
+  request_schema: scheme,dimensions,date
+  response_schema: number,reservation_token
+  required_role: HRP System User
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: CORE-007
+  app: ione_hrp
+  domain_group: Core
+  method: GET
+  path: /api/method/ione_hrp.api.v1.core.inbox.list
+  description: 查询统一待办
+  request_schema: filters,page,page_length
+  response_schema: items,total
+  required_role: Authenticated User
+  idempotency: Not applicable
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: CORE-008
+  app: ione_hrp
+  domain_group: Core
+  method: POST
+  path: /api/method/ione_hrp.api.v1.core.delegation.create
+  description: 创建审批委托
+  request_schema: from_user,to_user,scope,start,end
+  response_schema: delegation_name
+  required_role: HRP Department Manager
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: FIN-001
+  app: ione_hrp
+  domain_group: Finance
+  method: POST
+  path: /api/method/ione_hrp.api.v1.finance.budget.check
+  description: 预算可用性校验
+  request_schema: dimensions,amount,as_of_date
+  response_schema: available,control_result,breakdown
+  required_role: HRP Budget User
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: FIN-002
+  app: ione_hrp
+  domain_group: Finance
+  method: POST
+  path: /api/method/ione_hrp.api.v1.finance.budget.reserve
+  description: 创建预算预占
+  request_schema: source_doctype,source_name,lines
+  response_schema: reservation_name,ledger_entries
+  required_role: HRP Budget User
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: FIN-003
+  app: ione_hrp
+  domain_group: Finance
+  method: POST
+  path: /api/method/ione_hrp.api.v1.finance.budget.release
+  description: 释放预算预占
+  request_schema: reservation_name,amount,reason
+  response_schema: release_entry,available_after
+  required_role: HRP Budget User
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: FIN-004
+  app: ione_hrp
+  domain_group: Finance
+  method: POST
+  path: /api/method/ione_hrp.api.v1.finance.budget.commit
+  description: 预占转承诺
+  request_schema: reservation_name,contract_or_order,amount
+  response_schema: commitment_name,ledger_entries
+  required_role: HRP Budget Manager
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: FIN-005
+  app: ione_hrp
+  domain_group: Finance
+  method: POST
+  path: /api/method/ione_hrp.api.v1.finance.budget.actualize
+  description: 承诺转实际
+  request_schema: commitment_name,invoice_or_payment,amount
+  response_schema: actualization_name,ledger_entries
+  required_role: HRP Finance User
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: FIN-006
+  app: ione_hrp
+  domain_group: Finance
+  method: POST
+  path: /api/method/ione_hrp.api.v1.finance.budget.transfer
+  description: 执行预算调剂
+  request_schema: from_dimensions,to_dimensions,amount,approval
+  response_schema: transfer_name
+  required_role: HRP Budget Manager
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: FIN-007
+  app: ione_hrp
+  domain_group: Finance
+  method: POST
+  path: /api/method/ione_hrp.api.v1.finance.expense.validate
+  description: 校验费用标准和事前申请
+  request_schema: employee,expense_lines,preapproval
+  response_schema: violations,allowed_amount
+  required_role: HRP Expense User
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: FIN-008
+  app: ione_hrp
+  domain_group: Finance
+  method: POST
+  path: /api/method/ione_hrp.api.v1.finance.invoice.verify
+  description: 发票验真查重
+  request_schema: invoice_image,invoice_fields
+  response_schema: verified,duplicate,hash,details
+  required_role: HRP Expense User
+  idempotency: Required for write
+  async: Optional
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: FIN-009
+  app: ione_hrp
+  domain_group: Finance
+  method: POST
+  path: /api/method/ione_hrp.api.v1.finance.payment.create_batch
+  description: 生成付款批次
+  request_schema: approved_requests,bank_account
+  response_schema: batch,instructions
+  required_role: HRP Treasury Manager
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: FIN-010
+  app: ione_hrp
+  domain_group: Finance
+  method: POST
+  path: /api/method/ione_hrp.api.v1.finance.payment.send_bank
+  description: 发送银行付款指令
+  request_schema: batch,signature
+  response_schema: submission_id,status
+  required_role: HRP Treasury Manager
+  idempotency: Required for write
+  async: 'Yes'
+  transaction_boundary: Outbox transaction
+  audit: Always
+  version: v1
+- api_code: FIN-011
+  app: ione_hrp
+  domain_group: Finance
+  method: POST
+  path: /api/method/ione_hrp.api.v1.finance.bank.callback
+  description: 接收银行回执
+  request_schema: submission_id,status,reference,signature
+  response_schema: accepted,message
+  required_role: HRP Bank Integration
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Inbox transaction
+  audit: Always
+  version: v1
+- api_code: FIN-012
+  app: ione_hrp
+  domain_group: Finance
+  method: POST
+  path: /api/method/ione_hrp.api.v1.finance.accounting.generate_voucher
+  description: 根据规则生成ERPNext凭证
+  request_schema: source_doctype,source_name,rule_code
+  response_schema: voucher_type,voucher_name
+  required_role: HRP Finance Manager
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: FIN-013
+  app: ione_hrp
+  domain_group: Finance
+  method: POST
+  path: /api/method/ione_hrp.api.v1.finance.cost.run
+  description: 启动成本核算
+  request_schema: period,scheme,scope
+  response_schema: run_name,job_id
+  required_role: HRP Cost Manager
+  idempotency: Required for write
+  async: 'Yes'
+  transaction_boundary: Job orchestration
+  audit: Always
+  version: v1
+- api_code: SUP-001
+  app: ione_hrp
+  domain_group: Supply
+  method: POST
+  path: /api/method/ione_hrp.api.v1.supply.supplier.register
+  description: 供应商门户注册
+  request_schema: company_info,contacts,certificates
+  response_schema: registration_name
+  required_role: Supplier Portal User
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: SUP-002
+  app: ione_hrp
+  domain_group: Supply
+  method: POST
+  path: /api/method/ione_hrp.api.v1.supply.supplier.qualify
+  description: 供应商准入结论
+  request_schema: registration,checks,decision
+  response_schema: qualification,supplier
+  required_role: HRP Supplier Manager
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: SUP-003
+  app: ione_hrp
+  domain_group: Supply
+  method: POST
+  path: /api/method/ione_hrp.api.v1.supply.supplier.certificate_callback
+  description: 外部证照校验回调
+  request_schema: certificate,status,details
+  response_schema: accepted
+  required_role: HRP Supplier Integration
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: SUP-004
+  app: ione_hrp
+  domain_group: Supply
+  method: POST
+  path: /api/method/ione_hrp.api.v1.supply.tender.publish
+  description: 发布招标项目
+  request_schema: tender_project,channels
+  response_schema: publication_ids
+  required_role: HRP Tender Manager
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: SUP-005
+  app: ione_hrp
+  domain_group: Supply
+  method: POST
+  path: /api/method/ione_hrp.api.v1.supply.tender.register_bid
+  description: 登记供应商投标
+  request_schema: tender_package,supplier,bid_hash
+  response_schema: registration_name
+  required_role: Supplier Portal User
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: SUP-006
+  app: ione_hrp
+  domain_group: Supply
+  method: POST
+  path: /api/method/ione_hrp.api.v1.supply.tender.submit_score
+  description: 提交专家评分
+  request_schema: evaluation,expert,scores,signature
+  response_schema: score_name,total
+  required_role: HRP Evaluation Expert
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: SUP-007
+  app: ione_hrp
+  domain_group: Supply
+  method: POST
+  path: /api/method/ione_hrp.api.v1.supply.award.approve
+  description: 确认定标
+  request_schema: award_decision,approval_token
+  response_schema: award_notice
+  required_role: HRP Hospital Executive
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: SUP-008
+  app: ione_hrp
+  domain_group: Supply
+  method: POST
+  path: /api/method/ione_hrp.api.v1.supply.purchase.check_price
+  description: 采购价格合规校验
+  request_schema: item,supplier,qty,rate,date
+  response_schema: benchmark,deviation,decision
+  required_role: HRP Procurement User
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: SUP-009
+  app: ione_hrp
+  domain_group: Supply
+  method: POST
+  path: /api/method/ione_hrp.api.v1.supply.purchase.create_order
+  description: 从批准需求创建ERPNext采购订单
+  request_schema: approved_demands,supplier,terms
+  response_schema: purchase_order,budget_commitment
+  required_role: HRP Procurement Manager
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: SUP-010
+  app: ione_hrp
+  domain_group: Supply
+  method: POST
+  path: /api/method/ione_hrp.api.v1.supply.receipt.accept
+  description: 执行到货/质量验收
+  request_schema: purchase_receipt,acceptance_lines
+  response_schema: acceptance,status
+  required_role: HRP Warehouse User
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: SUP-011
+  app: ione_hrp
+  domain_group: Supply
+  method: POST
+  path: /api/method/ione_hrp.api.v1.supply.match.three_way
+  description: 执行订单-入库-发票三单匹配
+  request_schema: purchase_invoice
+  response_schema: match_name,result,variances
+  required_role: HRP Accounts Payable User
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: SUP-012
+  app: ione_hrp
+  domain_group: Supply
+  method: POST
+  path: /api/method/ione_hrp.api.v1.supply.contract.submit
+  description: 提交合同审批并创建预算承诺
+  request_schema: contract,attachments
+  response_schema: workflow_state,commitment
+  required_role: HRP Contract User
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: SUP-013
+  app: ione_hrp
+  domain_group: Supply
+  method: POST
+  path: /api/method/ione_hrp.api.v1.supply.contract.fulfill_obligation
+  description: 登记合同义务履行
+  request_schema: obligation,evidence,actual_date
+  response_schema: status,next_action
+  required_role: HRP Contract User
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: SUP-014
+  app: ione_hrp
+  domain_group: Supply
+  method: POST
+  path: /api/method/ione_hrp.api.v1.supply.spd.consume
+  description: 登记科室/患者耗材消耗
+  request_schema: cabinet,udi,patient,procedure,qty
+  response_schema: usage,stock_ledger,cost_event
+  required_role: HRP SPD Integration
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: AST-001
+  app: ione_hrp
+  domain_group: Asset
+  method: POST
+  path: /api/method/ione_hrp.api.v1.asset.asset.acquire
+  description: 从验收创建资产卡片
+  request_schema: acceptance,lines
+  response_schema: assets,links
+  required_role: HRP Asset Manager
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: AST-002
+  app: ione_hrp
+  domain_group: Asset
+  method: POST
+  path: /api/method/ione_hrp.api.v1.asset.asset.accept
+  description: 完成资产验收
+  request_schema: request,receipt,inspection
+  response_schema: acceptance,status
+  required_role: HRP Asset User
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: AST-003
+  app: ione_hrp
+  domain_group: Asset
+  method: POST
+  path: /api/method/ione_hrp.api.v1.asset.asset.transfer
+  description: 执行资产调拨
+  request_schema: asset,from,to,custodian,approval
+  response_schema: asset_movement
+  required_role: HRP Asset Manager
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: AST-004
+  app: ione_hrp
+  domain_group: Asset
+  method: POST
+  path: /api/method/ione_hrp.api.v1.asset.equipment.generate_pm_orders
+  description: 生成预防性维护工单
+  request_schema: plan,through_date
+  response_schema: orders
+  required_role: HRP Equipment Manager
+  idempotency: Required for write
+  async: 'Yes'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: AST-005
+  app: ione_hrp
+  domain_group: Asset
+  method: POST
+  path: /api/method/ione_hrp.api.v1.asset.equipment.report_fault
+  description: 上报设备故障
+  request_schema: equipment,severity,symptom,attachments
+  response_schema: fault,work_order
+  required_role: HRP Equipment User
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: AST-006
+  app: ione_hrp
+  domain_group: Asset
+  method: POST
+  path: /api/method/ione_hrp.api.v1.asset.equipment.complete_maintenance
+  description: 完成维护工单
+  request_schema: work_order,labor,parts,result
+  response_schema: status,next_due
+  required_role: HRP Equipment Engineer
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: AST-007
+  app: ione_hrp
+  domain_group: Asset
+  method: POST
+  path: /api/method/ione_hrp.api.v1.asset.calibration.import_result
+  description: 导入计量校准结果
+  request_schema: equipment,certificate,result,valid_until
+  response_schema: record,alert
+  required_role: HRP Metrology User
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: AST-008
+  app: ione_hrp
+  domain_group: Asset
+  method: POST
+  path: /api/method/ione_hrp.api.v1.asset.logistics.create_work_order
+  description: 由服务申请生成工单
+  request_schema: service_request,assignment
+  response_schema: work_order,sla
+  required_role: HRP Service Desk
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: PEO-001
+  app: ione_hrp
+  domain_group: People
+  method: POST
+  path: /api/method/ione_hrp.api.v1.people.credential.verify
+  description: 验证职业资质
+  request_schema: credential,source
+  response_schema: verification,result
+  required_role: HRP Credential Reviewer
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: PEO-002
+  app: ione_hrp
+  domain_group: People
+  method: POST
+  path: /api/method/ione_hrp.api.v1.people.privilege.check
+  description: 校验员工可执行的临床权限
+  request_schema: employee,procedure,date
+  response_schema: allowed,privileges,reasons
+  required_role: Authenticated Clinical System
+  idempotency: Not applicable
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: PEO-003
+  app: ione_hrp
+  domain_group: People
+  method: POST
+  path: /api/method/ione_hrp.api.v1.people.roster.generate
+  description: 根据模板生成排班
+  request_schema: cycle,unit,template
+  response_schema: roster_plan,assignments
+  required_role: HRP Roster Manager
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: PEO-004
+  app: ione_hrp
+  domain_group: People
+  method: POST
+  path: /api/method/ione_hrp.api.v1.people.roster.change
+  description: 提交并应用调班
+  request_schema: assignment,from_employee,to_employee,reason
+  response_schema: change_request,status
+  required_role: HRP Employee
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: PEO-005
+  app: ione_hrp
+  domain_group: People
+  method: POST
+  path: /api/method/ione_hrp.api.v1.people.attendance.import
+  description: 导入考勤源数据
+  request_schema: source,batch,records
+  response_schema: accepted,rejected,reconciliation
+  required_role: HRP Attendance Integration
+  idempotency: Required for write
+  async: 'Yes'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: PEO-006
+  app: ione_hrp
+  domain_group: People
+  method: POST
+  path: /api/method/ione_hrp.api.v1.people.performance.collect
+  description: 采集绩效指标
+  request_schema: cycle,indicator,source_payload
+  response_schema: performance_data,quality_status
+  required_role: HRP Performance Integration
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: PEO-007
+  app: ione_hrp
+  domain_group: People
+  method: POST
+  path: /api/method/ione_hrp.api.v1.people.bonus.calculate
+  description: 计算绩效奖金
+  request_schema: cycle,unit,scheme
+  response_schema: calculation,results,trace
+  required_role: HRP Performance Manager
+  idempotency: Required for write
+  async: 'Yes'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: PEO-008
+  app: ione_hrp
+  domain_group: People
+  method: POST
+  path: /api/method/ione_hrp.api.v1.people.bonus.publish
+  description: 发布奖金到HRMS薪资
+  request_schema: calculation,payroll_period,approval
+  response_schema: additional_salary_records
+  required_role: HRP HR Director
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: PRJ-001
+  app: ione_hrp
+  domain_group: Project
+  method: POST
+  path: /api/method/ione_hrp.api.v1.project.project.propose
+  description: 提交项目申报
+  request_schema: proposal,documents
+  response_schema: proposal_name,workflow_state
+  required_role: HRP Project User
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: PRJ-002
+  app: ione_hrp
+  domain_group: Project
+  method: POST
+  path: /api/method/ione_hrp.api.v1.project.project.stage_gate
+  description: 执行项目阶段闸门
+  request_schema: project,gate,evidence,decision
+  response_schema: stage,status,next_gate
+  required_role: HRP Project Office
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: PRJ-003
+  app: ione_hrp
+  domain_group: Project
+  method: POST
+  path: /api/method/ione_hrp.api.v1.project.research.import_output
+  description: 导入科研成果
+  request_schema: research_project,outputs
+  response_schema: created,duplicates
+  required_role: HRP Research User
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: PRJ-004
+  app: ione_hrp
+  domain_group: Project
+  method: POST
+  path: /api/method/ione_hrp.api.v1.project.capital.progress
+  description: 登记基建进度与工程量
+  request_schema: capital_project,period,progress,quantity
+  response_schema: progress_record,payment_eligible
+  required_role: HRP Capital Manager
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: PRJ-005
+  app: ione_hrp
+  domain_group: Project
+  method: POST
+  path: /api/method/ione_hrp.api.v1.project.project.close
+  description: 项目结题与余额处理
+  request_schema: project,acceptance,settlement
+  response_schema: closure,budget_release,archive
+  required_role: HRP Project Office
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: GOV-001
+  app: ione_hrp
+  domain_group: Governance
+  method: POST
+  path: /api/method/ione_hrp.api.v1.governance.control.test
+  description: 执行控制测试
+  request_schema: control,test_plan,sample,evidence
+  response_schema: test_result,deficiency
+  required_role: HRP Internal Control Tester
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: GOV-002
+  app: ione_hrp
+  domain_group: Governance
+  method: POST
+  path: /api/method/ione_hrp.api.v1.governance.risk.recalculate
+  description: 重算风险评分
+  request_schema: risk_register,assessment_date
+  response_schema: inherent,residual,level
+  required_role: HRP Risk Manager
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: GOV-003
+  app: ione_hrp
+  domain_group: Governance
+  method: POST
+  path: /api/method/ione_hrp.api.v1.governance.audit.create_sample
+  description: 按规则生成审计样本
+  request_schema: audit_project,population,method,size
+  response_schema: sample,selected_items,seed
+  required_role: HRP Internal Auditor
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: GOV-004
+  app: ione_hrp
+  domain_group: Governance
+  method: POST
+  path: /api/method/ione_hrp.api.v1.governance.finding.issue
+  description: 下发审计发现
+  request_schema: audit_project,finding,owner,due_date
+  response_schema: finding_name,notification
+  required_role: HRP Internal Auditor
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: GOV-005
+  app: ione_hrp
+  domain_group: Governance
+  method: POST
+  path: /api/method/ione_hrp.api.v1.governance.remediation.verify
+  description: 验证整改
+  request_schema: remediation,evidence,decision
+  response_schema: verification,status
+  required_role: HRP Internal Auditor
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: PLT-001
+  app: ione_hrp
+  domain_group: Platform
+  method: POST
+  path: /api/method/ione_hrp.api.v1.platform.integration.receive
+  description: 统一入站接口
+  request_schema: interface_code,headers,payload
+  response_schema: message_id,accepted
+  required_role: Integration Client
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Inbox transaction
+  audit: Always
+  version: v1
+- api_code: PLT-002
+  app: ione_hrp
+  domain_group: Platform
+  method: POST
+  path: /api/method/ione_hrp.api.v1.platform.integration.publish
+  description: 发布领域事件/外发消息
+  request_schema: event_type,aggregate,payload
+  response_schema: outbox_id
+  required_role: HRP Integration Publisher
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Outbox transaction
+  audit: Always
+  version: v1
+- api_code: PLT-003
+  app: ione_hrp
+  domain_group: Platform
+  method: POST
+  path: /api/method/ione_hrp.api.v1.platform.integration.retry
+  description: 重试失败消息
+  request_schema: message_id,reason
+  response_schema: status,next_retry
+  required_role: HRP Integration Operator
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: PLT-004
+  app: ione_hrp
+  domain_group: Platform
+  method: POST
+  path: /api/method/ione_hrp.api.v1.platform.reconciliation.run
+  description: 执行跨系统对账
+  request_schema: job,date_range,scope
+  response_schema: job_run,differences
+  required_role: HRP Reconciliation Operator
+  idempotency: Required for write
+  async: 'Yes'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: PLT-005
+  app: ione_hrp
+  domain_group: Platform
+  method: POST
+  path: /api/method/ione_hrp.api.v1.platform.metric.refresh
+  description: 刷新指标
+  request_schema: metric,date_range,dimensions
+  response_schema: job_id,snapshot_count
+  required_role: HRP Data Operator
+  idempotency: Required for write
+  async: 'Yes'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: PLT-006
+  app: ione_hrp
+  domain_group: Platform
+  method: POST
+  path: /api/method/ione_hrp.api.v1.platform.ai.invoke
+  description: 受控调用AI能力
+  request_schema: agent,task,context,confirmation_token
+  response_schema: invocation,result,citations
+  required_role: HRP AI User
+  idempotency: Required for write
+  async: Optional
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: POR-001
+  app: ione_hrp
+  domain_group: Portal
+  method: GET
+  path: /api/method/ione_hrp.api.v1.portal.home.get
+  description: 获取个性化门户首页
+  request_schema: context
+  response_schema: cards,tasks,alerts,shortcuts
+  required_role: Authenticated User
+  idempotency: Not applicable
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1
+- api_code: POR-002
+  app: ione_hrp
+  domain_group: Portal
+  method: POST
+  path: /api/method/ione_hrp.api.v1.portal.service.submit
+  description: 提交统一服务表单
+  request_schema: service_form,payload,attachments
+  response_schema: submission,workflow_state
+  required_role: Authenticated User
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Always
+  version: v1

@@ -1,0 +1,202 @@
+{
+  "doctype": "DocType",
+  "name": "HRP Department Requisition Line",
+  "module": "HRP Inventory SPD",
+  "custom": 0,
+  "engine": "InnoDB",
+  "autoname": "",
+  "title_field": "",
+  "is_submittable": 0,
+  "istable": 1,
+  "issingle": 0,
+  "track_changes": 0,
+  "allow_rename": 0,
+  "editable_grid": 1,
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "index_web_pages_for_search": 0,
+  "description": "库存与SPD领域的HRP科室申领明细对象；用于支撑业务闭环、权限、审计与对账。",
+  "fields": [
+    {
+      "fieldname": "sequence_no",
+      "label": "序号",
+      "fieldtype": "Int",
+      "default": "1",
+      "in_list_view": 1,
+      "description": "序号"
+    },
+    {
+      "fieldname": "reference_doctype",
+      "label": "引用类型",
+      "fieldtype": "Link",
+      "options": "DocType",
+      "description": "引用类型"
+    },
+    {
+      "fieldname": "reference_name",
+      "label": "引用单据",
+      "fieldtype": "Dynamic Link",
+      "options": "reference_doctype",
+      "search_index": 1,
+      "description": "引用单据"
+    },
+    {
+      "fieldname": "description",
+      "label": "说明",
+      "fieldtype": "Small Text",
+      "description": "说明"
+    },
+    {
+      "fieldname": "quantity",
+      "label": "数量",
+      "fieldtype": "Float",
+      "precision": "6",
+      "description": "数量"
+    },
+    {
+      "fieldname": "rate",
+      "label": "单价",
+      "fieldtype": "Currency",
+      "options": "currency",
+      "precision": "6",
+      "description": "单价"
+    },
+    {
+      "fieldname": "amount",
+      "label": "金额",
+      "fieldtype": "Currency",
+      "options": "currency",
+      "read_only": 1,
+      "in_list_view": 1,
+      "precision": "2",
+      "description": "金额"
+    },
+    {
+      "fieldname": "dimension_json",
+      "label": "核算维度",
+      "fieldtype": "Code",
+      "options": "JSON",
+      "description": "核算维度"
+    },
+    {
+      "fieldname": "item_code",
+      "label": "物资/耗材",
+      "fieldtype": "Link",
+      "options": "Item",
+      "search_index": 1,
+      "description": "物资/耗材"
+    },
+    {
+      "fieldname": "warehouse",
+      "label": "仓库",
+      "fieldtype": "Link",
+      "options": "Warehouse",
+      "search_index": 1,
+      "description": "仓库"
+    },
+    {
+      "fieldname": "department_warehouse",
+      "label": "科室库",
+      "fieldtype": "Link",
+      "options": "HRP Department Warehouse",
+      "search_index": 1,
+      "description": "科室库"
+    },
+    {
+      "fieldname": "batch_no",
+      "label": "批号",
+      "fieldtype": "Link",
+      "options": "Batch",
+      "search_index": 1,
+      "description": "批号"
+    },
+    {
+      "fieldname": "serial_no",
+      "label": "序列号",
+      "fieldtype": "Data",
+      "search_index": 1,
+      "description": "序列号"
+    },
+    {
+      "fieldname": "udi_di",
+      "label": "UDI-DI",
+      "fieldtype": "Data",
+      "search_index": 1,
+      "description": "UDI-DI"
+    },
+    {
+      "fieldname": "udi_pi",
+      "label": "UDI-PI",
+      "fieldtype": "Data",
+      "search_index": 1,
+      "description": "UDI-PI"
+    },
+    {
+      "fieldname": "expiry_date",
+      "label": "有效期",
+      "fieldtype": "Date",
+      "search_index": 1,
+      "description": "有效期"
+    },
+    {
+      "fieldname": "valuation_rate",
+      "label": "计价单价",
+      "fieldtype": "Currency",
+      "options": "currency",
+      "precision": "6",
+      "description": "计价单价"
+    },
+    {
+      "fieldname": "patient_id",
+      "label": "患者标识",
+      "fieldtype": "Data",
+      "search_index": 1,
+      "description": "患者标识"
+    },
+    {
+      "fieldname": "procedure_id",
+      "label": "诊疗/手术标识",
+      "fieldtype": "Data",
+      "search_index": 1,
+      "description": "诊疗/手术标识"
+    }
+  ],
+  "permissions": [
+    {
+      "role": "HRP Procurement User",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 0,
+      "submit": 0,
+      "cancel": 0,
+      "amend": 0
+    },
+    {
+      "role": "HRP Supply Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 0,
+      "submit": 0,
+      "cancel": 0,
+      "amend": 0
+    }
+  ],
+  "links": [],
+  "actions": [],
+  "x_hrp": {
+    "app": "ione_hrp",
+    "retention_years": 10,
+    "data_classification": "内部",
+    "key_indexes": [
+      "company",
+      "organization_unit"
+    ],
+    "standard_references": [
+      "Department"
+    ],
+    "domain_group": "Supply",
+    "module_package": "hrp_inventory_spd"
+  }
+}

@@ -1,0 +1,440 @@
+[
+  {
+    "source_app": "Frappe",
+    "doctype": "User",
+    "decision": "Reuse",
+    "design": "身份主表；通过User Permission和HRP Access Scope限制数据。"
+  },
+  {
+    "source_app": "Frappe",
+    "doctype": "Role",
+    "decision": "Reuse",
+    "design": "角色定义；HRP角色使用fixtures交付。"
+  },
+  {
+    "source_app": "Frappe",
+    "doctype": "Role Profile",
+    "decision": "Reuse",
+    "design": "岗位角色组合。"
+  },
+  {
+    "source_app": "Frappe",
+    "doctype": "User Permission",
+    "decision": "Reuse + Extend",
+    "design": "基础行级权限；复杂组织范围由permission_query_conditions补充。"
+  },
+  {
+    "source_app": "Frappe",
+    "doctype": "Workflow",
+    "decision": "Reuse",
+    "design": "静态状态/动作骨架；动态审批人由HRP Approval Matrix服务解析。"
+  },
+  {
+    "source_app": "Frappe",
+    "doctype": "Workflow State",
+    "decision": "Reuse",
+    "design": "统一使用英文状态代码，中文显示通过翻译。"
+  },
+  {
+    "source_app": "Frappe",
+    "doctype": "Assignment Rule",
+    "decision": "Reuse",
+    "design": "待办分配；金额/组织复杂路由由领域服务完成。"
+  },
+  {
+    "source_app": "Frappe",
+    "doctype": "ToDo",
+    "decision": "Reuse",
+    "design": "统一待办载体，不存业务真相。"
+  },
+  {
+    "source_app": "Frappe",
+    "doctype": "Notification",
+    "decision": "Reuse",
+    "design": "站内、邮件和Webhook通知。"
+  },
+  {
+    "source_app": "Frappe",
+    "doctype": "Communication",
+    "decision": "Reuse",
+    "design": "业务沟通记录。"
+  },
+  {
+    "source_app": "Frappe",
+    "doctype": "File",
+    "decision": "Reuse + Extend",
+    "design": "附件元数据；文件体放S3/MinIO，增加分类、保留和病毒扫描状态。"
+  },
+  {
+    "source_app": "Frappe",
+    "doctype": "Version",
+    "decision": "Reuse",
+    "design": "可变业务记录版本追踪；不可替代领域台账。"
+  },
+  {
+    "source_app": "Frappe",
+    "doctype": "Comment",
+    "decision": "Reuse",
+    "design": "评论和审批协作。"
+  },
+  {
+    "source_app": "Frappe",
+    "doctype": "DocShare",
+    "decision": "Reuse",
+    "design": "例外共享；定期审计。"
+  },
+  {
+    "source_app": "Frappe",
+    "doctype": "OAuth Client",
+    "decision": "Reuse",
+    "design": "外部系统OAuth客户端。"
+  },
+  {
+    "source_app": "Frappe",
+    "doctype": "Connected App",
+    "decision": "Reuse",
+    "design": "标准OAuth连接。"
+  },
+  {
+    "source_app": "Frappe",
+    "doctype": "Scheduled Job Type",
+    "decision": "Reuse",
+    "design": "调度定义。"
+  },
+  {
+    "source_app": "Frappe",
+    "doctype": "Data Import",
+    "decision": "Reuse",
+    "design": "受控主数据导入；生产导入必须审批和预校验。"
+  },
+  {
+    "source_app": "Frappe",
+    "doctype": "Web Form",
+    "decision": "Reuse / Selective",
+    "design": "低复杂度门户表单；复杂门户使用Frappe UI。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Company",
+    "decision": "Reuse",
+    "design": "法人/账簿主体。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Fiscal Year",
+    "decision": "Reuse",
+    "design": "会计和预算年度。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Account",
+    "decision": "Reuse",
+    "design": "会计科目。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Cost Center",
+    "decision": "Reuse + Map",
+    "design": "财务成本中心；与HRP组织责任中心映射。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Accounting Dimension",
+    "decision": "Reuse",
+    "design": "项目、资金来源等辅助核算维度。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Journal Entry",
+    "decision": "Reuse",
+    "design": "会计凭证；仅调用标准控制器生成。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "GL Entry",
+    "decision": "Read Only",
+    "design": "系统总账台账，禁止HRP直接写表。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Payment Entry",
+    "decision": "Reuse",
+    "design": "收付款凭证。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Bank Account",
+    "decision": "Reuse",
+    "design": "银行账户。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Bank Transaction",
+    "decision": "Reuse",
+    "design": "银行流水。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Bank Reconciliation Tool",
+    "decision": "Reuse + Orchestrate",
+    "design": "基础银行对账。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Supplier",
+    "decision": "Reuse",
+    "design": "供应商交易主表；扩展准入档案通过Link关联。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Contact",
+    "decision": "Reuse",
+    "design": "供应商/合同联系人。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Address",
+    "decision": "Reuse",
+    "design": "地址。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Item",
+    "decision": "Reuse",
+    "design": "物资、耗材和备件主表。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Item Group",
+    "decision": "Reuse",
+    "design": "物资分类基础。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "UOM",
+    "decision": "Reuse",
+    "design": "计量单位。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Warehouse",
+    "decision": "Reuse",
+    "design": "中心库/一级库；科室库存扩展映射。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Bin",
+    "decision": "Read Only",
+    "design": "库存聚合结果，禁止直接写。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Stock Ledger Entry",
+    "decision": "Read Only",
+    "design": "标准库存台账，禁止HRP直接写。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Batch",
+    "decision": "Reuse",
+    "design": "批号和有效期。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Serial No",
+    "decision": "Reuse",
+    "design": "序列号。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Material Request",
+    "decision": "Reuse + Extend",
+    "design": "采购/调拨/领用申请基础单据。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Request for Quotation",
+    "decision": "Reuse",
+    "design": "询价。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Supplier Quotation",
+    "decision": "Reuse",
+    "design": "供应商报价。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Purchase Order",
+    "decision": "Reuse + Extend",
+    "design": "采购订单；由批准需求和合同生成。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Purchase Receipt",
+    "decision": "Reuse + Extend",
+    "design": "到货入库；外接质量验收。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Purchase Invoice",
+    "decision": "Reuse + Extend",
+    "design": "采购发票；外接三单匹配和预算实际。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Stock Entry",
+    "decision": "Reuse",
+    "design": "调拨、领用和库存调整。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Delivery Note",
+    "decision": "Do Not Use",
+    "design": "医院采购场景不作为核心。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Asset",
+    "decision": "Reuse + Extend",
+    "design": "固定资产财务卡片。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Asset Category",
+    "decision": "Reuse",
+    "design": "资产分类和折旧。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Asset Movement",
+    "decision": "Reuse",
+    "design": "资产调拨。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Asset Repair",
+    "decision": "Reuse + Extend",
+    "design": "基础维修；医疗设备专业能力另建。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Asset Maintenance",
+    "decision": "Reuse + Extend",
+    "design": "基础保养计划。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Project",
+    "decision": "Reuse + Extend",
+    "design": "通用项目执行骨架。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Task",
+    "decision": "Reuse",
+    "design": "项目任务。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Timesheet",
+    "decision": "Reuse",
+    "design": "项目/维修工时。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Budget",
+    "decision": "Do Not Use as HRP Core",
+    "design": "标准预算粒度不足；仅保留兼容查询，HRP自建不可变预算台账。"
+  },
+  {
+    "source_app": "ERPNext",
+    "doctype": "Expense Claim",
+    "decision": "Reuse + Extend",
+    "design": "员工报销标准单据，HRP扩展事前、发票和预算。"
+  },
+  {
+    "source_app": "HRMS",
+    "doctype": "Employee",
+    "decision": "Reuse",
+    "design": "员工主表。"
+  },
+  {
+    "source_app": "HRMS",
+    "doctype": "Department",
+    "decision": "Reuse + Map",
+    "design": "行政部门；与HRP组织单元映射。"
+  },
+  {
+    "source_app": "HRMS",
+    "doctype": "Designation",
+    "decision": "Reuse",
+    "design": "岗位名称基础。"
+  },
+  {
+    "source_app": "HRMS",
+    "doctype": "Job Opening",
+    "decision": "Reuse",
+    "design": "招聘岗位。"
+  },
+  {
+    "source_app": "HRMS",
+    "doctype": "Job Applicant",
+    "decision": "Reuse",
+    "design": "应聘者。"
+  },
+  {
+    "source_app": "HRMS",
+    "doctype": "Shift Type",
+    "decision": "Reuse",
+    "design": "班次模板。"
+  },
+  {
+    "source_app": "HRMS",
+    "doctype": "Shift Assignment",
+    "decision": "Reuse + Extend",
+    "design": "班次分配；复杂医疗排班由HRP Roster驱动。"
+  },
+  {
+    "source_app": "HRMS",
+    "doctype": "Attendance",
+    "decision": "Reuse",
+    "design": "日考勤结果。"
+  },
+  {
+    "source_app": "HRMS",
+    "doctype": "Employee Checkin",
+    "decision": "Reuse",
+    "design": "考勤原始记录。"
+  },
+  {
+    "source_app": "HRMS",
+    "doctype": "Leave Application",
+    "decision": "Reuse",
+    "design": "请假。"
+  },
+  {
+    "source_app": "HRMS",
+    "doctype": "Salary Structure",
+    "decision": "Reuse",
+    "design": "薪资结构。"
+  },
+  {
+    "source_app": "HRMS",
+    "doctype": "Salary Slip",
+    "decision": "Reuse",
+    "design": "薪资单。"
+  },
+  {
+    "source_app": "HRMS",
+    "doctype": "Additional Salary",
+    "decision": "Reuse",
+    "design": "绩效奖金和专项津贴发布载体。"
+  },
+  {
+    "source_app": "HRMS",
+    "doctype": "Appraisal",
+    "decision": "Reuse / Selective",
+    "design": "通用考核；医院绩效核算使用HRP扩展对象。"
+  }
+]

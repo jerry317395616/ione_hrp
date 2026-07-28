@@ -1,0 +1,114 @@
+{
+  "actions": [],
+  "allow_rename": 0,
+  "autoname": "field:module_name",
+  "creation": "2026-07-28 00:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "module_section",
+    "module_name",
+    "module_key",
+    "label_cn",
+    "domain_group",
+    "column_break_main",
+    "enabled",
+    "sequence",
+    "workspace_route",
+    "description"
+  ],
+  "fields": [
+    {
+      "fieldname": "module_section",
+      "fieldtype": "Section Break",
+      "label": "Module"
+    },
+    {
+      "fieldname": "module_name",
+      "fieldtype": "Link",
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "label": "Module",
+      "options": "Module Def",
+      "reqd": 1,
+      "unique": 1
+    },
+    {
+      "fieldname": "module_key",
+      "fieldtype": "Data",
+      "in_list_view": 1,
+      "label": "Module Key",
+      "read_only": 1
+    },
+    {
+      "fieldname": "label_cn",
+      "fieldtype": "Data",
+      "in_list_view": 1,
+      "label": "Chinese Label"
+    },
+    {
+      "fieldname": "domain_group",
+      "fieldtype": "Select",
+      "in_standard_filter": 1,
+      "label": "Domain Group",
+      "options": "Core\nFinance\nSupply\nAsset\nPeople\nProject\nGovernance\nPlatform\nPortal\nOther"
+    },
+    {
+      "fieldname": "column_break_main",
+      "fieldtype": "Column Break"
+    },
+    {
+      "default": "1",
+      "fieldname": "enabled",
+      "fieldtype": "Check",
+      "in_list_view": 1,
+      "label": "Enabled"
+    },
+    {
+      "default": "10",
+      "fieldname": "sequence",
+      "fieldtype": "Int",
+      "in_list_view": 1,
+      "label": "Sequence"
+    },
+    {
+      "fieldname": "workspace_route",
+      "fieldtype": "Data",
+      "label": "Workspace Route"
+    },
+    {
+      "fieldname": "description",
+      "fieldtype": "Small Text",
+      "label": "Description"
+    }
+  ],
+  "links": [],
+  "modified": "2026-07-28 00:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "HRP Foundation",
+  "name": "HRP Module Setting",
+  "naming_rule": "By fieldname",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "create": 1,
+      "delete": 1,
+      "read": 1,
+      "report": 1,
+      "role": "System Manager",
+      "select": 1,
+      "write": 1
+    },
+    {
+      "read": 1,
+      "report": 1,
+      "role": "All",
+      "select": 1
+    }
+  ],
+  "show_name_in_global_search": 1,
+  "sort_field": "sequence",
+  "sort_order": "ASC",
+  "states": [],
+  "track_changes": 1
+}

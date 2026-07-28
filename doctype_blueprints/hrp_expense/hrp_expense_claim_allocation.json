@@ -1,0 +1,118 @@
+{
+  "doctype": "DocType",
+  "name": "HRP Expense Claim Allocation",
+  "module": "HRP Expense",
+  "custom": 0,
+  "engine": "InnoDB",
+  "autoname": "",
+  "title_field": "",
+  "is_submittable": 0,
+  "istable": 1,
+  "issingle": 0,
+  "track_changes": 0,
+  "allow_rename": 0,
+  "editable_grid": 1,
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "index_web_pages_for_search": 0,
+  "description": "报账费用领域的HRP费用报销分摊对象；用于支撑业务闭环、权限、审计与对账。",
+  "fields": [
+    {
+      "fieldname": "sequence_no",
+      "label": "序号",
+      "fieldtype": "Int",
+      "default": "1",
+      "in_list_view": 1,
+      "description": "序号"
+    },
+    {
+      "fieldname": "reference_doctype",
+      "label": "引用类型",
+      "fieldtype": "Link",
+      "options": "DocType",
+      "description": "引用类型"
+    },
+    {
+      "fieldname": "reference_name",
+      "label": "引用单据",
+      "fieldtype": "Dynamic Link",
+      "options": "reference_doctype",
+      "search_index": 1,
+      "description": "引用单据"
+    },
+    {
+      "fieldname": "description",
+      "label": "说明",
+      "fieldtype": "Small Text",
+      "description": "说明"
+    },
+    {
+      "fieldname": "quantity",
+      "label": "数量",
+      "fieldtype": "Float",
+      "precision": "6",
+      "description": "数量"
+    },
+    {
+      "fieldname": "rate",
+      "label": "单价",
+      "fieldtype": "Currency",
+      "options": "currency",
+      "precision": "6",
+      "description": "单价"
+    },
+    {
+      "fieldname": "amount",
+      "label": "金额",
+      "fieldtype": "Currency",
+      "options": "currency",
+      "read_only": 1,
+      "in_list_view": 1,
+      "precision": "2",
+      "description": "金额"
+    },
+    {
+      "fieldname": "dimension_json",
+      "label": "核算维度",
+      "fieldtype": "Code",
+      "options": "JSON",
+      "description": "核算维度"
+    }
+  ],
+  "permissions": [
+    {
+      "role": "HRP Finance User",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 0,
+      "submit": 0,
+      "cancel": 0,
+      "amend": 0
+    },
+    {
+      "role": "HRP Budget Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 0,
+      "submit": 0,
+      "cancel": 0,
+      "amend": 0
+    }
+  ],
+  "links": [],
+  "actions": [],
+  "x_hrp": {
+    "app": "ione_hrp",
+    "retention_years": 10,
+    "data_classification": "内部",
+    "key_indexes": [
+      "company",
+      "organization_unit"
+    ],
+    "standard_references": [],
+    "domain_group": "Finance",
+    "module_package": "hrp_expense"
+  }
+}

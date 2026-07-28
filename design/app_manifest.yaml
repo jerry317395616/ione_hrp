@@ -1,0 +1,56 @@
+generated_at: '2026-07-28'
+apps: 1
+app:
+  name: ione_hrp
+  title_cn: 美妍伊人医院HRP
+  depends:
+  - frappe
+  - erpnext
+  - hrms
+  module_count: 36
+  doctype_count: 398
+  field_count: 10036
+  modules:
+  - HRP Foundation
+  - HRP Organization
+  - HRP Master Data
+  - HRP Workflow Authorization
+  - HRP Budget
+  - HRP Expense
+  - HRP Treasury
+  - HRP Accounting Bridge
+  - HRP Cost
+  - HRP Supplier
+  - HRP Sourcing Tender
+  - HRP Procurement
+  - HRP Contract
+  - HRP Inventory SPD
+  - HRP Asset
+  - HRP Equipment
+  - HRP Logistics Facilities
+  - HRP Archive
+  - HRP Credential
+  - HRP Roster Attendance
+  - HRP Workforce
+  - HRP Performance
+  - HRP Program Project
+  - HRP Research
+  - HRP Teaching
+  - HRP Capital
+  - HRP IT
+  - HRP Internal Control
+  - HRP Risk
+  - HRP Audit
+  - HRP Compliance Policy
+  - HRP Integration
+  - HRP Data Metric
+  - HRP AI
+  - HRP Portal
+  - HRP Service
+totals:
+  apps: 1
+  modules: 36
+  doctypes: 398
+  fields: 10036
+  roles: 78
+  permission_rows: 144

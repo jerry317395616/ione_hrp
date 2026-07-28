@@ -1,0 +1,44 @@
+[project]
+name = "ione_hrp"
+authors = [
+    { name = "美妍伊人医疗科技有限公司" }
+]
+description = "Hospital Resource Planning platform built as one Frappe app with multiple modules"
+requires-python = ">=3.10,<3.15"
+readme = "README.md"
+dynamic = ["version"]
+dependencies = []
+
+[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.bench.frappe-dependencies]
+frappe = ">=17.0.0-dev,<18.0.0"
+erpnext = ">=17.0.0-dev,<18.0.0"
+hrms = ">=17.0.0-dev,<18.0.0"
+
+[tool.frappe.testing.function_type_validation]
+max_module_depth = 1
+
+[tool.ruff]
+line-length = 110
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["F", "E", "W", "I", "UP", "B", "RUF"]
+ignore = ["B017", "B018", "B023", "B904", "E101", "E402", "E501", "E741", "F401", "F403", "F405", "F722", "W191", "RUF001"]
+typing-modules = ["frappe.types.DF"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "tab"
+docstring-code-format = true
+
+[tool.ruff.lint.isort.sections]
+frappe = ["frappe"]
+erpnext = ["erpnext"]
+hrms = ["hrms"]
+
+[tool.ruff.lint.isort]
+section-order = ["future", "standard-library", "third-party", "frappe", "erpnext", "hrms", "first-party", "local-folder"]

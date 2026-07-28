@@ -1,0 +1,194 @@
+{
+  "doctype": "DocType",
+  "name": "HRP Asset Acquisition Line",
+  "module": "HRP Asset",
+  "custom": 0,
+  "engine": "InnoDB",
+  "autoname": "",
+  "title_field": "",
+  "is_submittable": 0,
+  "istable": 1,
+  "issingle": 0,
+  "track_changes": 0,
+  "allow_rename": 0,
+  "editable_grid": 1,
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "index_web_pages_for_search": 0,
+  "description": "固定资产领域的HRP资产购置明细对象；用于支撑业务闭环、权限、审计与对账。",
+  "fields": [
+    {
+      "fieldname": "sequence_no",
+      "label": "序号",
+      "fieldtype": "Int",
+      "default": "1",
+      "in_list_view": 1,
+      "description": "序号"
+    },
+    {
+      "fieldname": "reference_doctype",
+      "label": "引用类型",
+      "fieldtype": "Link",
+      "options": "DocType",
+      "description": "引用类型"
+    },
+    {
+      "fieldname": "reference_name",
+      "label": "引用单据",
+      "fieldtype": "Dynamic Link",
+      "options": "reference_doctype",
+      "search_index": 1,
+      "description": "引用单据"
+    },
+    {
+      "fieldname": "description",
+      "label": "说明",
+      "fieldtype": "Small Text",
+      "description": "说明"
+    },
+    {
+      "fieldname": "quantity",
+      "label": "数量",
+      "fieldtype": "Float",
+      "precision": "6",
+      "description": "数量"
+    },
+    {
+      "fieldname": "rate",
+      "label": "单价",
+      "fieldtype": "Currency",
+      "options": "currency",
+      "precision": "6",
+      "description": "单价"
+    },
+    {
+      "fieldname": "amount",
+      "label": "金额",
+      "fieldtype": "Currency",
+      "options": "currency",
+      "read_only": 1,
+      "in_list_view": 1,
+      "precision": "2",
+      "description": "金额"
+    },
+    {
+      "fieldname": "dimension_json",
+      "label": "核算维度",
+      "fieldtype": "Code",
+      "options": "JSON",
+      "description": "核算维度"
+    },
+    {
+      "fieldname": "asset",
+      "label": "ERPNext资产",
+      "fieldtype": "Link",
+      "options": "Asset",
+      "search_index": 1,
+      "description": "ERPNext资产"
+    },
+    {
+      "fieldname": "equipment_code",
+      "label": "设备编码",
+      "fieldtype": "Data",
+      "search_index": 1,
+      "description": "设备编码"
+    },
+    {
+      "fieldname": "serial_no",
+      "label": "序列号",
+      "fieldtype": "Data",
+      "search_index": 1,
+      "description": "序列号"
+    },
+    {
+      "fieldname": "manufacturer",
+      "label": "生产厂商",
+      "fieldtype": "Data",
+      "description": "生产厂商"
+    },
+    {
+      "fieldname": "model_no",
+      "label": "型号",
+      "fieldtype": "Data",
+      "description": "型号"
+    },
+    {
+      "fieldname": "asset_location",
+      "label": "资产位置",
+      "fieldtype": "Link",
+      "options": "Location",
+      "description": "资产位置"
+    },
+    {
+      "fieldname": "custodian",
+      "label": "保管人",
+      "fieldtype": "Link",
+      "options": "Employee",
+      "description": "保管人"
+    },
+    {
+      "fieldname": "commissioning_date",
+      "label": "启用日期",
+      "fieldtype": "Date",
+      "description": "启用日期"
+    },
+    {
+      "fieldname": "warranty_end_date",
+      "label": "保修截止",
+      "fieldtype": "Date",
+      "description": "保修截止"
+    },
+    {
+      "fieldname": "maintenance_due_date",
+      "label": "下次维保",
+      "fieldtype": "Date",
+      "search_index": 1,
+      "description": "下次维保"
+    },
+    {
+      "fieldname": "downtime_hours",
+      "label": "停机小时",
+      "fieldtype": "Float",
+      "precision": "2",
+      "description": "停机小时"
+    }
+  ],
+  "permissions": [
+    {
+      "role": "HRP Asset User",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 0,
+      "submit": 0,
+      "cancel": 0,
+      "amend": 0
+    },
+    {
+      "role": "HRP Equipment Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 0,
+      "submit": 0,
+      "cancel": 0,
+      "amend": 0
+    }
+  ],
+  "links": [],
+  "actions": [],
+  "x_hrp": {
+    "app": "ione_hrp",
+    "retention_years": 10,
+    "data_classification": "内部",
+    "key_indexes": [
+      "company",
+      "organization_unit"
+    ],
+    "standard_references": [
+      "Asset"
+    ],
+    "domain_group": "Asset",
+    "module_package": "hrp_asset"
+  }
+}

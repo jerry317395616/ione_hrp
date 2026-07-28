@@ -1,0 +1,208 @@
+{
+  "doctype": "DocType",
+  "name": "HRP Audit Evidence",
+  "module": "HRP Audit",
+  "custom": 0,
+  "engine": "InnoDB",
+  "autoname": "format:GOV-.YYYY.-.#####",
+  "title_field": "subject",
+  "is_submittable": 0,
+  "istable": 0,
+  "issingle": 0,
+  "track_changes": 0,
+  "allow_rename": 0,
+  "editable_grid": 0,
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "index_web_pages_for_search": 0,
+  "description": "审计领域的HRP审计证据对象；用于支撑业务闭环、权限、审计与对账。",
+  "fields": [
+    {
+      "fieldname": "event_time",
+      "label": "发生时间",
+      "fieldtype": "Datetime",
+      "reqd": 1,
+      "search_index": 1,
+      "in_list_view": 1,
+      "description": "发生时间"
+    },
+    {
+      "fieldname": "status",
+      "label": "状态",
+      "fieldtype": "Select",
+      "options": "Pending\nProcessing\nSuccess\nFailed\nIgnored",
+      "reqd": 1,
+      "search_index": 1,
+      "in_list_view": 1,
+      "description": "状态"
+    },
+    {
+      "fieldname": "correlation_id",
+      "label": "关联ID",
+      "fieldtype": "Data",
+      "search_index": 1,
+      "in_list_view": 1,
+      "description": "关联ID"
+    },
+    {
+      "fieldname": "idempotency_key",
+      "label": "幂等键",
+      "fieldtype": "Data",
+      "search_index": 1,
+      "description": "幂等键"
+    },
+    {
+      "fieldname": "reference_doctype",
+      "label": "引用类型",
+      "fieldtype": "Link",
+      "options": "DocType",
+      "description": "引用类型"
+    },
+    {
+      "fieldname": "reference_name",
+      "label": "引用单据",
+      "fieldtype": "Dynamic Link",
+      "options": "reference_doctype",
+      "search_index": 1,
+      "description": "引用单据"
+    },
+    {
+      "fieldname": "payload_hash",
+      "label": "报文哈希",
+      "fieldtype": "Data",
+      "description": "报文哈希"
+    },
+    {
+      "fieldname": "payload",
+      "label": "报文",
+      "fieldtype": "Long Text",
+      "description": "报文"
+    },
+    {
+      "fieldname": "error_code",
+      "label": "错误码",
+      "fieldtype": "Data",
+      "description": "错误码"
+    },
+    {
+      "fieldname": "error_message",
+      "label": "错误信息",
+      "fieldtype": "Long Text",
+      "description": "错误信息"
+    },
+    {
+      "fieldname": "retry_count",
+      "label": "重试次数",
+      "fieldtype": "Int",
+      "default": "0",
+      "description": "重试次数"
+    },
+    {
+      "fieldname": "next_retry_at",
+      "label": "下次重试",
+      "fieldtype": "Datetime",
+      "description": "下次重试"
+    },
+    {
+      "fieldname": "risk_level",
+      "label": "风险等级",
+      "fieldtype": "Select",
+      "options": "Low\nMedium\nHigh\nCritical",
+      "search_index": 1,
+      "description": "风险等级"
+    },
+    {
+      "fieldname": "control_owner",
+      "label": "控制责任人",
+      "fieldtype": "Link",
+      "options": "User",
+      "description": "控制责任人"
+    },
+    {
+      "fieldname": "responsible_department",
+      "label": "责任部门",
+      "fieldtype": "Link",
+      "options": "Department",
+      "search_index": 1,
+      "description": "责任部门"
+    },
+    {
+      "fieldname": "due_date",
+      "label": "到期日",
+      "fieldtype": "Date",
+      "search_index": 1,
+      "description": "到期日"
+    },
+    {
+      "fieldname": "severity",
+      "label": "严重程度",
+      "fieldtype": "Select",
+      "options": "Minor\nMajor\nCritical",
+      "search_index": 1,
+      "description": "严重程度"
+    },
+    {
+      "fieldname": "evidence_required",
+      "label": "要求证据",
+      "fieldtype": "Check",
+      "default": "1",
+      "description": "要求证据"
+    },
+    {
+      "fieldname": "root_cause",
+      "label": "根因",
+      "fieldtype": "Long Text",
+      "description": "根因"
+    },
+    {
+      "fieldname": "corrective_action",
+      "label": "纠正措施",
+      "fieldtype": "Long Text",
+      "description": "纠正措施"
+    },
+    {
+      "fieldname": "verification_result",
+      "label": "验证结果",
+      "fieldtype": "Small Text",
+      "description": "验证结果"
+    }
+  ],
+  "permissions": [
+    {
+      "role": "HRP Auditor",
+      "read": 1,
+      "write": 0,
+      "create": 0,
+      "delete": 0,
+      "submit": 0,
+      "cancel": 0,
+      "amend": 0
+    },
+    {
+      "role": "HRP Internal Control Manager",
+      "read": 1,
+      "write": 0,
+      "create": 0,
+      "delete": 0,
+      "submit": 0,
+      "cancel": 0,
+      "amend": 0
+    }
+  ],
+  "links": [],
+  "actions": [],
+  "x_hrp": {
+    "app": "ione_hrp",
+    "retention_years": 30,
+    "data_classification": "内部",
+    "key_indexes": [
+      "company",
+      "organization_unit",
+      "status",
+      "posting_date"
+    ],
+    "standard_references": [],
+    "domain_group": "Governance",
+    "module_package": "hrp_audit"
+  }
+}

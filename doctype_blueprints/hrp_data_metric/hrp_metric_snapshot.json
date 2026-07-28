@@ -1,0 +1,207 @@
+{
+  "doctype": "DocType",
+  "name": "HRP Metric Snapshot",
+  "module": "HRP Data Metric",
+  "custom": 0,
+  "engine": "InnoDB",
+  "autoname": "format:PLT-.YYYY.-.#####",
+  "title_field": "subject",
+  "is_submittable": 0,
+  "istable": 0,
+  "issingle": 0,
+  "track_changes": 0,
+  "allow_rename": 0,
+  "editable_grid": 0,
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "index_web_pages_for_search": 0,
+  "description": "数据指标领域的HRP指标快照对象；用于支撑业务闭环、权限、审计与对账。",
+  "fields": [
+    {
+      "fieldname": "event_time",
+      "label": "发生时间",
+      "fieldtype": "Datetime",
+      "reqd": 1,
+      "search_index": 1,
+      "in_list_view": 1,
+      "description": "发生时间"
+    },
+    {
+      "fieldname": "status",
+      "label": "状态",
+      "fieldtype": "Select",
+      "options": "Pending\nProcessing\nSuccess\nFailed\nIgnored",
+      "reqd": 1,
+      "search_index": 1,
+      "in_list_view": 1,
+      "description": "状态"
+    },
+    {
+      "fieldname": "correlation_id",
+      "label": "关联ID",
+      "fieldtype": "Data",
+      "search_index": 1,
+      "in_list_view": 1,
+      "description": "关联ID"
+    },
+    {
+      "fieldname": "idempotency_key",
+      "label": "幂等键",
+      "fieldtype": "Data",
+      "search_index": 1,
+      "description": "幂等键"
+    },
+    {
+      "fieldname": "reference_doctype",
+      "label": "引用类型",
+      "fieldtype": "Link",
+      "options": "DocType",
+      "description": "引用类型"
+    },
+    {
+      "fieldname": "reference_name",
+      "label": "引用单据",
+      "fieldtype": "Dynamic Link",
+      "options": "reference_doctype",
+      "search_index": 1,
+      "description": "引用单据"
+    },
+    {
+      "fieldname": "payload_hash",
+      "label": "报文哈希",
+      "fieldtype": "Data",
+      "description": "报文哈希"
+    },
+    {
+      "fieldname": "payload",
+      "label": "报文",
+      "fieldtype": "Long Text",
+      "description": "报文"
+    },
+    {
+      "fieldname": "error_code",
+      "label": "错误码",
+      "fieldtype": "Data",
+      "description": "错误码"
+    },
+    {
+      "fieldname": "error_message",
+      "label": "错误信息",
+      "fieldtype": "Long Text",
+      "description": "错误信息"
+    },
+    {
+      "fieldname": "retry_count",
+      "label": "重试次数",
+      "fieldtype": "Int",
+      "default": "0",
+      "description": "重试次数"
+    },
+    {
+      "fieldname": "next_retry_at",
+      "label": "下次重试",
+      "fieldtype": "Datetime",
+      "description": "下次重试"
+    },
+    {
+      "fieldname": "metric_code",
+      "label": "指标编码",
+      "fieldtype": "Data",
+      "search_index": 1,
+      "description": "指标编码"
+    },
+    {
+      "fieldname": "metric_name",
+      "label": "指标名称",
+      "fieldtype": "Data",
+      "description": "指标名称"
+    },
+    {
+      "fieldname": "grain",
+      "label": "统计粒度",
+      "fieldtype": "Select",
+      "options": "Event\nDay\nMonth\nQuarter\nYear",
+      "description": "统计粒度"
+    },
+    {
+      "fieldname": "formula_expression",
+      "label": "公式表达式",
+      "fieldtype": "Code",
+      "options": "Python",
+      "description": "公式表达式"
+    },
+    {
+      "fieldname": "source_dataset",
+      "label": "来源数据集",
+      "fieldtype": "Link",
+      "options": "HRP Data Set",
+      "description": "来源数据集"
+    },
+    {
+      "fieldname": "refresh_frequency",
+      "label": "刷新频率",
+      "fieldtype": "Select",
+      "options": "Realtime\nHourly\nDaily\nMonthly",
+      "description": "刷新频率"
+    },
+    {
+      "fieldname": "last_refresh_at",
+      "label": "最后刷新",
+      "fieldtype": "Datetime",
+      "read_only": 1,
+      "description": "最后刷新"
+    },
+    {
+      "fieldname": "metric_value",
+      "label": "指标值",
+      "fieldtype": "Float",
+      "precision": "6",
+      "description": "指标值"
+    },
+    {
+      "fieldname": "dimension_json",
+      "label": "维度",
+      "fieldtype": "Code",
+      "options": "JSON",
+      "description": "维度"
+    }
+  ],
+  "permissions": [
+    {
+      "role": "HRP Integration Operator",
+      "read": 1,
+      "write": 0,
+      "create": 0,
+      "delete": 0,
+      "submit": 0,
+      "cancel": 0,
+      "amend": 0
+    },
+    {
+      "role": "HRP Data Analyst",
+      "read": 1,
+      "write": 0,
+      "create": 0,
+      "delete": 0,
+      "submit": 0,
+      "cancel": 0,
+      "amend": 0
+    }
+  ],
+  "links": [],
+  "actions": [],
+  "x_hrp": {
+    "app": "ione_hrp",
+    "retention_years": 10,
+    "data_classification": "内部",
+    "key_indexes": [
+      "company",
+      "organization_unit",
+      "status",
+      "posting_date"
+    ],
+    "standard_references": [],
+    "domain_group": "Platform",
+    "module_package": "hrp_data_metric"
+  }
+}
