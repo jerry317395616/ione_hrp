@@ -23,6 +23,16 @@ Python 包表达。`frappe`、`erpnext`、`hrms` 是锁定提交的上游依赖�
 在升级 GitHub Pro 或明确批准公开仓库之前，策略文件只表示期望状态，不能
 声明远端规则已经生效。禁止为了通过验证而擅自公开仓库。
 
+升级套餐后执行以下命令应用并核验远端策略：
+
+```bash
+python scripts/apply_branch_protection.py --apply
+```
+
+开发机执行 `git config core.hooksPath .githooks` 启用版本化的
+`pre-push` 防护。该本地钩子只用于降低误推风险，不能替代 GitHub 服务端
+保护，也不能作为 COD-001 完成证据。
+
 COD-005 建立 CI 流水线后，再把对应状态检查加入分支保护。本任务不提前实现
 COD-005。
 

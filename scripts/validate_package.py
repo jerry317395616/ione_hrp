@@ -3,9 +3,9 @@ from __future__ import annotations
 import csv
 import json
 import sys
-import tomllib
 from pathlib import Path
 
+import tomllib
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]

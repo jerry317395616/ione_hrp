@@ -6,9 +6,12 @@
     "json_parse": true,
     "yaml_parse": true,
     "repository_contract": true,
-    "repository_contract_tests": 5,
+    "repository_contract_tests": 11,
     "git_monorepo": true,
     "github_branch_protection": false,
+    "github_repository_ruleset": false,
+    "branch_protection_automation": true,
+    "local_main_push_guard": true,
     "github_repository": "https://github.com/jerry317395616/ione_hrp",
     "github_commit": "e5ac08a9884ef56b24816ff775c04bac3724f773",
     "modules_txt_matches_registry": true,
@@ -32,7 +35,7 @@
   "not_run": [
     "bench init against live GitHub develop",
     "ERPNext/HRMS integration tests",
-    "GitHub branch protection enforcement"
+    "GitHub branch protection or repository ruleset enforcement"
   ],
-  "reason_not_run": "The application was built and installed on the existing Press-managed manager.myyr.top site. Pinned upstream integration belongs to COD-002. GitHub rejected branch protection for this private repository with HTTP 403 because the account requires GitHub Pro or a public repository; the repository was not made public without explicit approval."
+  "reason_not_run": "The application was built and installed on the existing Press-managed manager.myyr.top site. Pinned upstream integration belongs to COD-002. GitHub rejected both branch protection and repository rulesets for this private repository with HTTP 403 because the account requires GitHub Pro or a public repository; the repository was not made public without explicit approval. scripts/apply_branch_protection.py and the local pre-push guard are ready but do not replace server-side enforcement."
 }

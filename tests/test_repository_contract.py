@@ -11,6 +11,7 @@ from scripts.repository_contract import (
     discover_custom_apps,
     find_legacy_prefix_references,
     validate_branch_policy,
+    validate_push_guard,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -76,6 +77,14 @@ class RepositoryContractTest(unittest.TestCase):
             self.assertIn("at least one approving review is required", violations)
             self.assertIn("CODEOWNER review is required", violations)
             self.assertIn("force pushes must be disabled", violations)
+
+    def test_rejects_missing_push_guard(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            self.assertEqual(
+                validate_push_guard(root),
+                ["missing .githooks/pre-push"],
+            )
 
 
 if __name__ == "__main__":

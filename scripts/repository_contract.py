@@ -4,9 +4,9 @@ import csv
 import json
 import re
 import sys
-import tomllib
 from pathlib import Path
 
+import tomllib
 import yaml
 
 APP_NAME = "ione_hrp"
@@ -84,6 +84,21 @@ def validate_branch_policy(root: Path) -> list[str]:
         violations.append("force pushes must be disabled")
     if protection.get("allow_deletions") is not False:
         violations.append("protected branch deletion must be disabled")
+    return violations
+
+
+def validate_push_guard(root: Path) -> list[str]:
+    hook_path = root / ".githooks" / "pre-push"
+    if not hook_path.is_file():
+        return ["missing .githooks/pre-push"]
+    hook = hook_path.read_text(encoding="utf-8")
+    violations: list[str] = []
+    if "refs/heads/main" not in hook:
+        violations.append("pre-push hook must guard refs/heads/main")
+    if "exit 1" not in hook:
+        violations.append("pre-push hook must reject direct main pushes")
+    if not (root / "scripts" / "apply_branch_protection.py").is_file():
+        violations.append("missing scripts/apply_branch_protection.py")
     return violations
 
 
@@ -176,6 +191,7 @@ def collect_violations(root: Path) -> list[str]:
 
     violations.extend(find_legacy_prefix_references(root))
     violations.extend(validate_branch_policy(root))
+    violations.extend(validate_push_guard(root))
     violations.extend(validate_catalog_ownership(root))
     violations.extend(validate_module_structure(root))
     violations.extend(validate_protected_ledgers(root))
