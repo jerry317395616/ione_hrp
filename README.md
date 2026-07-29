@@ -58,6 +58,26 @@ python scripts/environment_manager.py provision development
 种子或记录名，也不提供通用删除；持久测试数据通过 replaceable Site 重建清理。完整
 模型、调用、验证和回滚方法见 `architecture/test_data_factory.md`。
 
+## 性能基线与压测
+
+`ione_hrp/config/performance_baselines.json` 版本化登记只读场景、资源硬上限和
+smoke/baseline/load 阈值。`PLT-018` 只允许系统管理员读取注册表与环境许可；压测只能由
+站点外的官方 k6 执行，不能从 Web 请求、后台任务或调度器启动。
+
+执行器要求本地/目标注册表 SHA 一致，并仅放行受管 `development`/`test`、测试开关开启、
+仅合成数据、非公开且外部集成关闭的 Site。固定请求数、VU 和时长均有上限，API Token
+只从环境变量读取，报告不保存凭据、目标 URL 或响应正文。先查看无请求计划：
+
+```bash
+python scripts/performance_baseline.py \
+  --base-url http://127.0.0.1:8200 \
+  --profile smoke \
+  --dry-run
+```
+
+初始场景覆盖认证到 MariaDB 的模块注册表只读链路；容量场景必须随对应业务 COD 增量交付。
+完整阈值、执行、安全、制品和回滚方法见 `architecture/performance_baselines.md`。
+
 ## Fixtures 治理
 
 Fixture 只用于 `ione_hrp` 对标准 Frappe/ERPNext/HRMS 对象的受控配置扩展。

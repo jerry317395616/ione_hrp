@@ -17,6 +17,8 @@ concurrency:
 env:
   PYTHON_VERSION: "3.14"
   NODE_VERSION: "24"
+  K6_VERSION: "2.1.0"
+  K6_LINUX_AMD64_SHA256: "295d961ebfca306f295f1133068dcd403a8171c87f387928f5f30b0fbcff858a"
 
 jobs:
   quality:
@@ -44,6 +46,18 @@ jobs:
           npm ci
       - name: Run repository, unit, type and frontend checks
         run: python scripts/quality.py
+      - name: Validate pinned k6 performance script
+        run: |
+          archive="$RUNNER_TEMP/k6-v${K6_VERSION}-linux-amd64.tar.gz"
+          curl --fail --location --silent --show-error \
+            "https://github.com/grafana/k6/releases/download/v${K6_VERSION}/k6-v${K6_VERSION}-linux-amd64.tar.gz" \
+            --output "$archive"
+          printf '%s  %s\n' "$K6_LINUX_AMD64_SHA256" "$archive" | sha256sum --check
+          tar --extract --gzip --file "$archive" --directory "$RUNNER_TEMP"
+          "$RUNNER_TEMP/k6-v${K6_VERSION}-linux-amd64/k6" version \
+            | grep --fixed-strings "v${K6_VERSION}"
+          "$RUNNER_TEMP/k6-v${K6_VERSION}-linux-amd64/k6" inspect \
+            ione_hrp/load_tests/performance_baseline.js
       - name: Validate governed Git change
         env:
           CHANGE_BASE: ${{ github.event.pull_request.base.sha || github.event.before || '' }}

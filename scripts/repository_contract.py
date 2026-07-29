@@ -33,6 +33,10 @@ from ione_hrp.common.fixture_policy import (
 	load_fixture_policy,
 )
 from ione_hrp.common.immutable_ledger import BASE_LEDGER_FIELDS
+from ione_hrp.common.performance_baseline import (
+	PerformanceBaselineContractError,
+	load_performance_baseline_registry,
+)
 from ione_hrp.common.test_data_factory import (
 	TestDataFactoryContractError,
 	load_test_data_scenario_registry,
@@ -387,11 +391,26 @@ def validate_ci_pipeline(root: Path) -> list[str]:
 		'pip install --disable-pip-version-check -e ".[dev]"',
 		"npm ci",
 		"python scripts/quality.py",
+		"k6-v${K6_VERSION}-linux-amd64.tar.gz",
+		"sha256sum --check",
+		'" inspect \\',
+		"ione_hrp/load_tests/performance_baseline.js",
 		"python scripts/change_manager.py",
 		"npm audit --audit-level=high",
 	):
 		if required_command not in quality_commands:
 			violations.append(f"CI quality job is missing command: {required_command}")
+	workflow_environment = workflow.get("env")
+	if not isinstance(workflow_environment, dict):
+		violations.append("CI workflow must pin the k6 environment")
+	else:
+		if workflow_environment.get("K6_VERSION") != "2.1.0":
+			violations.append("CI must pin k6 version 2.1.0")
+		if (
+			workflow_environment.get("K6_LINUX_AMD64_SHA256")
+			!= "295d961ebfca306f295f1133068dcd403a8171c87f387928f5f30b0fbcff858a"
+		):
+			violations.append("CI must pin the official k6 Linux archive SHA-256")
 
 	integration_commands = "\n".join(
 		str(step.get("run", "")) for step in integration.get("steps", []) if isinstance(step, dict)
@@ -1354,6 +1373,177 @@ def validate_test_data_factory_contract(root: Path) -> list[str]:
 	return violations
 
 
+def validate_performance_baseline_contract(root: Path) -> list[str]:
+	config_path = root / APP_NAME / "config" / "performance_baselines.json"
+	common_path = root / APP_NAME / "common" / "performance_baseline.py"
+	service_path = root / APP_NAME / "services" / "performance_baseline.py"
+	facade_path = root / APP_NAME / "hrp_foundation" / "services" / "performance.py"
+	api_path = root / APP_NAME / "api" / "v1" / "performance.py"
+	k6_path = root / APP_NAME / "load_tests" / "performance_baseline.js"
+	runner_path = root / "scripts" / "performance_baseline.py"
+	documentation_path = root / "architecture" / "performance_baselines.md"
+	adr_path = root / "architecture" / "adr" / "ADR-0010-external-governed-performance-baseline.md"
+	task_path = root / "backlog" / "COD-015.md"
+	change_path = root / "changes" / "COD-015.json"
+	test_paths = (
+		root / "tests" / "test_performance_baseline.py",
+		root / APP_NAME / "hrp_foundation" / "tests" / "test_performance_baseline.py",
+	)
+	catalog_paths = (
+		root / "api" / "api_catalog.csv",
+		root / "api" / "api_catalog.yaml",
+		root / "api" / "openapi.yaml",
+	)
+	required_paths = (
+		config_path,
+		common_path,
+		service_path,
+		facade_path,
+		api_path,
+		k6_path,
+		runner_path,
+		documentation_path,
+		adr_path,
+		task_path,
+		change_path,
+		*test_paths,
+		*catalog_paths,
+	)
+	missing = [str(path.relative_to(root)) for path in required_paths if not path.is_file()]
+	if missing:
+		return [f"missing performance baseline contract file: {path}" for path in missing]
+
+	violations: list[str] = []
+	try:
+		registry = load_performance_baseline_registry(config_path)
+	except PerformanceBaselineContractError as exc:
+		return [f"invalid performance baseline registry: {exc}"]
+	if not registry.scenarios:
+		violations.append("performance baseline must declare at least one source-controlled scenario")
+	if set(registry.policy.allowed_profiles) - {"development", "test"}:
+		violations.append("performance baseline permits a non-test environment")
+	if registry.policy.http_write_enabled:
+		violations.append("performance baseline must disable HTTP writes")
+	for scenario in registry.scenarios:
+		if scenario.method != "GET" or not scenario.read_only:
+			violations.append(f"{scenario.scenario_id} is not read-only")
+		if scenario.contains_personal_data:
+			violations.append(f"{scenario.scenario_id} permits personal data")
+		for profile in scenario.profiles:
+			if profile.virtual_users > registry.policy.max_virtual_users:
+				violations.append(f"{scenario.scenario_id}/{profile.profile} exceeds the VU limit")
+			if profile.iterations > registry.policy.max_iterations:
+				violations.append(f"{scenario.scenario_id}/{profile.profile} exceeds the request limit")
+			if profile.max_duration_seconds > registry.policy.max_duration_seconds:
+				violations.append(f"{scenario.scenario_id}/{profile.profile} exceeds the duration limit")
+
+	common_text = common_path.read_text(encoding="utf-8")
+	for token in (
+		"class PerformanceBaselineRegistry",
+		"class PerformanceScenarioDefinition",
+		"class PerformanceLoadProfile",
+		"class PerformanceRunSummary",
+		"evaluate_performance_run",
+		'"http_write_enabled": self.http_write_enabled',
+		'"external_k6_process"',
+	):
+		if token not in common_text:
+			violations.append(f"performance baseline model is missing: {token}")
+
+	service_text = service_path.read_text(encoding="utf-8")
+	for token in (
+		"require_roles",
+		"get_environment_status",
+		"_is_load_test_available",
+		"allow_tests",
+		"synthetic_data_only",
+		"public_access",
+		"external_integrations_enabled",
+		"performance_baseline_contract_read",
+	):
+		if token not in service_text:
+			violations.append(f"performance baseline service is missing: {token}")
+	if "frappe.db.commit" in service_text:
+		violations.append("performance baseline service must not own a transaction commit")
+
+	api_text = api_path.read_text(encoding="utf-8")
+	if '@frappe.whitelist(allow_guest=True, methods=["GET"])' not in api_text:
+		violations.append("PLT-018 performance baseline contract must be GET-only")
+	if "run_performance" in api_text or "evaluate_performance" in api_text:
+		violations.append("performance execution or result writes must not be exposed through HTTP")
+
+	k6_text = k6_path.read_text(encoding="utf-8")
+	for token in (
+		"shared-iterations",
+		"IONE_PERF_CONFIRM",
+		"NON_PRODUCTION_LOAD_TEST",
+		"get_performance_baseline_contract",
+		"load_test_available === true",
+		"IONE_PERF_REGISTRY_SHA256",
+		"registry.policy.k6_version",
+		"summaryTrendStats",
+		"ione_scenario_requests",
+		"ione_scenario_failed",
+		"ione_scenario_check",
+		"ione_scenario_duration",
+	):
+		if token not in k6_text:
+			violations.append(f"k6 performance runner is missing: {token}")
+	for forbidden in (
+		"http.post",
+		"http.put",
+		"http.patch",
+		"http.del",
+		"insecureSkipTLSVerify",
+		"noConnectionReuse",
+	):
+		if forbidden in k6_text:
+			violations.append(f"k6 performance runner contains forbidden behavior: {forbidden}")
+
+	runner_text = runner_path.read_text(encoding="utf-8")
+	for token in (
+		"normalize_base_url",
+		"normalize_output_path",
+		"CHILD_ENVIRONMENT_ALLOWLIST",
+		"build_child_environment",
+		"IONE_PERF_API_KEY",
+		"IONE_PERF_API_SECRET",
+		"k6 executable was not found",
+		"k6 {registry.policy.k6_version} is required",
+		"evaluate_performance_run",
+		"subprocess.run",
+		"--dry-run",
+	):
+		if token not in runner_text:
+			violations.append(f"performance orchestration runner is missing: {token}")
+	for forbidden in (
+		"--api-key",
+		"--api-secret",
+		"verify=False",
+		"ssl._create_unverified_context",
+		"os.environ.copy()",
+	):
+		if forbidden in runner_text:
+			violations.append(f"performance runner contains forbidden secret/TLS option: {forbidden}")
+
+	performance_api = "/api/method/ione_hrp.api.v1.performance.get_performance_baseline_contract"
+	for catalog_path in catalog_paths:
+		if performance_api not in catalog_path.read_text(encoding="utf-8"):
+			violations.append(
+				f"{catalog_path.relative_to(root)} is missing the performance baseline endpoint"
+			)
+	openapi = yaml.safe_load((root / "api" / "openapi.yaml").read_text(encoding="utf-8"))
+	path_contract = openapi.get("paths", {}).get(performance_api, {})
+	operation = path_contract.get("get", {})
+	if operation.get("x-transaction-boundary") != "Read-only":
+		violations.append("PLT-018 performance baseline contract API must be read-only")
+	if operation.get("x-required-role") != "System Manager or HRP System Manager":
+		violations.append("PLT-018 performance baseline contract API has the wrong role contract")
+	if set(path_contract) != {"get"}:
+		violations.append("PLT-018 performance baseline contract must not expose writes")
+	return violations
+
+
 def validate_environment_profiles(root: Path) -> list[str]:
 	profile_path = root / APP_NAME / "config" / "environment_profiles.json"
 	manager_path = root / "scripts" / "environment_manager.py"
@@ -1609,6 +1799,7 @@ def collect_violations(root: Path) -> list[str]:
 	violations.extend(validate_immutable_ledger_contract(root))
 	violations.extend(validate_transactional_message_contract(root))
 	violations.extend(validate_test_data_factory_contract(root))
+	violations.extend(validate_performance_baseline_contract(root))
 	return violations
 
 

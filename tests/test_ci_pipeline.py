@@ -117,6 +117,36 @@ class CIPipelineTest(unittest.TestCase):
 				validate_ci_pipeline(root),
 			)
 
+	def test_rejects_quality_job_without_pinned_k6_inspection(self) -> None:
+		with tempfile.TemporaryDirectory() as temp:
+			root = Path(temp)
+			copy_ci_files(root)
+			workflow_path = root / ".github" / "workflows" / "ci.yml"
+			workflow = workflow_path.read_text(encoding="utf-8").replace(
+				"sha256sum --check",
+				"checksum-validation-removed",
+				1,
+			)
+			workflow_path.write_text(workflow, encoding="utf-8")
+			self.assertIn(
+				"CI quality job is missing command: sha256sum --check",
+				validate_ci_pipeline(root),
+			)
+		with tempfile.TemporaryDirectory() as temp:
+			root = Path(temp)
+			copy_ci_files(root)
+			workflow_path = root / ".github" / "workflows" / "ci.yml"
+			workflow = workflow_path.read_text(encoding="utf-8").replace(
+				"ione_hrp/load_tests/performance_baseline.js",
+				"performance-script-inspection-removed",
+				1,
+			)
+			workflow_path.write_text(workflow, encoding="utf-8")
+			self.assertIn(
+				"CI quality job is missing command: ione_hrp/load_tests/performance_baseline.js",
+				validate_ci_pipeline(root),
+			)
+
 
 if __name__ == "__main__":
 	unittest.main()

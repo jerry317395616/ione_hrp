@@ -298,6 +298,42 @@ paths:
       x-required-role: System Manager or HRP System Manager
       x-transaction-boundary: Read-only
       x-idempotency: Read-only deterministic
+  /api/method/ione_hrp.api.v1.performance.get_performance_baseline_contract:
+    get:
+      operationId: platform_018
+      summary: 查询性能基线与非生产压测许可契约
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Source-controlled read-only scenarios, thresholds and environment gate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerformanceBaselineContractResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '403':
+          description: System Manager or HRP System Manager role required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '500':
+          description: Performance registry or managed environment configuration is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+      x-required-role: System Manager or HRP System Manager
+      x-transaction-boundary: Read-only
+      x-idempotency: Read-only deterministic
   /api/method/ione_hrp.api.v1.modules.set_module_enabled:
     post:
       operationId: platform_009
@@ -3590,6 +3626,13 @@ components:
       properties:
         message:
           $ref: '#/components/schemas/TestDataFactoryContract'
+    PerformanceBaselineContractResponse:
+      type: object
+      required:
+      - message
+      properties:
+        message:
+          $ref: '#/components/schemas/PerformanceBaselineContract'
     IoneErrorResponse:
       type: object
       required:
@@ -3968,6 +4011,242 @@ components:
             name:
               type: string
         generation_available:
+          type: boolean
+    PerformanceBaselineContract:
+      type: object
+      additionalProperties: false
+      required:
+      - status
+      - schema_version
+      - app
+      - sha256
+      - scenario_count
+      - scenarios
+      - execution_policy
+      - result_policy
+      - environment
+      - load_test_available
+      properties:
+        status:
+          type: string
+          const: ok
+        schema_version:
+          type: integer
+          const: 1
+        app:
+          type: string
+          const: ione_hrp
+        sha256:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        scenario_count:
+          type: integer
+          minimum: 1
+        scenarios:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            additionalProperties: false
+            required:
+            - scenario_id
+            - version
+            - label
+            - description
+            - method
+            - path
+            - response_contract
+            - required_roles
+            - contains_personal_data
+            - read_only
+            - profiles
+            properties:
+              scenario_id:
+                type: string
+                pattern: ^[a-z][a-z0-9-]{2,63}$
+              version:
+                type: integer
+                minimum: 1
+              label:
+                type: string
+              description:
+                type: string
+              method:
+                type: string
+                const: GET
+              path:
+                type: string
+                pattern: ^/api/method/ione_hrp\.[a-z0-9_.]+$
+              response_contract:
+                type: string
+                enum:
+                - module_registry_v1
+              required_roles:
+                type: array
+                minItems: 1
+                items:
+                  type: string
+                  enum:
+                  - System Manager
+                  - HRP System Manager
+              contains_personal_data:
+                type: boolean
+                const: false
+              read_only:
+                type: boolean
+                const: true
+              profiles:
+                type: array
+                minItems: 1
+                items:
+                  type: object
+                  additionalProperties: false
+                  required:
+                  - profile
+                  - virtual_users
+                  - iterations
+                  - max_duration_seconds
+                  - thresholds
+                  properties:
+                    profile:
+                      type: string
+                      enum:
+                      - smoke
+                      - baseline
+                      - load
+                    virtual_users:
+                      type: integer
+                      minimum: 1
+                      maximum: 50
+                    iterations:
+                      type: integer
+                      minimum: 1
+                      maximum: 5000
+                    max_duration_seconds:
+                      type: integer
+                      minimum: 1
+                      maximum: 300
+                    thresholds:
+                      type: object
+                      additionalProperties: false
+                      required:
+                      - max_error_rate
+                      - min_check_rate
+                      - p95_ms
+                      - p99_ms
+                      - min_requests_per_second
+                      properties:
+                        max_error_rate:
+                          type: number
+                          minimum: 0
+                          maximum: 0.1
+                        min_check_rate:
+                          type: number
+                          minimum: 0.9
+                          maximum: 1
+                        p95_ms:
+                          type: number
+                          minimum: 1
+                        p99_ms:
+                          type: number
+                          minimum: 1
+                        min_requests_per_second:
+                          type: number
+                          minimum: 0.01
+        execution_policy:
+          type: object
+          additionalProperties: false
+          required:
+          - allowed_profiles
+          - managed_environment_required
+          - allow_tests_required
+          - synthetic_data_only_required
+          - public_access_forbidden
+          - external_integrations_forbidden
+          - http_write_enabled
+          - k6_version
+          - max_virtual_users
+          - max_iterations
+          - max_duration_seconds
+          - idempotency
+          - execution_location
+          properties:
+            allowed_profiles:
+              type: array
+              items:
+                type: string
+                enum:
+                - development
+                - test
+            managed_environment_required:
+              type: boolean
+              const: true
+            allow_tests_required:
+              type: boolean
+              const: true
+            synthetic_data_only_required:
+              type: boolean
+              const: true
+            public_access_forbidden:
+              type: boolean
+              const: true
+            external_integrations_forbidden:
+              type: boolean
+              const: true
+            http_write_enabled:
+              type: boolean
+              const: false
+            k6_version:
+              type: string
+              const: 2.1.0
+            max_virtual_users:
+              type: integer
+              maximum: 50
+            max_iterations:
+              type: integer
+              maximum: 5000
+            max_duration_seconds:
+              type: integer
+              maximum: 300
+            idempotency:
+              type: string
+              const: read_only_replay_safe
+            execution_location:
+              type: string
+              const: external_k6_process
+        result_policy:
+          type: object
+          additionalProperties: false
+          required:
+          - thresholds_enforced_by_k6
+          - independent_python_evaluation
+          - raw_credentials_persisted
+          - target_url_persisted
+          properties:
+            thresholds_enforced_by_k6:
+              type: boolean
+              const: true
+            independent_python_evaluation:
+              type: boolean
+              const: true
+            raw_credentials_persisted:
+              type: boolean
+              const: false
+            target_url_persisted:
+              type: boolean
+              const: false
+        environment:
+          type: object
+          additionalProperties: false
+          required:
+          - managed
+          - name
+          properties:
+            managed:
+              type: boolean
+            name:
+              type: string
+        load_test_available:
           type: boolean
     Problem:
       type: object
