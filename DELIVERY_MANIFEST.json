@@ -10,8 +10,9 @@
     "design_fields": 10036,
     "doctype_blueprints": 398,
     "starter_doctypes": 3,
-    "repository_contract_tests": 41,
-    "frappe_integration_tests": 9
+    "repository_contract_tests": 56,
+    "frappe_integration_tests": 18,
+    "environment_profiles": 3
   },
   "entrypoints": [
     "README.md",
@@ -19,7 +20,9 @@
     "architecture/repository_governance.md",
     "architecture/ci_pipeline.md",
     "architecture/quality_tooling.md",
+    "architecture/environments.md",
     "architecture/module_registry.yaml",
+    "ione_hrp/config/environment_profiles.json",
     "pyproject.toml",
     "pyrightconfig.json",
     "package.json",
@@ -35,7 +38,9 @@
     "scripts/quality.sh",
     "scripts/bootstrap_latest_develop.sh",
     "scripts/create_module.py",
+    "scripts/environment_manager.py",
     "backlog/COD-005.md",
+    "backlog/COD-006.md",
     "backlog/backlog.csv"
   ]
 }
