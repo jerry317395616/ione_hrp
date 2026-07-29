@@ -23,7 +23,7 @@ else:
 
 APP_NAME = "ione_hrp"
 UPSTREAM_APPS = frozenset({"frappe", "erpnext", "hrms"})
-REQUIRED_CI_CONTEXT = "CI / Required"
+REQUIRED_CI_CONTEXT = "Required"
 REQUIRED_CI_JOBS = frozenset({"quality", "integration", "required"})
 REQUIRED_PYTHON_DEV_DEPENDENCIES = frozenset({"pyyaml==6.0.3", "ruff==0.15.9"})
 LEGACY_PREFIXES = ("myi" + "_hrp", "myi" + "-hrp")

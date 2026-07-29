@@ -33,9 +33,9 @@ python scripts/apply_branch_protection.py --apply
 `pre-push` 防护。该本地钩子只用于降低误推风险，不能替代 GitHub 服务端
 保护，也不能作为 COD-001 完成证据。
 
-COD-005 已建立 GitHub Actions 流水线；`main` 分支保护必须要求稳定汇总检查
-`CI / Required`。该检查只有仓库质量、前端检查、秘密与依赖扫描、锁定 Bench
-迁移和 `ione_hrp` 集成测试全部成功时才通过。
+COD-005 已建立 GitHub Actions 流水线；`main` 分支保护必须要求 API 上下文
+`Required`（GitHub 页面显示为 `CI / Required`）。该检查只有仓库质量、前端
+检查、秘密与依赖扫描、锁定 Bench 迁移和 `ione_hrp` 集成测试全部成功时才通过。
 
 ## 单应用边界
 

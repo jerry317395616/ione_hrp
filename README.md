@@ -113,7 +113,7 @@ Pull Request、`main` 推送和人工运行都会触发 `.github/workflows/ci.ym
 - `Integration` 用锁定的 Frappe、ERPNext、Frappe HR 提交创建临时 Bench，
   迁移新站点并运行全部 `ione_hrp` 集成测试；
 - `Required` 只在两个作业都成功时通过，并由分支保护要求
-  `CI / Required`。
+  `Required` 检查上下文（GitHub 页面显示为 `CI / Required`）。
 
 CI 使用一次性测试密码且不连接 Press 或生产环境。完整设计、安全边界和本地
 复现命令见 `architecture/ci_pipeline.md`。
