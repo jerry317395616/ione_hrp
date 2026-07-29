@@ -1,5 +1,5 @@
 {
-  "status": "PENDING_COD_014_INTEGRATION",
+  "status": "PASS_COD_014",
   "checks": {
     "python_compile": true,
     "pyproject_parse": true,
@@ -7,16 +7,16 @@
     "yaml_parse": true,
     "repository_contract": true,
     "repository_contract_tests": 155,
-    "frappe_integration_tests": 74,
+    "frappe_integration_tests": 85,
     "frappe_integration_tests_defined": 85,
     "quality_gate": true,
     "ci_pipeline": true,
     "ci_workflow": ".github/workflows/ci.yml",
     "ci_required_context": "Required",
     "ci_required_display_name": "CI / Required",
-    "ci_github_run_id": 30486455756,
-    "ci_github_run_url": "https://github.com/jerry317395616/ione_hrp/actions/runs/30486455756",
-    "ci_github_run_commit": "896159c5cf983f0b003a5d302f038225474dddfa",
+    "ci_github_run_id": 30492870633,
+    "ci_github_run_url": "https://github.com/jerry317395616/ione_hrp/actions/runs/30492870633",
+    "ci_github_run_commit": "2f12e00c758f415e2d3c35a204fc4a641ba4dd01",
     "ci_quality_job_success": true,
     "ci_secret_scan_success": true,
     "ci_dependency_audit_high_vulnerabilities": 0,
@@ -173,15 +173,15 @@
     "test_data_factory_step_count": 2,
     "test_data_factory_unit_tests": 8,
     "test_data_factory_integration_tests_defined": 11,
-    "test_data_factory_integration_tests_passed": 0,
-    "test_data_factory_permission_before_environment_verified": false,
-    "test_data_factory_environment_gate_verified": false,
-    "test_data_factory_controller_write_verified": false,
-    "test_data_factory_idempotency_verified": false,
-    "test_data_factory_failure_rollback_verified": false,
-    "test_data_factory_conflict_protection_verified": false,
-    "test_data_factory_audit_redaction_verified": false,
-    "test_data_factory_http_contract_verified": false,
+    "test_data_factory_integration_tests_passed": 11,
+    "test_data_factory_permission_before_environment_verified": true,
+    "test_data_factory_environment_gate_verified": true,
+    "test_data_factory_controller_write_verified": true,
+    "test_data_factory_idempotency_verified": true,
+    "test_data_factory_failure_rollback_verified": true,
+    "test_data_factory_conflict_protection_verified": true,
+    "test_data_factory_audit_redaction_verified": true,
+    "test_data_factory_http_contract_verified": true,
     "test_data_factory_http_write_enabled": false,
     "test_data_factory_arbitrary_doctype_input_enabled": false,
     "test_data_factory_contains_personal_data": false,
@@ -233,8 +233,7 @@
     "post_install_error_log_count": 0
   },
   "not_run": [
-    "COD-014 locked-Bench integration tests pending GitHub Actions",
     "full upstream Frappe/ERPNext/HRMS application test suites"
   ],
-  "reason_not_run": "COD-014 local quality passed with 155 repository tests, Ruff, Pyright, ESLint, Prettier, source-controlled scenarios, dependency ordering and safety-policy contract checks. The 11 new Frappe/MariaDB integration tests are defined but await the branch GitHub Actions run before this report can claim 85 integration tests passed. Full upstream application suites remain outside COD-014 scope. No Press or production migration is required because COD-014 adds no production DocType, table, Fixture or patch."
+  "reason_not_run": "The full upstream Frappe, ERPNext and HRMS application suites are outside COD-014 scope. Repository quality, 155 repository tests, 85 ione_hrp Frappe tests, repeated locked-Bench migration, controller-backed deterministic generation, permission and non-production environment gates, encrypted idempotency, partial-failure rollback, conflict protection, audit redaction, read-only HTTP permissions, dependency audit, secret scanning and the Required context passed in GitHub Actions run 30492870633 for implementation commit 2f12e00c758f415e2d3c35a204fc4a641ba4dd01. No Press or production migration was required or performed because COD-014 adds no production DocType, table, Fixture or patch."
 }
