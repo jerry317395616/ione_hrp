@@ -99,6 +99,24 @@ GET /api/method/ione_hrp.api.v1.errors.get_error_catalog
 错误目录没有 HTTP 写入口，也不创建 DocType 或站点数据。命名、兼容、安全、
 开发用法与回滚规则见 `architecture/errors.md`。
 
+## 审计上下文
+
+应用使用锁定 Frappe v17 的请求和后台任务钩子，为每次执行生成服务端
+`request_id`，并通过 `correlation_id` 关联 HTTP、服务和队列调用。所有响应
+返回 `X-Correlation-ID` 与 `X-Request-ID`；受控错误体也包含这两个安全字段。
+跨队列调用必须使用 `ione_hrp.services.audit_context.enqueue_with_audit`，自研
+结构化审计必须使用 `emit_audit_event`，不得记录用户、患者、请求正文、路径、
+站点或凭据。
+
+已认证用户可只读查询当前请求上下文：
+
+```text
+GET /api/method/ione_hrp.api.v1.audit.get_audit_context
+```
+
+该能力不创建 DocType 或数据库记录。ID 规则、任务父子传播、权限、脱敏和回滚
+见 `architecture/audit_context.md`。
+
 安装到已有非生产 Bench：
 
 ```bash

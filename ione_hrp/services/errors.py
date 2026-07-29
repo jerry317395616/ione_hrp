@@ -12,6 +12,7 @@ from ione_hrp.common.error_catalog import (
 	load_error_catalog,
 	validate_error_translations,
 )
+from ione_hrp.services.audit_context import emit_audit_event, ensure_audit_context
 
 ERROR_CATALOG_ROLES = frozenset({"System Manager", "HRP System Manager"})
 INTERNAL_ERROR_FALLBACK = ErrorDefinition(
@@ -30,9 +31,14 @@ def _new_error_id() -> str:
 
 
 def _attach_public_response(error: IoneApplicationError) -> None:
+	context = ensure_audit_context()
 	response = getattr(frappe.local, "response", None)
 	if response is not None:
-		response["ione_error"] = error.as_public_dict()
+		response["ione_error"] = {
+			**error.as_public_dict(),
+			"correlation_id": context.correlation_id,
+			"request_id": context.request_id,
+		}
 	headers = getattr(frappe.local, "response_headers", None)
 	if headers is not None:
 		headers["X-Ione-Error-Code"] = error.code
@@ -50,8 +56,12 @@ def _audit_error(error: IoneApplicationError, cause: BaseException | None) -> No
 	}
 	if cause is not None:
 		payload["cause_type"] = type(cause).__name__
-	logger = frappe.logger("ione_hrp.errors", allow_site=True)
-	getattr(logger, error.definition.log_level)(payload)
+	emit_audit_event(
+		"ione_error_raised",
+		level=error.definition.log_level,
+		logger_name="ione_hrp.errors",
+		**{key: value for key, value in payload.items() if key != "event"},
+	)
 
 
 def build_ione_error(
@@ -118,11 +128,10 @@ def get_error_catalog_status() -> dict[str, object]:
 		raise_ione_error("CONFIGURATION_INVALID", cause=exc)
 	result = catalog.as_public_dict(translate=frappe._)
 	result["http_write_enabled"] = False
-	frappe.logger("ione_hrp.errors", allow_site=True).info(
-		{
-			"event": "error_catalog_read",
-			"catalog_sha256": catalog.sha256,
-			"error_count": len(catalog.errors),
-		}
+	emit_audit_event(
+		"error_catalog_read",
+		logger_name="ione_hrp.errors",
+		catalog_sha256=catalog.sha256,
+		error_count=len(catalog.errors),
 	)
 	return result

@@ -1,0 +1,74 @@
+# 审计上下文与关联 ID
+
+## 权威模型
+
+`ione_hrp.common.audit_context.AuditContext` 是请求和后台任务上下文的唯一模型。
+它是不可变的进程内对象，不是 DocType，也不产生数据库记录：
+
+| 字段 | 来源 | 语义 |
+| --- | --- | --- |
+| `schema_version` | 应用常量 | 当前固定为 1 |
+| `correlation_id` | 合法请求参数、请求头、父任务或服务端生成 | 关联同一业务调用的多个执行 |
+| `request_id` | 服务端生成 | 唯一标识一次 HTTP、任务或服务执行 |
+| `parent_request_id` | 受控任务载荷 | 标识创建当前后台任务的上游执行 |
+| `channel` | 服务端 | `http`、`job` 或 `service` |
+
+ID 只允许 ASCII 字母、数字、点、下划线、冒号、斜杠和连字符，以字母或数字
+开头，最长 140 个字符。输入不做静默截断或空白修剪。HTTP 参数
+`correlation_id` 保持对 `X-Correlation-ID` 的历史优先级；上下文建立后不能在
+同一执行中替换为另一个 ID。`X-Request-ID` 输入不会被信任。
+
+## HTTP 生命周期
+
+锁定的 Frappe v17 先完成 `make_form_dict`，再调用 `before_request`，最后在
+`process_response` 中合并 `frappe.local.response_headers`。应用据此注册：
+
+```text
+before_request -> start_http_audit_context
+endpoint/error -> ensure_audit_context + emit_audit_event
+after_request  -> finish_http_audit_context
+response       -> X-Correlation-ID + X-Request-ID
+```
+
+非法调用方关联 ID 会先安装一个安全的服务端上下文，再通过
+`IONE-CORE-0003` 返回 400；非法原值不会进入响应或日志。统一错误体新增
+`correlation_id` 和 `request_id`，`error_id` 仍只标识单次错误。
+
+## 后台任务传播
+
+跨队列调用必须使用 `ione_hrp.services.audit_context.enqueue_with_audit`。该服务
+附加只包含 schema、关联 ID 和父请求 ID 的保留载荷。Frappe 的 `before_job`
+钩子在调用目标函数前 `pop` 载荷并生成新的请求 ID，因此业务函数不会收到保留
+参数。没有载荷的计划任务获得新的关联 ID；损坏载荷被丢弃、记录脱敏警告并以
+安全上下文继续执行。
+
+直接 `frappe.enqueue` 仍可运行，但不会继承上游关联 ID。领域服务需要跨模块或
+跨队列传播时，应调用公开的 `enqueue_with_audit`，不得导入其他模块私有实现。
+
+## 审计日志
+
+自研应用结构化审计统一调用 `emit_audit_event`。服务自动添加上下文，只允许
+命名空间内日志名、受控事件名和短标量字段。以下字段标记禁止进入应用审计：
+
+- 用户、邮箱、患者和站点；
+- 请求消息、正文和嵌套 payload；
+- 密码、令牌和 secret；
+- 文件或 Bench 路径、SQL。
+
+运行时故障仍可使用 Frappe 标准 `frappe.log_error` 机制；业务审计不得绕过统一
+服务直接调用 `frappe.logger`。
+
+## API、权限与幂等
+
+`GET /api/method/ione_hrp.api.v1.audit.get_audit_context` 只允许已认证用户，返回
+当前安全上下文和 `http_write_enabled=false`。重复请求不写 `Version`、
+`Comment` 或 `Error Log`；复用相同关联 ID 时，每个请求仍生成唯一请求 ID。
+
+本能力不提供 HTTP 写接口，不新增角色、DocType、Fixture、Patch 或 Workspace，
+不改变 ERPNext 和 Frappe HR 权限，也不执行会计、库存或 HR 业务过账。
+
+## 工程脚本
+
+`change_manager.py`、`environment_manager.py` 和 `fixture_manager.py` 共用纯 Python
+标识符校验器。仓库契约阻止脚本或运行时代码重新定义关联 ID 正则、在统一服务
+外读取 `X-Correlation-ID`，以及绕过脱敏服务写应用审计日志。

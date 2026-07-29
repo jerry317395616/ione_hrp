@@ -146,6 +146,50 @@ paths:
       x-required-role: System Manager or HRP System Manager
       x-transaction-boundary: Read-only
       x-idempotency: Read-only deterministic
+  /api/method/ione_hrp.api.v1.audit.get_audit_context:
+    get:
+      operationId: platform_014
+      summary: 查询当前请求的审计上下文
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+          pattern: ^[A-Za-z0-9][A-Za-z0-9._:/-]{0,139}$
+      responses:
+        '200':
+          description: Safe request-scoped identifiers without actor or request payload
+          headers:
+            X-Correlation-ID:
+              $ref: '#/components/headers/CorrelationId'
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditContextResponse'
+        '400':
+          description: Invalid correlation identifier
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+      x-required-role: Authenticated User
+      x-transaction-boundary: Read-only
+      x-idempotency: Read-only per request
   /api/method/ione_hrp_core.api.v1.scope.resolve:
     post:
       operationId: core_001
@@ -3243,6 +3287,17 @@ paths:
               description: service_form,payload,attachments
               additionalProperties: true
 components:
+  headers:
+    CorrelationId:
+      description: Identifier propagated across related HTTP and background executions.
+      schema:
+        type: string
+        pattern: ^[A-Za-z0-9][A-Za-z0-9._:/-]{0,139}$
+    RequestId:
+      description: Unique identifier for this HTTP request or background execution.
+      schema:
+        type: string
+        pattern: ^req-[A-Za-z0-9]{20}$
   securitySchemes:
     tokenAuth:
       type: apiKey
@@ -3260,6 +3315,13 @@ components:
           type: array
           items:
             type: string
+    AuditContextResponse:
+      type: object
+      required:
+      - message
+      properties:
+        message:
+          $ref: '#/components/schemas/AuditContext'
     IoneErrorResponse:
       type: object
       required:
@@ -3282,6 +3344,8 @@ components:
       - message
       - error_id
       - retryable
+      - correlation_id
+      - request_id
       properties:
         schema_version:
           type: integer
@@ -3307,6 +3371,46 @@ components:
           type: string
         retryable:
           type: boolean
+        correlation_id:
+          type: string
+          pattern: ^[A-Za-z0-9][A-Za-z0-9._:/-]{0,139}$
+        request_id:
+          type: string
+          pattern: ^req-[A-Za-z0-9]{20}$
+    AuditContext:
+      type: object
+      additionalProperties: false
+      required:
+      - schema_version
+      - correlation_id
+      - request_id
+      - parent_request_id
+      - channel
+      - http_write_enabled
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        correlation_id:
+          type: string
+          pattern: ^[A-Za-z0-9][A-Za-z0-9._:/-]{0,139}$
+        request_id:
+          type: string
+          pattern: ^req-[A-Za-z0-9]{20}$
+        parent_request_id:
+          oneOf:
+          - type: string
+            pattern: ^req-[A-Za-z0-9]{20}$
+          - type: 'null'
+        channel:
+          type: string
+          enum:
+          - http
+          - job
+          - service
+        http_write_enabled:
+          type: boolean
+          const: false
     Problem:
       type: object
       required:

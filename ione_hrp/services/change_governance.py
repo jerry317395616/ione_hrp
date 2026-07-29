@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import re
 from pathlib import Path
 
 import frappe
@@ -10,10 +9,10 @@ from ione_hrp.common.change_governance import (
 	inspect_change_governance,
 )
 from ione_hrp.common.constants import APP_NAME
+from ione_hrp.services.audit_context import emit_audit_event, ensure_audit_context
 from ione_hrp.services.errors import raise_ione_error, require_roles
 
 GOVERNANCE_ROLES = frozenset({"System Manager", "HRP System Manager"})
-CORRELATION_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:/-]{0,139}$")
 
 
 def _repository_root() -> Path:
@@ -24,38 +23,23 @@ def _require_governance_reader() -> None:
 	require_roles(GOVERNANCE_ROLES)
 
 
-def _correlation_id(value: str | None) -> str:
-	correlation_id = (value or "").strip()
-	if not correlation_id:
-		request = getattr(frappe.local, "request", None)
-		if request is not None:
-			correlation_id = (request.headers.get("X-Correlation-ID") or "").strip()
-	if not correlation_id:
-		correlation_id = frappe.generate_hash(length=16)
-	if CORRELATION_ID_PATTERN.fullmatch(correlation_id) is None:
-		raise_ione_error("INVALID_REQUEST")
-	return correlation_id
-
-
 def get_change_governance_status(correlation_id: str | None = None) -> dict[str, object]:
 	"""Return a redacted, read-only view of the Git-governed engineering baseline."""
 	_require_governance_reader()
-	request_id = _correlation_id(correlation_id)
+	context = ensure_audit_context(correlation_id)
 	try:
 		report = inspect_change_governance(_repository_root())
 	except ChangeGovernanceError as exc:
 		raise_ione_error("CONFIGURATION_INVALID", cause=exc)
 	result = report.as_public_dict()
-	result["correlation_id"] = request_id
+	result["correlation_id"] = context.correlation_id
 	result["write_channel"] = "Git pull request only"
 	result["http_write_enabled"] = False
-	frappe.logger("ione_hrp.change_governance", allow_site=True).info(
-		{
-			"event": "change_governance_status_read",
-			"correlation_id": request_id,
-			"governance_sha256": report.sha256,
-			"decision_count": len(report.decisions),
-			"change_record_count": len(report.changes),
-		}
+	emit_audit_event(
+		"change_governance_status_read",
+		logger_name="ione_hrp.change_governance",
+		governance_sha256=report.sha256,
+		decision_count=len(report.decisions),
+		change_record_count=len(report.changes),
 	)
 	return result
