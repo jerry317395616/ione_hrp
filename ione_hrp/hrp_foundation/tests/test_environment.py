@@ -5,6 +5,7 @@ from frappe.tests import IntegrationTestCase
 
 from ione_hrp.api.v1.environment import get_environment_status as get_api_status
 from ione_hrp.common.environment_profiles import load_environment_registry
+from ione_hrp.common.error_catalog import IoneApplicationError
 from ione_hrp.services.environment import (
 	assert_external_integrations_allowed,
 	get_environment_status,
@@ -60,20 +61,23 @@ class TestEnvironmentStatus(IntegrationTestCase):
 	def test_configuration_drift_fails_closed(self) -> None:
 		self._apply_profile("demo")
 		frappe.conf["allow_tests"] = True
-		with self.assertRaises(frappe.ValidationError):
+		with self.assertRaises(IoneApplicationError) as raised:
 			get_environment_status()
+		self.assertEqual(raised.exception.code, "IONE-CORE-0009")
 
 	def test_external_integrations_are_denied(self) -> None:
 		self._apply_profile("development")
-		with self.assertRaises(frappe.PermissionError):
+		with self.assertRaises(IoneApplicationError) as raised:
 			assert_external_integrations_allowed()
+		self.assertEqual(raised.exception.code, "IONE-CORE-0008")
 
 	def test_environment_api_rejects_guest(self) -> None:
 		self._apply_profile("test")
 		original_user = frappe.session.user or "Administrator"
 		try:
 			frappe.set_user("Guest")
-			with self.assertRaises(frappe.AuthenticationError):
+			with self.assertRaises(IoneApplicationError) as raised:
 				get_api_status()
+			self.assertEqual(raised.exception.code, "IONE-CORE-0001")
 		finally:
 			frappe.set_user(original_user)

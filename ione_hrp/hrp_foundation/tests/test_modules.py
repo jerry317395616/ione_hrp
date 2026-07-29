@@ -6,6 +6,7 @@ import frappe
 from frappe.tests import IntegrationTestCase
 
 from ione_hrp.api.v1.modules import list_modules, set_module_enabled
+from ione_hrp.common.error_catalog import IoneApplicationError
 from ione_hrp.services.module_registry import load_module_registry
 from ione_hrp.setup.modules import sync_module_defs, sync_module_settings
 
@@ -67,17 +68,19 @@ class TestModuleRegistry(IntegrationTestCase):
 		with (
 			patch.object(frappe.db, "get_value", return_value="another_app"),
 			patch.object(frappe, "get_doc") as get_doc,
-			self.assertRaises(frappe.ValidationError),
+			self.assertRaises(IoneApplicationError) as raised,
 		):
 			sync_module_defs()
+		self.assertEqual(raised.exception.code, "IONE-CORE-0009")
 		get_doc.assert_not_called()
 
 	def test_module_list_rejects_guest(self) -> None:
 		original_user = frappe.session.user or "Administrator"
 		try:
 			frappe.set_user("Guest")
-			with self.assertRaises(frappe.AuthenticationError):
+			with self.assertRaises(IoneApplicationError) as raised:
 				list_modules()
+			self.assertEqual(raised.exception.code, "IONE-CORE-0001")
 		finally:
 			frappe.set_user(original_user)
 
@@ -85,9 +88,10 @@ class TestModuleRegistry(IntegrationTestCase):
 		module = load_module_registry().modules[0]
 		with (
 			patch("ione_hrp.api.v1.modules.frappe.get_roles", return_value=["HRP User"]),
-			self.assertRaises(frappe.PermissionError),
+			self.assertRaises(IoneApplicationError) as raised,
 		):
 			set_module_enabled(module.module, True, "COD-003-permission-test")
+		self.assertEqual(raised.exception.code, "IONE-CORE-0002")
 
 	def test_module_write_is_idempotent_and_audited(self) -> None:
 		module = load_module_registry().modules[0]
@@ -128,12 +132,14 @@ class TestModuleRegistry(IntegrationTestCase):
 			module.module,
 			"enabled",
 		)
-		with self.assertRaises(frappe.ValidationError):
+		with self.assertRaises(IoneApplicationError) as raised:
 			set_module_enabled(module.module, not bool(original_enabled), "../invalid")
+		self.assertEqual(raised.exception.code, "IONE-CORE-0003")
 		self.assertEqual(
 			frappe.db.get_value("HRP Module Setting", module.module, "enabled"),
 			original_enabled,
 		)
 
-		with self.assertRaises(frappe.ValidationError):
+		with self.assertRaises(IoneApplicationError) as raised:
 			set_module_enabled("HRP Not Declared", True, "COD-003-invalid-module")
+		self.assertEqual(raised.exception.code, "IONE-CORE-0004")

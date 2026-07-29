@@ -10,3 +10,8 @@
 `ione_hrp.services.change_governance` 提供管理员只读的脱敏治理状态；没有
 站点内写入、审批或状态转换入口。规则见
 `architecture/change_governance.md`。
+
+应用异常统一通过 `ione_hrp.services.errors` 抛出，使用稳定
+`IONE-CORE-xxxx` 代码、标准 HTTP 状态、中英文消息、安全响应头和脱敏审计。
+错误目录由 Git 管理，不建立站点内可编辑模型。规则见
+`architecture/errors.md`。

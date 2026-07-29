@@ -11,6 +11,7 @@ from ione_hrp.common.fixture_policy import (
 	load_fixture_policy,
 )
 from ione_hrp.services.environment import get_environment_status
+from ione_hrp.services.errors import raise_ione_error
 
 
 def _fixture_directory() -> Path:
@@ -27,7 +28,7 @@ def get_fixture_governance_status() -> dict[str, object]:
 		policy = load_fixture_policy()
 		repository = inspect_fixture_repository(policy, _fixture_directory())
 	except FixturePolicyError as exc:
-		frappe.throw(str(exc), frappe.ValidationError)
+		raise_ione_error("CONFIGURATION_INVALID", cause=exc)
 	return {
 		"policy": policy.as_public_dict(),
 		"repository": repository.as_dict(),
@@ -49,15 +50,12 @@ def assert_fixture_export_allowed() -> dict[str, object]:
 		or not frappe.conf.get("allow_tests")
 		or status.get("external_integrations_enabled")
 	):
-		frappe.throw(
-			"Fixture export is allowed only on the managed development environment",
-			frappe.PermissionError,
-		)
+		raise_ione_error("OPERATION_NOT_ALLOWED")
 	try:
 		policy = load_fixture_policy()
 		repository = inspect_fixture_repository(policy, _fixture_directory())
 	except FixturePolicyError as exc:
-		frappe.throw(str(exc), frappe.ValidationError)
+		raise_ione_error("CONFIGURATION_INVALID", cause=exc)
 	return {
 		"status": "ok",
 		"environment": "development",

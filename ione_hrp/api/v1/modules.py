@@ -6,6 +6,11 @@ from typing import TYPE_CHECKING, TypedDict, cast
 import frappe
 from frappe.utils import cint
 
+from ione_hrp.services.errors import (
+	raise_ione_error,
+	require_authenticated_user,
+	require_roles,
+)
 from ione_hrp.services.module_registry import load_module_registry
 
 if TYPE_CHECKING:
@@ -27,15 +32,8 @@ class ModuleView(TypedDict):
 	description: str
 
 
-def _require_authenticated_user() -> None:
-	if frappe.session.user == "Guest":
-		frappe.throw("Authentication required", frappe.AuthenticationError)
-
-
 def _require_module_admin() -> None:
-	_require_authenticated_user()
-	if not MODULE_ADMIN_ROLES.intersection(frappe.get_roles()):
-		frappe.throw("HRP module administration permission is required", frappe.PermissionError)
+	require_roles(MODULE_ADMIN_ROLES)
 
 
 def _correlation_id(value: str | None) -> str:
@@ -47,13 +45,13 @@ def _correlation_id(value: str | None) -> str:
 	if not correlation_id:
 		correlation_id = frappe.generate_hash(length=16)
 	if not CORRELATION_ID_PATTERN.fullmatch(correlation_id):
-		frappe.throw("Invalid correlation_id")
+		raise_ione_error("INVALID_REQUEST")
 	return correlation_id
 
 
 @frappe.whitelist(methods=["GET"])
 def list_modules() -> list[ModuleView]:
-	_require_authenticated_user()
+	require_authenticated_user()
 	registry = load_module_registry()
 	settings = {}
 	if frappe.db.exists("DocType", "HRP Module Setting"):
@@ -100,7 +98,7 @@ def set_module_enabled(
 	_require_module_admin()
 	modules = {row.module: row for row in load_module_registry().modules}
 	if module_name not in modules:
-		frappe.throw(f"Module is not declared by ione_hrp: {module_name}")
+		raise_ione_error("RESOURCE_NOT_FOUND")
 
 	request_id = _correlation_id(correlation_id)
 	doc = cast("HRPModuleSetting", frappe.get_doc("HRP Module Setting", module_name))

@@ -940,8 +940,11 @@ def assess_changed_paths(
 	):
 		raise ChangeGovernanceError("ADR files cannot be deleted")
 
+	# Required per-task metadata remains mandatory, covered and hashed, but it must not
+	# raise the risk of every substantive change merely because governance is present.
+	risk_paths = actual_paths - required_paths
 	matched_rules = tuple(
-		rule for rule in report.policy.risk_rules if any(rule.matches(path) for path in actual_paths)
+		rule for rule in report.policy.risk_rules if any(rule.matches(path) for path in risk_paths)
 	)
 	required_risk = max(
 		(rule.minimum_risk for rule in matched_rules),

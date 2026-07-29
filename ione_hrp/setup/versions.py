@@ -12,6 +12,7 @@ import frappe
 from frappe.utils import cint
 
 from ione_hrp.common.constants import SUPPORTED_MAJOR
+from ione_hrp.services.errors import raise_ione_error
 
 UPSTREAM_APPS = ("frappe", "erpnext", "hrms")
 LOCK_PATH = Path(__file__).resolve().parents[2] / "resolved_versions.lock.json"
@@ -94,12 +95,17 @@ def validate_runtime_versions() -> dict[str, str]:
 		if major != SUPPORTED_MAJOR:
 			incompatible.append(f"{app}={raw}")
 	if incompatible:
-		frappe.throw(
-			"ione_hrp requires Frappe ecosystem major "
-			f"{SUPPORTED_MAJOR}; incompatible: {', '.join(incompatible)}"
+		raise_ione_error(
+			"CONFIGURATION_INVALID",
+			cause=RuntimeError(
+				f"Frappe ecosystem major mismatch: required={SUPPORTED_MAJOR}, apps={','.join(incompatible)}"
+			),
 		)
 	if cint(frappe.conf.get("ione_hrp_enforce_upstream_lock", 0)):
 		status = get_version_status()
 		if status["status"] != "match":
-			frappe.throw("ione_hrp upstream commit lock mismatch: " + "; ".join(status["issues"]))
+			raise_ione_error(
+				"CONFIGURATION_INVALID",
+				cause=RuntimeError("Upstream commit lock mismatch"),
+			)
 	return versions

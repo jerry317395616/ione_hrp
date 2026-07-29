@@ -9,11 +9,13 @@ from scripts.repository_contract import (
 	APP_NAME,
 	collect_violations,
 	discover_custom_apps,
+	find_direct_frappe_throws,
 	find_legacy_prefix_references,
 	validate_branch_policy,
 	validate_change_governance,
 	validate_ci_pipeline,
 	validate_environment_profiles,
+	validate_error_contract,
 	validate_fixture_governance,
 	validate_module_boundaries,
 	validate_push_guard,
@@ -134,6 +136,24 @@ class RepositoryContractTest(unittest.TestCase):
 
 	def test_current_change_governance_is_mandatory(self) -> None:
 		self.assertEqual(validate_change_governance(ROOT), [])
+
+	def test_current_error_contract_is_mandatory(self) -> None:
+		self.assertEqual(validate_error_contract(ROOT), [])
+
+	def test_rejects_direct_frappe_throw_outside_error_service(self) -> None:
+		with tempfile.TemporaryDirectory() as temp:
+			root = Path(temp)
+			source = root / "ione_hrp" / "api" / "v1" / "unsafe.py"
+			source.parent.mkdir(parents=True)
+			source.write_text(
+				'import frappe\n\n\ndef unsafe():\n\tfrappe.throw("raw payload")\n',
+				encoding="utf-8",
+			)
+
+			violations = find_direct_frappe_throws(root)
+
+		self.assertEqual(len(violations), 1)
+		self.assertIn("calls frappe.throw outside", violations[0])
 
 
 if __name__ == "__main__":

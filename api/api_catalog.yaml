@@ -1020,6 +1020,20 @@
   transaction_boundary: Read-only
   audit: Redacted site log
   version: v1
+- api_code: PLT-013
+  app: ione_hrp
+  domain_group: Platform
+  method: GET
+  path: /api/method/ione_hrp.api.v1.errors.get_error_catalog
+  description: 查询统一错误码目录
+  request_schema: 无
+  response_schema: schema_version,namespace,error_count,sha256,errors,http_write_enabled
+  required_role: System Manager or HRP System Manager
+  idempotency: Read-only deterministic
+  async: 'No'
+  transaction_boundary: Read-only
+  audit: Redacted site log
+  version: v1
 - api_code: POR-001
   app: ione_hrp
   domain_group: Portal

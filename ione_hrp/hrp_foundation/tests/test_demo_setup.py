@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from unittest.mock import patch
 
-import frappe
 from frappe.tests import IntegrationTestCase
 
+from ione_hrp.common.error_catalog import IoneApplicationError
 from ione_hrp.setup.demo import (
 	SYNTHETIC_COMPANY_NAME,
 	setup_synthetic_demo,
@@ -19,9 +19,10 @@ class TestSyntheticDemoSetup(IntegrationTestCase):
 				return_value={"name": "test", "synthetic_data_only": True},
 			),
 			patch("ione_hrp.setup.demo.setup_complete") as setup,
-			self.assertRaises(frappe.PermissionError),
+			self.assertRaises(IoneApplicationError) as raised,
 		):
 			setup_synthetic_demo()
+		self.assertEqual(raised.exception.code, "IONE-CORE-0008")
 		setup.assert_not_called()
 
 	def test_existing_synthetic_company_is_idempotent(self) -> None:
@@ -51,9 +52,10 @@ class TestSyntheticDemoSetup(IntegrationTestCase):
 				return_value=["Real Hospital"],
 			),
 			patch("ione_hrp.setup.demo.setup_complete") as setup,
-			self.assertRaises(frappe.ValidationError),
+			self.assertRaises(IoneApplicationError) as raised,
 		):
 			setup_synthetic_demo()
+		self.assertEqual(raised.exception.code, "IONE-CORE-0005")
 		setup.assert_not_called()
 
 	def test_new_demo_uses_standard_erpnext_setup_controller(self) -> None:

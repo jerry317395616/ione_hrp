@@ -4,6 +4,7 @@ import frappe
 from frappe.tests import IntegrationTestCase
 
 from ione_hrp.api.v1.health import get_upstream_version_status
+from ione_hrp.common.error_catalog import IoneApplicationError
 from ione_hrp.setup.versions import get_version_status
 
 
@@ -16,7 +17,8 @@ class TestUpstreamVersionLock(IntegrationTestCase):
 		original_user = frappe.session.user or "Administrator"
 		try:
 			frappe.set_user("Guest")
-			with self.assertRaises(frappe.AuthenticationError):
+			with self.assertRaises(IoneApplicationError) as raised:
 				get_upstream_version_status()
+			self.assertEqual(raised.exception.code, "IONE-CORE-0001")
 		finally:
 			frappe.set_user(original_user)
