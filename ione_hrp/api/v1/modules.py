@@ -1,12 +1,17 @@
 from __future__ import annotations
 
 import re
-from typing import TypedDict
+from typing import TYPE_CHECKING, TypedDict, cast
 
 import frappe
 from frappe.utils import cint
 
 from ione_hrp.services.module_registry import load_module_registry
+
+if TYPE_CHECKING:
+	from ione_hrp.hrp_foundation.doctype.hrp_module_setting.hrp_module_setting import (
+		HRPModuleSetting,
+	)
 
 MODULE_ADMIN_ROLES = frozenset({"System Manager", "HRP System Manager"})
 CORRELATION_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:/-]{0,139}$")
@@ -98,7 +103,7 @@ def set_module_enabled(
 		frappe.throw(f"Module is not declared by ione_hrp: {module_name}")
 
 	request_id = _correlation_id(correlation_id)
-	doc = frappe.get_doc("HRP Module Setting", module_name)
+	doc = cast("HRPModuleSetting", frappe.get_doc("HRP Module Setting", module_name))
 	desired = int(bool(cint(enabled)))
 	current = int(bool(doc.enabled))
 	if desired == current:

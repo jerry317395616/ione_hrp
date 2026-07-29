@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 import frappe
 
@@ -43,7 +43,7 @@ def sync_module_defs() -> dict[str, list[str]]:
 	}
 	owners: dict[str, str | None] = {}
 	for module in registry.modules:
-		owner = frappe.db.get_value("Module Def", module.module, "app_name")
+		owner = cast(str | None, frappe.db.get_value("Module Def", module.module, "app_name"))
 		owners[module.module] = owner
 		if owner not in (None, APP_NAME):
 			report["conflicts"].append(f"{module.module} -> {owner}")

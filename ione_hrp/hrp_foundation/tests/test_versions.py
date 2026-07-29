@@ -13,7 +13,7 @@ class TestUpstreamVersionLock(IntegrationTestCase):
 		self.assertEqual(status["status"], "match", status["issues"])
 
 	def test_version_status_rejects_guest(self) -> None:
-		original_user = frappe.session.user
+		original_user = frappe.session.user or "Administrator"
 		try:
 			frappe.set_user("Guest")
 			with self.assertRaises(frappe.AuthenticationError):
