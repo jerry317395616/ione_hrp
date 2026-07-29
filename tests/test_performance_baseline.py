@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import json
 import os
+import tempfile
 import unittest
 from argparse import Namespace
 from pathlib import Path
@@ -17,6 +18,7 @@ from ione_hrp.common.performance_baseline import (
 	parse_performance_baseline_registry,
 	parse_performance_run_summary,
 )
+from scripts.checksums import calculate
 from scripts.performance_baseline import (
 	build_child_environment,
 	build_plan,
@@ -241,6 +243,15 @@ class TestPerformanceBaselineContract(unittest.TestCase):
 		self.assertNotIn("UNRELATED_SECRET", child_environment)
 		runner_source = (ROOT / "scripts" / "performance_baseline.py").read_text(encoding="utf-8")
 		self.assertIn('"IONE_PERF_CONFIRM": CONFIRMATION', runner_source)
+
+	def test_generated_performance_artifacts_are_excluded_from_repository_checksums(self) -> None:
+		with tempfile.TemporaryDirectory() as temp:
+			root = Path(temp)
+			artifact = root / ".artifacts" / "performance" / "smoke.json"
+			artifact.parent.mkdir(parents=True)
+			artifact.write_text('{"status":"pass"}\n', encoding="utf-8")
+			(root / "tracked.txt").write_text("tracked\n", encoding="utf-8")
+			self.assertEqual(set(calculate(root)), {"tracked.txt"})
 
 	def test_runner_rejects_unpinned_k6_before_starting_a_load_test(self) -> None:
 		args = Namespace(

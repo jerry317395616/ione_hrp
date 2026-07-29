@@ -7,6 +7,7 @@ from pathlib import Path
 
 EXCLUDED_PARTS = frozenset(
 	{
+		".artifacts",
 		".git",
 		".mypy_cache",
 		".pyright",

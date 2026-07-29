@@ -92,7 +92,7 @@ baseline；只有 baseline 稳定通过且测试环境容量明确时才运行 l
 
 常规 CI 验证注册表、执行器、响应契约、结果评估器和真实 HTTP 权限，不在共享 GitHub
 Runner 上对外发起压测。容量基线应在隔离、生产等价的 test 环境执行，报告作为发布证据
-存入受控制品系统；`.artifacts/` 被 Git 忽略。
+存入受控制品系统；`.artifacts/` 被 Git 忽略，也不进入 `SHA256SUMS.txt` 仓库清单。
 
 `design/tests.csv` 中 TST-0133 至 TST-0147 是后续领域并发、容量、故障注入和安全场景，
 不会在 COD-015 伪造为已完成。对应领域 DocType 和服务交付后，使用相同注册表增加有界
