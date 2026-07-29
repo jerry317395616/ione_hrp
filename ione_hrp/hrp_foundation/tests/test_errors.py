@@ -47,6 +47,8 @@ class TestIoneErrors(FrappeAPITestCase):
 		self.assertEqual(payload["category"], "authentication")
 		self.assertEqual(payload["message"], "需要先登录。")
 		self.assertFalse(payload["retryable"])
+		self.assertEqual(payload["correlation_id"], response.headers["X-Correlation-ID"])
+		self.assertEqual(payload["request_id"], response.headers["X-Request-ID"])
 		self.assertEqual(response.headers["X-Ione-Error-Code"], payload["code"])
 		self.assertEqual(response.headers["X-Ione-Error-ID"], payload["error_id"])
 
@@ -71,12 +73,13 @@ class TestIoneErrors(FrappeAPITestCase):
 		self.assertEqual(payload["code"], "IONE-CORE-0003")
 		self.assertEqual(payload["category"], "validation")
 		self.assertEqual(payload["message"], "请求参数无效。")
-		self.assertNotIn("correlation", json.dumps(payload))
+		self.assertEqual(payload["correlation_id"], response.headers["X-Correlation-ID"])
+		self.assertEqual(payload["request_id"], response.headers["X-Request-ID"])
 
 	def test_audit_is_redacted_and_unknown_key_fails_closed(self) -> None:
 		sensitive = RuntimeError("patient=secret token=super-secret /private/path")
 		with (
-			patch("ione_hrp.services.errors.frappe.logger") as logger,
+			patch("ione_hrp.services.audit_context.frappe.logger") as logger,
 			self.assertRaises(IoneApplicationError) as raised,
 		):
 			raise_ione_error("UNKNOWN_ERROR_KEY", cause=sensitive)
@@ -98,7 +101,7 @@ class TestIoneErrors(FrappeAPITestCase):
 				"ione_hrp.services.errors.load_error_catalog",
 				side_effect=ErrorCatalogError("patient=secret /private/path"),
 			),
-			patch("ione_hrp.services.errors.frappe.logger") as logger,
+			patch("ione_hrp.services.audit_context.frappe.logger") as logger,
 			self.assertRaises(IoneApplicationError) as raised,
 		):
 			raise_ione_error("INVALID_REQUEST")
@@ -129,7 +132,7 @@ class TestIoneErrors(FrappeAPITestCase):
 			"Comment": frappe.db.count("Comment"),
 			"Error Log": frappe.db.count("Error Log"),
 		}
-		with patch("ione_hrp.services.errors.frappe.logger") as logger:
+		with patch("ione_hrp.services.audit_context.frappe.logger") as logger:
 			first = get_error_catalog_status()
 			second = get_error_catalog_status()
 		after = {

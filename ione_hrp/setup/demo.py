@@ -6,6 +6,7 @@ import frappe
 
 from erpnext.setup.setup_wizard.setup_wizard import setup_complete
 
+from ione_hrp.services.audit_context import emit_audit_event
 from ione_hrp.services.environment import get_environment_status
 from ione_hrp.services.errors import raise_ione_error
 
@@ -46,8 +47,11 @@ def setup_synthetic_demo() -> dict[str, object]:
 			}
 		)
 	)
-	frappe.logger("ione_hrp.environment", allow_site=True).info(
-		"Synthetic demo baseline created for environment=demo"
+	emit_audit_event(
+		"synthetic_demo_baseline_created",
+		logger_name="ione_hrp.environment",
+		environment="demo",
+		changed=True,
 	)
 	return {
 		"status": "ok",

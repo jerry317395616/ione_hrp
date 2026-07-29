@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import re
 from typing import TYPE_CHECKING, TypedDict, cast
 
 import frappe
 from frappe.utils import cint
 
+from ione_hrp.services.audit_context import emit_audit_event, ensure_audit_context
 from ione_hrp.services.errors import (
 	raise_ione_error,
 	require_authenticated_user,
@@ -19,7 +19,6 @@ if TYPE_CHECKING:
 	)
 
 MODULE_ADMIN_ROLES = frozenset({"System Manager", "HRP System Manager"})
-CORRELATION_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:/-]{0,139}$")
 
 
 class ModuleView(TypedDict):
@@ -34,19 +33,6 @@ class ModuleView(TypedDict):
 
 def _require_module_admin() -> None:
 	require_roles(MODULE_ADMIN_ROLES)
-
-
-def _correlation_id(value: str | None) -> str:
-	correlation_id = (value or "").strip()
-	if not correlation_id:
-		request = getattr(frappe.local, "request", None)
-		if request is not None:
-			correlation_id = (request.headers.get("X-Correlation-ID") or "").strip()
-	if not correlation_id:
-		correlation_id = frappe.generate_hash(length=16)
-	if not CORRELATION_ID_PATTERN.fullmatch(correlation_id):
-		raise_ione_error("INVALID_REQUEST")
-	return correlation_id
 
 
 @frappe.whitelist(methods=["GET"])
@@ -96,41 +82,45 @@ def set_module_enabled(
 ) -> dict[str, object]:
 	"""Idempotently change a published module setting and leave an audit trail."""
 	_require_module_admin()
+	context = ensure_audit_context(correlation_id)
 	modules = {row.module: row for row in load_module_registry().modules}
 	if module_name not in modules:
 		raise_ione_error("RESOURCE_NOT_FOUND")
 
-	request_id = _correlation_id(correlation_id)
 	doc = cast("HRPModuleSetting", frappe.get_doc("HRP Module Setting", module_name))
 	desired = int(bool(cint(enabled)))
 	current = int(bool(doc.enabled))
 	if desired == current:
+		emit_audit_event(
+			"module_enabled_unchanged",
+			logger_name="ione_hrp.module_registry",
+			module=module_name,
+			enabled=bool(current),
+		)
 		return {
 			"module": module_name,
 			"enabled": bool(current),
 			"changed": False,
-			"correlation_id": request_id,
+			"correlation_id": context.correlation_id,
 		}
 
 	doc.enabled = desired
 	doc.save()
 	audit_message = (
-		f"Module enabled changed from {bool(current)} to {bool(desired)}; correlation_id={request_id}"
+		f"Module enabled changed from {bool(current)} to {bool(desired)}; "
+		f"correlation_id={context.correlation_id}; request_id={context.request_id}"
 	)
 	doc.add_comment("Info", audit_message)
-	frappe.logger("ione_hrp.module_registry", allow_site=True).info(
-		{
-			"event": "module_enabled_changed",
-			"module": module_name,
-			"before": bool(current),
-			"after": bool(desired),
-			"correlation_id": request_id,
-			"user": frappe.session.user,
-		}
+	emit_audit_event(
+		"module_enabled_changed",
+		logger_name="ione_hrp.module_registry",
+		module=module_name,
+		before=bool(current),
+		after=bool(desired),
 	)
 	return {
 		"module": module_name,
 		"enabled": bool(desired),
 		"changed": True,
-		"correlation_id": request_id,
+		"correlation_id": context.correlation_id,
 	}

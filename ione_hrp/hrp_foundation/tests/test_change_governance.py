@@ -25,8 +25,8 @@ class TestChangeGovernanceAPI(FrappeAPITestCase):
 		payload = response.get_json()["message"]
 		self.assertEqual(payload["status"], "ok")
 		self.assertEqual(payload["correlation_id"], "COD-008-http-success")
-		self.assertEqual(payload["change_record_count"], 9)
-		self.assertEqual(payload["decision_count"], 4)
+		self.assertEqual(payload["change_record_count"], 10)
+		self.assertEqual(payload["decision_count"], 5)
 		self.assertFalse(payload["http_write_enabled"])
 		self.assertEqual(payload["write_channel"], "Git pull request only")
 		serialized = json.dumps(payload, ensure_ascii=False)
@@ -63,7 +63,7 @@ class TestChangeGovernanceAPI(FrappeAPITestCase):
 			"Comment": frappe.db.count("Comment"),
 			"Error Log": frappe.db.count("Error Log"),
 		}
-		with patch("ione_hrp.services.change_governance.frappe.logger") as logger:
+		with patch("ione_hrp.services.audit_context.frappe.logger") as logger:
 			first = get_change_governance_status("COD-008-idempotent-1")
 			second = get_change_governance_status("COD-008-idempotent-2")
 		after = {

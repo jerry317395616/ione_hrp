@@ -607,6 +607,132 @@ def validate_error_contract(root: Path) -> list[str]:
 	return violations
 
 
+def find_direct_audit_loggers(root: Path) -> list[str]:
+	"""Require application audit events to pass through the redacting context service."""
+	app_root = root / APP_NAME
+	allowed_path = app_root / "services" / "audit_context.py"
+	violations: list[str] = []
+	for path in app_root.rglob("*.py"):
+		if path == allowed_path or "tests" in path.parts:
+			continue
+		try:
+			tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+		except SyntaxError:
+			continue
+		for node in ast.walk(tree):
+			if (
+				isinstance(node, ast.Call)
+				and isinstance(node.func, ast.Attribute)
+				and isinstance(node.func.value, ast.Name)
+				and node.func.value.id == "frappe"
+				and node.func.attr == "logger"
+			):
+				violations.append(
+					f"{path.relative_to(root)}:{node.lineno} calls frappe.logger outside "
+					"ione_hrp.services.audit_context"
+				)
+	return violations
+
+
+def validate_audit_context_contract(root: Path) -> list[str]:
+	common_path = root / APP_NAME / "common" / "audit_context.py"
+	service_path = root / APP_NAME / "services" / "audit_context.py"
+	api_path = root / APP_NAME / "api" / "v1" / "audit.py"
+	hooks_path = root / APP_NAME / "hooks.py"
+	documentation_path = root / "architecture" / "audit_context.md"
+	task_path = root / "backlog" / "COD-010.md"
+	test_paths = (
+		root / "tests" / "test_audit_context.py",
+		root / APP_NAME / "hrp_foundation" / "tests" / "test_audit_context.py",
+	)
+	catalog_paths = (
+		root / "api" / "api_catalog.csv",
+		root / "api" / "api_catalog.yaml",
+		root / "api" / "openapi.yaml",
+	)
+	required_paths = (
+		common_path,
+		service_path,
+		api_path,
+		hooks_path,
+		documentation_path,
+		task_path,
+		*test_paths,
+		*catalog_paths,
+	)
+	missing = [str(path.relative_to(root)) for path in required_paths if not path.is_file()]
+	if missing:
+		return [f"missing audit context contract file: {path}" for path in missing]
+
+	violations = find_direct_audit_loggers(root)
+	hooks_text = hooks_path.read_text(encoding="utf-8")
+	for token in (
+		"start_http_audit_context",
+		"finish_http_audit_context",
+		"start_job_audit_context",
+		"finish_job_audit_context",
+	):
+		if token not in hooks_text:
+			violations.append(f"Frappe hooks are missing audit lifecycle token: {token}")
+
+	common_text = common_path.read_text(encoding="utf-8")
+	for token in (
+		"AUDIT_CONTEXT_SCHEMA_VERSION = 1",
+		"class AuditContext",
+		"as_propagation_dict",
+		"parse_propagation_payload",
+		"FORBIDDEN_AUDIT_FIELD_MARKERS",
+	):
+		if token not in common_text:
+			violations.append(f"audit context model is missing: {token}")
+
+	service_text = service_path.read_text(encoding="utf-8")
+	for token in (
+		'"X-Correlation-ID"',
+		'"X-Request-ID"',
+		"AUDIT_CONTEXT_JOB_KWARG",
+		"kwargs.pop(AUDIT_CONTEXT_JOB_KWARG",
+		"emit_audit_event",
+		"enqueue_with_audit",
+		"http_write_enabled",
+	):
+		if token not in service_text:
+			violations.append(f"audit context service is missing: {token}")
+
+	api_text = api_path.read_text(encoding="utf-8")
+	if '@frappe.whitelist(allow_guest=True, methods=["GET"])' not in api_text:
+		violations.append("audit context endpoint must enter the application layer for uniform guest errors")
+
+	audit_api = "/api/method/ione_hrp.api.v1.audit.get_audit_context"
+	for catalog_path in catalog_paths:
+		if audit_api not in catalog_path.read_text(encoding="utf-8"):
+			violations.append(f"{catalog_path.relative_to(root)} is missing the audit context endpoint")
+
+	openapi_text = (root / "api" / "openapi.yaml").read_text(encoding="utf-8")
+	for token in ("X-Correlation-ID", "X-Request-ID", "AuditContext", "correlation_id", "request_id"):
+		if token not in openapi_text:
+			violations.append(f"OpenAPI is missing audit context token: {token}")
+
+	for script_name in ("change_manager.py", "environment_manager.py", "fixture_manager.py"):
+		script_text = (root / "scripts" / script_name).read_text(encoding="utf-8")
+		if "ione_hrp.common.audit_context" not in script_text:
+			violations.append(f"{script_name} must use the shared correlation ID contract")
+		if "CORRELATION_ID_PATTERN" in script_text:
+			violations.append(f"{script_name} must not define a duplicate correlation ID pattern")
+
+	for path in (root / APP_NAME).rglob("*.py"):
+		if path == service_path or "tests" in path.parts:
+			continue
+		text = path.read_text(encoding="utf-8")
+		if "X-Correlation-ID" in text:
+			violations.append(
+				f"{path.relative_to(root)} reads X-Correlation-ID outside the audit context service"
+			)
+		if "CORRELATION_ID_PATTERN" in text:
+			violations.append(f"{path.relative_to(root)} defines a duplicate correlation ID pattern")
+	return violations
+
+
 def validate_environment_profiles(root: Path) -> list[str]:
 	profile_path = root / APP_NAME / "config" / "environment_profiles.json"
 	manager_path = root / "scripts" / "environment_manager.py"
@@ -857,6 +983,7 @@ def collect_violations(root: Path) -> list[str]:
 	violations.extend(validate_fixture_governance(root))
 	violations.extend(validate_change_governance(root))
 	violations.extend(validate_error_contract(root))
+	violations.extend(validate_audit_context_contract(root))
 	return violations
 
 

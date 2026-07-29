@@ -14,6 +14,12 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 if str(REPOSITORY_ROOT) not in sys.path:
 	sys.path.insert(0, str(REPOSITORY_ROOT))
 
+from ione_hrp.common.audit_context import (
+	AuditContextError,
+)
+from ione_hrp.common.audit_context import (
+	normalize_correlation_id as normalize_shared_correlation_id,
+)
 from ione_hrp.common.change_governance import (
 	ChangedPath,
 	ChangeGovernanceError,
@@ -24,7 +30,6 @@ from ione_hrp.common.change_governance import (
 	validate_adr_transition,
 )
 
-CORRELATION_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:/-]{0,139}$")
 ZERO_SHA = frozenset({"", "0" * 40})
 
 
@@ -148,9 +153,10 @@ def build_change_plan(
 
 def normalize_correlation_id(value: str | None) -> str:
 	correlation_id = value or f"COD-008-{uuid.uuid4()}"
-	if CORRELATION_ID_PATTERN.fullmatch(correlation_id) is None:
-		raise ChangeManagerError("Invalid correlation ID")
-	return correlation_id
+	try:
+		return normalize_shared_correlation_id(correlation_id)
+	except AuditContextError as exc:
+		raise ChangeManagerError("Invalid correlation ID") from exc
 
 
 def _default_audit_path(root: Path) -> Path:

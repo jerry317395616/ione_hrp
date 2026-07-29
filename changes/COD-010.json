@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "task_id": "COD-010",
+  "title": "建立审计上下文与关联ID",
+  "status": "In Progress",
+  "risk_level": "critical",
+  "change_types": [
+    "application",
+    "architecture",
+    "documentation",
+    "governance",
+    "security"
+  ],
+  "affected_modules": [
+    "HRP Foundation"
+  ],
+  "breaking_change": false,
+  "adr_ids": [
+    "ADR-0005"
+  ],
+  "path_globs": [
+    "README.md",
+    "DELIVERY_MANIFEST.json",
+    "VALIDATION_REPORT.json",
+    "SHA256SUMS.txt",
+    "api/**",
+    "architecture/**",
+    "backlog/**",
+    "changes/COD-010.json",
+    "ione_hrp/**",
+    "scripts/**",
+    "tests/**"
+  ],
+  "permissions_impact": "新增只读审计上下文 API 仅允许已认证用户；Guest 通过统一错误服务返回 401，不新增角色或提升权限。",
+  "migration_impact": "不新增 DocType、Fixture、Patch、Workspace 或数据库记录；仅随应用源码注册 Frappe 请求和任务钩子。",
+  "rollback_plan": "整体回滚 COD-010 的四个生命周期钩子、上下文服务、API 和调用迁移；不删除业务数据且不修改上游源码。",
+  "security_impact": "调用方只可提供严格校验的关联 ID；请求 ID 服务端生成；公开响应和应用审计不记录用户、患者、请求正文、路径、站点或凭据。",
+  "test_plan": [
+    "不可变上下文、ID、版本化任务载荷、父子关系和脱敏字段纯单元测试",
+    "禁止重复关联 ID 正则、旁路请求头读取和直接应用审计日志的仓库契约测试",
+    "认证、Guest、非法输入、响应头、错误体、只读幂等和参数优先级 HTTP 端到端测试",
+    "队列关联传播、载荷消费、非法载荷替换和日志脱敏 Frappe 集成测试"
+  ],
+  "owner": "I-ONE HRP Maintainers",
+  "created_on": "2026-07-29",
+  "updated_on": "2026-07-29"
+}

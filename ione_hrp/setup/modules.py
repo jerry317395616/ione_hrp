@@ -5,6 +5,7 @@ from typing import Any, cast
 import frappe
 
 from ione_hrp.common.constants import APP_NAME
+from ione_hrp.services.audit_context import emit_audit_event
 from ione_hrp.services.errors import raise_ione_error
 from ione_hrp.services.module_registry import ModuleSpec, load_module_registry
 
@@ -22,15 +23,13 @@ def declared_modules() -> list[str]:
 
 
 def _audit_sync(operation: str, report: dict[str, list[str]]) -> None:
-	frappe.logger("ione_hrp.module_registry", allow_site=True).info(
-		{
-			"event": operation,
-			"app": APP_NAME,
-			"site": getattr(frappe.local, "site", None),
-			"created": report["created"],
-			"updated": report.get("updated", []),
-			"unchanged": report["unchanged"],
-		}
+	emit_audit_event(
+		operation,
+		logger_name="ione_hrp.module_registry",
+		app=APP_NAME,
+		created_count=len(report["created"]),
+		updated_count=len(report.get("updated", [])),
+		unchanged_count=len(report["unchanged"]),
 	)
 
 

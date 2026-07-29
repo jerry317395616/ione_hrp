@@ -16,6 +16,7 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 if str(REPOSITORY_ROOT) not in sys.path:
 	sys.path.insert(0, str(REPOSITORY_ROOT))
 
+from ione_hrp.common.audit_context import AuditContextError, normalize_correlation_id
 from ione_hrp.common.environment_profiles import (
 	EnvironmentProfile,
 	EnvironmentProfileError,
@@ -23,7 +24,6 @@ from ione_hrp.common.environment_profiles import (
 	load_environment_registry,
 )
 
-CORRELATION_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{7,127}$")
 PRODUCTION_MARKERS = ("manager.myyr.top", "/prod/", "\\prod\\", "production")
 PLACEHOLDER_SECRETS = frozenset({"change-me", "change-me-now", "password"})
 
@@ -409,9 +409,10 @@ def provision_environment(
 
 def _correlation_id(value: str | None) -> str:
 	correlation_id = value or f"COD-006-{uuid.uuid4()}"
-	if not CORRELATION_ID_PATTERN.fullmatch(correlation_id):
-		raise EnvironmentManagerError("Invalid correlation ID")
-	return correlation_id
+	try:
+		return normalize_correlation_id(correlation_id)
+	except AuditContextError as exc:
+		raise EnvironmentManagerError("Invalid correlation ID") from exc
 
 
 def append_audit_event(

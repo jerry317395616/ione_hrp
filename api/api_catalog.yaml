@@ -1034,6 +1034,20 @@
   transaction_boundary: Read-only
   audit: Redacted site log
   version: v1
+- api_code: PLT-014
+  app: ione_hrp
+  domain_group: Platform
+  method: GET
+  path: /api/method/ione_hrp.api.v1.audit.get_audit_context
+  description: 查询当前请求的审计上下文
+  request_schema: X-Correlation-ID
+  response_schema: schema_version,correlation_id,request_id,parent_request_id,channel,http_write_enabled
+  required_role: Authenticated User
+  idempotency: Read-only per request
+  async: 'No'
+  transaction_boundary: Read-only
+  audit: Redacted context log
+  version: v1
 - api_code: POR-001
   app: ione_hrp
   domain_group: Portal

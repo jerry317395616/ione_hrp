@@ -9,8 +9,10 @@ from scripts.repository_contract import (
 	APP_NAME,
 	collect_violations,
 	discover_custom_apps,
+	find_direct_audit_loggers,
 	find_direct_frappe_throws,
 	find_legacy_prefix_references,
+	validate_audit_context_contract,
 	validate_branch_policy,
 	validate_change_governance,
 	validate_ci_pipeline,
@@ -139,6 +141,24 @@ class RepositoryContractTest(unittest.TestCase):
 
 	def test_current_error_contract_is_mandatory(self) -> None:
 		self.assertEqual(validate_error_contract(ROOT), [])
+
+	def test_current_audit_context_contract_is_mandatory(self) -> None:
+		self.assertEqual(validate_audit_context_contract(ROOT), [])
+
+	def test_rejects_direct_audit_logger_outside_context_service(self) -> None:
+		with tempfile.TemporaryDirectory() as temp:
+			root = Path(temp)
+			source = root / "ione_hrp" / "services" / "unsafe.py"
+			source.parent.mkdir(parents=True)
+			source.write_text(
+				'import frappe\n\n\ndef unsafe():\n\tfrappe.logger("ione_hrp.unsafe").info({"user": "x"})\n',
+				encoding="utf-8",
+			)
+
+			violations = find_direct_audit_loggers(root)
+
+		self.assertEqual(len(violations), 1)
+		self.assertIn("calls frappe.logger outside", violations[0])
 
 	def test_rejects_direct_frappe_throw_outside_error_service(self) -> None:
 		with tempfile.TemporaryDirectory() as temp:
