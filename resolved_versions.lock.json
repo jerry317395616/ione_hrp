@@ -29,8 +29,19 @@
     "node": "follow the locked Frappe commit"
   },
   "compatibility_validation": {
-    "status": "pending",
-    "environment": null,
-    "validated_at": null
+    "status": "passed",
+    "environment": "/home/zyd/validation/cod-002-bench (cod002.localhost)",
+    "validated_at": "2026-07-29T02:35:10Z",
+    "checks": [
+      "official remote and exact commit verification",
+      "clean detached upstream worktrees",
+      "fresh Frappe site creation",
+      "ERPNext installation",
+      "Frappe HR installation",
+      "ione_hrp installation",
+      "migration with enforced upstream lock",
+      "authenticated version diagnostics",
+      "Frappe integration tests"
+    ]
   }
 }

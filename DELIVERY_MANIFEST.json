@@ -10,7 +10,8 @@
     "design_fields": 10036,
     "doctype_blueprints": 398,
     "starter_doctypes": 3,
-    "repository_contract_tests": 12
+    "repository_contract_tests": 18,
+    "frappe_integration_tests": 2
   },
   "entrypoints": [
     "README.md",
