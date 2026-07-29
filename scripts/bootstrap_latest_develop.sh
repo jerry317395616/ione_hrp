@@ -133,9 +133,16 @@ bench setup requirements
 
 git clone --no-hardlinks "$ROOT_DIR" "$BENCH_DIR/apps/ione_hrp"
 ./env/bin/python -m pip install -e apps/ione_hrp
-if ! grep -qxF ione_hrp sites/apps.txt; then
-  echo ione_hrp >> sites/apps.txt
-fi
+python3 - "$BENCH_DIR/sites/apps.txt" <<'PYAPPS'
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+apps = [line.strip() for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+if "ione_hrp" not in apps:
+    apps.append("ione_hrp")
+path.write_text("\n".join(apps) + "\n", encoding="utf-8")
+PYAPPS
 
 bash "$ROOT_DIR/scripts/lock_versions.sh" "$BENCH_DIR" "$LOCK_FILE"
 
