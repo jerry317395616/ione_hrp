@@ -1,12 +1,24 @@
 {
-  "status": "PASS_COD_001",
+  "status": "PASS_COD_001_PARTIAL_COD_002",
   "checks": {
     "python_compile": true,
     "pyproject_parse": true,
     "json_parse": true,
     "yaml_parse": true,
     "repository_contract": true,
-    "repository_contract_tests": 12,
+    "repository_contract_tests": 18,
+    "frappe_integration_tests": 2,
+    "upstream_version_lock": true,
+    "upstream_remote_heads_verified": true,
+    "upstream_isolated_bench_validation": true,
+    "upstream_production_promotion": false,
+    "upstream_lock_commits": {
+      "frappe": "883224ff626c4635a58c47133f1ba6101cdbd938",
+      "erpnext": "372dff2ffa232f54595f48c2639d828c4a64ddde",
+      "hrms": "2d9e4a0bc7a8d18c42c25cc7ff95eb52b460c6b1"
+    },
+    "upstream_validation_bench": "/home/zyd/validation/cod-002-bench",
+    "upstream_validation_site": "cod002.localhost",
     "git_monorepo": true,
     "github_branch_protection": true,
     "github_repository_ruleset": false,
