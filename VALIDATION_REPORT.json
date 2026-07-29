@@ -1,5 +1,5 @@
 {
-  "status": "PENDING_CI_COD_008",
+  "status": "PASS_COD_008",
   "checks": {
     "python_compile": true,
     "pyproject_parse": true,
@@ -13,9 +13,9 @@
     "ci_workflow": ".github/workflows/ci.yml",
     "ci_required_context": "Required",
     "ci_required_display_name": "CI / Required",
-    "ci_github_run_id": 30443592308,
-    "ci_github_run_url": "https://github.com/jerry317395616/ione_hrp/actions/runs/30443592308",
-    "ci_github_run_commit": "36cf339d396bec3796a73568a3012e23e49ff030",
+    "ci_github_run_id": 30449729171,
+    "ci_github_run_url": "https://github.com/jerry317395616/ione_hrp/actions/runs/30449729171",
+    "ci_github_run_commit": "74b52f9af8a5ef06d74c3a4b2852efbc213dafb9",
     "ci_quality_job_success": true,
     "ci_secret_scan_success": true,
     "ci_dependency_audit_high_vulnerabilities": 0,
@@ -86,13 +86,17 @@
     "change_governance_risk_rule_count": 5,
     "change_governance_unit_tests": 19,
     "change_governance_integration_tests_defined": 5,
+    "change_governance_integration_tests_passed": 5,
     "change_governance_sha256": "d68acc6a9503aa235ba8ced8167210d16201b7b1ca0503f51f3de5c47c9b1bcf",
+    "change_governance_diff_sha256": "4809af4a3c38e51bd9829648e68ab735032f8e043bcfbf7f826e30007ab97be2",
+    "change_governance_changed_file_count": 38,
+    "change_governance_required_risk": "critical",
     "change_governance_deterministic": true,
     "change_governance_http_write_disabled": true,
     "change_governance_git_only_write_channel": true,
-    "change_governance_permission_verified": false,
-    "change_governance_http_e2e_verified": false,
-    "change_governance_ci_diff_verified": false,
+    "change_governance_permission_verified": true,
+    "change_governance_http_e2e_verified": true,
+    "change_governance_ci_diff_verified": true,
     "upstream_validation_bench": "/home/zyd/validation/cod-002-bench",
     "upstream_validation_site": "cod002.localhost",
     "git_monorepo": true,
@@ -141,5 +145,5 @@
   "not_run": [
     "full upstream Frappe/ERPNext/HRMS application test suites"
   ],
-  "reason_not_run": "COD-008 local repository tests and static gates pass. The five new Frappe permission and HTTP end-to-end tests, locked Bench migration, GitHub change-diff gate and final Required context are pending the task Pull Request CI. No Press or production migration is part of this validation."
+  "reason_not_run": "The full upstream Frappe, ERPNext and HRMS application suites are outside COD-008 scope. Repository quality, the ione_hrp Frappe suite, repeated locked-Bench migration, permission and HTTP end-to-end paths, change-diff governance, secret scanning and the final Required context passed in GitHub Actions run 30449729171. No Press or production migration was required or performed."
 }
