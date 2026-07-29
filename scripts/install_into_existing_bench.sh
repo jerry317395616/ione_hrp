@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+LOCK_FILE="${LOCK_FILE:-$ROOT_DIR/resolved_versions.lock.json}"
 BENCH_DIR="${BENCH_DIR:?Set BENCH_DIR}"
 SITE_NAME="${SITE_NAME:?Set SITE_NAME}"
 
@@ -9,6 +10,7 @@ cd "$BENCH_DIR"
 for app in frappe erpnext hrms; do
   [[ -d "apps/$app" ]] || { echo "Missing dependency app: $app" >&2; exit 1; }
 done
+"$ROOT_DIR/scripts/lock_versions.sh" "$BENCH_DIR" "$LOCK_FILE"
 
 if [[ -e apps/ione_hrp ]]; then
   echo "apps/ione_hrp already exists; refusing to overwrite" >&2
@@ -22,4 +24,3 @@ fi
 bench --site "$SITE_NAME" install-app ione_hrp
 bench --site "$SITE_NAME" migrate
 bench build --app ione_hrp
-"$ROOT_DIR/scripts/lock_versions.sh" "$BENCH_DIR" "$ROOT_DIR/resolved_versions.lock.json"

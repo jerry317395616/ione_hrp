@@ -7,6 +7,7 @@ from pathlib import Path
 
 import tomllib
 import yaml
+from version_lock import load_lock
 
 ROOT = Path(__file__).resolve().parents[1]
 APP = ROOT
@@ -21,6 +22,7 @@ def main() -> None:
     pyproject = tomllib.loads((APP / "pyproject.toml").read_text(encoding="utf-8"))
     if pyproject["project"]["name"] != "ione_hrp":
         fail("pyproject project name mismatch")
+    load_lock(ROOT / "resolved_versions.lock.json")
 
     registry = yaml.safe_load((ROOT / "architecture" / "module_registry.yaml").read_text(encoding="utf-8"))
     modules = [line.strip() for line in (PKG / "modules.txt").read_text(encoding="utf-8").splitlines() if line.strip()]

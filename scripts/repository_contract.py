@@ -9,6 +9,11 @@ from pathlib import Path
 import tomllib
 import yaml
 
+if __package__:
+    from scripts.version_lock import UPSTREAM_APPS, load_lock
+else:
+    from version_lock import UPSTREAM_APPS, load_lock
+
 APP_NAME = "ione_hrp"
 UPSTREAM_APPS = frozenset({"frappe", "erpnext", "hrms"})
 LEGACY_PREFIXES = ("myi" + "_hrp", "myi" + "-hrp")
@@ -97,6 +102,34 @@ def validate_push_guard(root: Path) -> list[str]:
         violations.append("pre-push hook must reject direct main pushes")
     if not (root / "scripts" / "apply_branch_protection.py").is_file():
         violations.append("missing scripts/apply_branch_protection.py")
+    return violations
+
+
+def validate_version_baseline(root: Path) -> list[str]:
+    violations: list[str] = []
+    try:
+        lock = load_lock(root / "resolved_versions.lock.json")
+    except ValueError as exc:
+        return [f"invalid resolved_versions.lock.json: {exc}"]
+
+    baseline_path = root / "architecture" / "version_baseline.json"
+    if not baseline_path.is_file():
+        return ["missing architecture/version_baseline.json"]
+    baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
+    if baseline.get("lock_file") != "../resolved_versions.lock.json":
+        violations.append("version baseline must reference resolved_versions.lock.json")
+    rows = baseline.get("repositories")
+    if not isinstance(rows, dict):
+        return [*violations, "version baseline repositories must be an object"]
+    for app in UPSTREAM_APPS:
+        baseline_row = rows.get(app)
+        if not isinstance(baseline_row, dict):
+            violations.append(f"version baseline is missing {app}")
+            continue
+        for field in ("url", "branch", "version_marker", "commit"):
+            lock_field = "repository" if field == "url" else "version" if field == "version_marker" else field
+            if baseline_row.get(field) != lock["apps"][app].get(lock_field):
+                violations.append(f"version baseline {app}.{field} differs from lock")
     return violations
 
 
@@ -190,6 +223,7 @@ def collect_violations(root: Path) -> list[str]:
     violations.extend(find_legacy_prefix_references(root))
     violations.extend(validate_branch_policy(root))
     violations.extend(validate_push_guard(root))
+    violations.extend(validate_version_baseline(root))
     violations.extend(validate_catalog_ownership(root))
     violations.extend(validate_module_structure(root))
     violations.extend(validate_protected_ledgers(root))
