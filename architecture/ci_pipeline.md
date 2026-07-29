@@ -49,7 +49,8 @@ COD-005 在 GitHub Actions 中建立 `ione_hrp` 的合并门禁。流水线只�
 
 `Required` 使用 `always()` 汇总前两个作业。只有 `Quality` 和 `Integration`
 都为 `success` 才返回成功，因此前置作业失败、跳过或取消都不能绕过门禁。
-稳定检查名为 `CI / Required`，是 `main` 分支唯一要求的 CI 状态检查。
+GitHub API 中的稳定检查上下文名为 `Required`，页面显示为
+`CI / Required`；它是 `main` 分支唯一要求的 CI 状态检查。
 
 ## 供应链约束
 

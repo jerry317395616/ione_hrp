@@ -10,13 +10,14 @@
     "design_fields": 10036,
     "doctype_blueprints": 398,
     "starter_doctypes": 3,
-    "repository_contract_tests": 34,
+    "repository_contract_tests": 41,
     "frappe_integration_tests": 9
   },
   "entrypoints": [
     "README.md",
     "AGENTS.md",
     "architecture/repository_governance.md",
+    "architecture/ci_pipeline.md",
     "architecture/quality_tooling.md",
     "architecture/module_registry.yaml",
     "pyproject.toml",
@@ -26,12 +27,15 @@
     "eslint.config.mjs",
     ".prettierrc.json",
     "ione_hrp",
+    ".github/workflows/ci.yml",
     ".github/branch-protection.json",
+    "scripts/ci_integration.sh",
     "scripts/repository_contract.py",
     "scripts/quality.py",
     "scripts/quality.sh",
     "scripts/bootstrap_latest_develop.sh",
     "scripts/create_module.py",
+    "backlog/COD-005.md",
     "backlog/backlog.csv"
   ]
 }
