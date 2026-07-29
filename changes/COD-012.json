@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "task_id": "COD-012",
+  "title": "建立不可变台账基类",
+  "status": "Implemented",
+  "risk_level": "high",
+  "change_types": [
+    "application",
+    "architecture",
+    "documentation",
+    "governance",
+    "security"
+  ],
+  "affected_modules": [
+    "HRP Foundation"
+  ],
+  "breaking_change": false,
+  "adr_ids": [
+    "ADR-0007"
+  ],
+  "path_globs": [
+    "README.md",
+    "DELIVERY_MANIFEST.json",
+    "VALIDATION_REPORT.json",
+    "SHA256SUMS.txt",
+    "api/**",
+    "architecture/**",
+    "backlog/**",
+    "changes/COD-012.json",
+    "ione_hrp/**",
+    "scripts/**",
+    "tests/**"
+  ],
+  "permissions_impact": "公共控制器要求具体 Ledger DocType 只授予读取、报表和选择权限；创建、更新、删除、重命名、取消和导入均禁止。写入角色由具体领域服务声明并在幂等预留前校验。",
+  "migration_impact": "不新增生产 DocType、表、Fixture 或数据 patch。锁定 Bench 测试动态创建并清理临时 Ledger DocType。后续具体业务台账由对应 COD 单独迁移。",
+  "rollback_plan": "回滚应用提交，不删除任何后续业务台账记录。若具体业务模块已继承该基类，须先暂停其写入口并由对应变更恢复兼容实现。",
+  "security_impact": "直接 CRUD 和服务上下文外插入失败；冲销使用 FOR UPDATE NOWAIT 和一次冲销检查；审计不记录金额、维度、凭证正文或幂等原始键。数据库原始 SQL 权限仍须由生产运维隔离和审计。",
+  "test_plan": [
+    "定义、公共字段、规范化 JSON、字段白名单、等额反向和篡改纯单元测试",
+    "服务专用插入、更新、db_set、删除和重命名拒绝的 Frappe 集成测试",
+    "追加与冲销持久化幂等、权限先行、异常回滚和脱敏审计测试",
+    "MariaDB 双连接行锁竞争、一次冲销和反向数值集成测试",
+    "PLT-015 真实 HTTP 成功、未认证拒绝和三份 API 契约测试",
+    "禁止具体 Ledger 绕过公共服务和禁止服务提交事务的仓库门禁"
+  ],
+  "owner": "I-ONE HRP Maintainers",
+  "created_on": "2026-07-29",
+  "updated_on": "2026-07-29"
+}
