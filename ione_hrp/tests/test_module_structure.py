@@ -1,15 +1,14 @@
 from __future__ import annotations
 
-from pathlib import Path
+from ione_hrp.services.module_registry import (
+    load_declared_modules,
+    load_module_registry,
+    validate_module_source_tree,
+)
 
 
-def test_declared_modules_have_packages() -> None:
-    package_root = Path(__file__).resolve().parents[1]
-    modules = [line.strip() for line in (package_root / "modules.txt").read_text().splitlines() if line.strip()]
-    missing = []
-    for module in modules:
-        package = module.lower().replace(" ", "_").replace("&", "and")
-        # Official module package names are validated by the repository script; this test catches gross omissions.
-        if not any(path.name.startswith("hrp_") and path.is_dir() for path in package_root.iterdir()):
-            missing.append(package)
-    assert not missing
+def test_all_36_declared_modules_have_exact_packages() -> None:
+    registry = load_module_registry()
+    assert len(registry.modules) == 36
+    assert load_declared_modules() == tuple(row.module for row in registry.modules)
+    assert validate_module_source_tree(expected_module_count=36) == []

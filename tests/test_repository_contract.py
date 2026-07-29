@@ -11,6 +11,7 @@ from scripts.repository_contract import (
     discover_custom_apps,
     find_legacy_prefix_references,
     validate_branch_policy,
+    validate_module_boundaries,
     validate_push_guard,
 )
 
@@ -90,6 +91,30 @@ class RepositoryContractTest(unittest.TestCase):
                 validate_push_guard(root),
                 ["missing .githooks/pre-push"],
             )
+
+    def test_rejects_private_cross_module_import(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            source = root / "ione_hrp" / "hrp_budget" / "services" / "budget.py"
+            source.parent.mkdir(parents=True)
+            source.write_text(
+                "from ione_hrp.hrp_procurement.doctype.purchase import Purchase\n",
+                encoding="utf-8",
+            )
+            violations = validate_module_boundaries(root)
+            self.assertEqual(len(violations), 1)
+            self.assertIn("imports private cross-module path", violations[0])
+
+    def test_allows_cross_module_service_facade(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            source = root / "ione_hrp" / "hrp_budget" / "services" / "budget.py"
+            source.parent.mkdir(parents=True)
+            source.write_text(
+                "from ione_hrp.hrp_procurement.services.public import submit_request\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(validate_module_boundaries(root), [])
 
 
 if __name__ == "__main__":

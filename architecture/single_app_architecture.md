@@ -53,3 +53,24 @@ ione_hrp/
 5. 提交代码、迁移、权限、测试和文档。
 
 生产界面只允许启停已发布模块，不允许生成源代码模块。
+
+## 模块注册表契约
+
+`architecture/module_registry.yaml` 是模块显示名、Python 包名、领域组、中文
+名称、默认启用状态和顺序的唯一机器权威。`ione_hrp.services.module_registry`
+负责解析和严格校验，以下入口不得自行实现另一套解析规则：
+
+- 安装和迁移阶段的 `Module Def`、`HRP Module Setting` 同步；
+- 模块查询与启停 API；
+- `bench ione-hrp-create-module` 和 `scripts/create_module.py`；
+- 仓库契约、打包校验与自动化测试。
+
+当前基线必须恰好登记 36 个模块。注册表、`modules.txt`、模块目录、
+`__init__.py`、`README.md` 和七个标准子包必须逐项一致，存在重复名称、重复
+序号、未登记目录、缺失目录或包名不匹配时，构建立即失败。
+仓库契约还会解析 Python 导入；跨模块调用只能导入目标模块的 `services`
+公共门面，禁止直接依赖另一模块的 DocType 控制器或其他内部包。
+
+模块生成是开发期源码操作。生成器在写入前验证现有源码树，使用临时目录和
+原子文件替换；任何后置校验失败都会恢复 `modules.txt`、注册表并删除新目录。
+生产站点只同步已发布模块元数据，保留各站点自己的启停选择。
