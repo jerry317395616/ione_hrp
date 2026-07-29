@@ -97,7 +97,10 @@ def build_quality_steps(
 		),
 	)
 	node_steps = (
-		QualityStep("pyright", (npm_executable, "run", "typecheck")),
+		QualityStep(
+			"pyright",
+			(npm_executable, "run", "typecheck", "--", "--pythonpath", python_executable),
+		),
 		QualityStep("eslint", (npm_executable, "run", "lint:frontend")),
 		QualityStep("prettier", (npm_executable, "run", "format:frontend:check")),
 	)
