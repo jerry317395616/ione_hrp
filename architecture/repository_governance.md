@@ -14,16 +14,16 @@ Python 包表达。`frappe`、`erpnext`、`hrms` 是锁定提交的上游依赖�
 - 所有变更从短期任务分支发起，格式为 `cod/COD-XXX-short-name`。
 - `main` 禁止直接推送、强制推送和删除。
 - 合并必须使用 Pull Request，保持线性历史并解决全部评审讨论。
-- 至少一名 CODEOWNER 批准；新提交会使旧批准失效。
+- 当前仓库只有一名维护者，采用“强制 PR、暂不强制独立批准”的可执行基线。
+- `CODEOWNERS` 继续声明代码所有权；添加第二名维护者后，把必需批准数提升为 1。
 
 `.github/branch-protection.json` 是机器可读的保护策略；GitHub 中的实际规则
 必须与该文件保持一致。仓库管理员也受同一规则约束。
 
-当前 GitHub 仓库为私有仓库，GitHub Free 对分支保护 API 返回 HTTP 403。
-在升级 GitHub Pro 或明确批准公开仓库之前，策略文件只表示期望状态，不能
-声明远端规则已经生效。禁止为了通过验证而擅自公开仓库。
+GitHub 仓库已由所有者明确批准并设置为公开仓库。GitHub Free 的服务端分支
+保护已经生效，实际规则必须持续通过脚本与策略文件比对。
 
-升级套餐后执行以下命令应用并核验远端策略：
+执行以下命令应用并核验远端策略：
 
 ```bash
 python scripts/apply_branch_protection.py --apply

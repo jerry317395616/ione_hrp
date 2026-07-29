@@ -6,7 +6,6 @@ from typing import Any
 
 import yaml
 
-
 DOMAIN_GROUPS = (
     "Core",
     "Finance",

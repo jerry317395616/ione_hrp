@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import frappe
 
-
 _ALLOWED_APP_ROLES = {
     "System Manager",
     "HRP System Manager",

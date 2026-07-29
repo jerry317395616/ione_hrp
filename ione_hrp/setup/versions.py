@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from importlib import import_module
 
-import frappe
 from packaging.version import Version
+
+import frappe
 
 from ione_hrp.common.constants import SUPPORTED_MAJOR
 

@@ -62,10 +62,7 @@ class RepositoryContractTest(unittest.TestCase):
                                 "contexts": [],
                             },
                             "enforce_admins": False,
-                            "required_pull_request_reviews": {
-                                "required_approving_review_count": 0,
-                                "require_code_owner_reviews": False,
-                            },
+                            "required_pull_request_reviews": None,
                             "allow_force_pushes": True,
                             "allow_deletions": True,
                         },
@@ -74,9 +71,17 @@ class RepositoryContractTest(unittest.TestCase):
                 encoding="utf-8",
             )
             violations = validate_branch_policy(root)
-            self.assertIn("at least one approving review is required", violations)
-            self.assertIn("CODEOWNER review is required", violations)
+            self.assertIn("pull requests must be required before merging", violations)
             self.assertIn("force pushes must be disabled", violations)
+
+    def test_solo_maintainer_policy_still_requires_pull_requests(self) -> None:
+        policy = json.loads(
+            (ROOT / ".github" / "branch-protection.json").read_text(encoding="utf-8")
+        )
+        reviews = policy["protection"]["required_pull_request_reviews"]
+        self.assertIsInstance(reviews, dict)
+        self.assertEqual(reviews["required_approving_review_count"], 0)
+        self.assertFalse(reviews["require_code_owner_reviews"])
 
     def test_rejects_missing_push_guard(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

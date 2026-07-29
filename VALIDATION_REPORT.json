@@ -1,19 +1,22 @@
 {
-  "status": "PARTIAL_COD_001",
+  "status": "PASS_COD_001",
   "checks": {
     "python_compile": true,
     "pyproject_parse": true,
     "json_parse": true,
     "yaml_parse": true,
     "repository_contract": true,
-    "repository_contract_tests": 11,
+    "repository_contract_tests": 12,
     "git_monorepo": true,
-    "github_branch_protection": false,
+    "github_branch_protection": true,
     "github_repository_ruleset": false,
+    "github_repository_visibility": "PUBLIC",
+    "github_branch_protection_verified_at": "2026-07-29",
+    "github_branch_policy": "solo-maintainer-pull-request-baseline",
     "branch_protection_automation": true,
     "local_main_push_guard": true,
     "github_repository": "https://github.com/jerry317395616/ione_hrp",
-    "github_commit": "e5ac08a9884ef56b24816ff775c04bac3724f773",
+    "github_validated_parent_commit": "5f33e98",
     "modules_txt_matches_registry": true,
     "doctype_catalog_count": 398,
     "field_catalog_count": 10036,
@@ -34,8 +37,7 @@
   },
   "not_run": [
     "bench init against live GitHub develop",
-    "ERPNext/HRMS integration tests",
-    "GitHub branch protection or repository ruleset enforcement"
+    "ERPNext/HRMS integration tests"
   ],
-  "reason_not_run": "The application was built and installed on the existing Press-managed manager.myyr.top site. Pinned upstream integration belongs to COD-002. GitHub rejected both branch protection and repository rulesets for this private repository with HTTP 403 because the account requires GitHub Pro or a public repository; the repository was not made public without explicit approval. scripts/apply_branch_protection.py and the local pre-push guard are ready but do not replace server-side enforcement."
+  "reason_not_run": "The application was already built and installed on the existing Press-managed manager.myyr.top site. Pinned Frappe, ERPNext and HRMS integration belongs to COD-002. COD-001 changes repository governance only and require no production migration."
 }

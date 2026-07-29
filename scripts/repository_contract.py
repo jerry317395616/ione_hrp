@@ -70,16 +70,14 @@ def validate_branch_policy(root: Path) -> list[str]:
         return ["missing .github/branch-protection.json"]
     policy = json.loads(policy_path.read_text(encoding="utf-8"))
     protection = policy.get("protection", {})
-    reviews = protection.get("required_pull_request_reviews") or {}
+    reviews = protection.get("required_pull_request_reviews")
     violations: list[str] = []
     if policy.get("default_branch") != "main":
         violations.append("default branch must be main")
     if protection.get("enforce_admins") is not True:
         violations.append("branch protection must include administrators")
-    if reviews.get("required_approving_review_count", 0) < 1:
-        violations.append("at least one approving review is required")
-    if reviews.get("require_code_owner_reviews") is not True:
-        violations.append("CODEOWNER review is required")
+    if not isinstance(reviews, dict):
+        violations.append("pull requests must be required before merging")
     if protection.get("allow_force_pushes") is not False:
         violations.append("force pushes must be disabled")
     if protection.get("allow_deletions") is not False:
@@ -213,7 +211,7 @@ def main() -> int:
                 "custom_app": APP_NAME,
                 "modules": 36,
                 "protected_branch": "main",
-                "pull_request_reviews": "required",
+                "pull_requests": "required",
             },
             ensure_ascii=False,
         )
