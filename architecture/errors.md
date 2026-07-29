@@ -5,7 +5,7 @@
 `ione_hrp/config/error_catalog.json` 是应用错误码、类别、HTTP 状态、公开消息、
 重试语义和日志级别的唯一机器权威。错误码属于代码/API 契约，不使用可在生产
 Site 修改的 DocType。所有模块通过 `ione_hrp.services.errors` 公共门面抛出
-受控错误，禁止直接调用 `frappe.throw`。
+受控错误，禁止直接调用 `frappe.throw` 或 `frappe.only_for`。
 
 该决策由
 `architecture/adr/ADR-0003-source-controlled-error-contract.md` 记录。

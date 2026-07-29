@@ -44,7 +44,7 @@ superseded_by:
 错误码使用连续的 `IONE-CORE-xxxx` 命名空间。纯 Python 层负责严格解析、
 确定性摘要和异常对象；`ione_hrp.services.errors` 负责翻译、Frappe 响应、
 安全响应头与脱敏审计。业务代码只能通过该公开服务抛出受控错误，不再直接
-调用 `frappe.throw`。公开错误仅包含 schema、code、category、message、
+调用 `frappe.throw` 或 `frappe.only_for`。公开错误仅包含 schema、code、category、message、
 `error_id` 和 retryable。
 
 ## 后果
@@ -58,7 +58,7 @@ superseded_by:
 ## 验证与退出条件
 
 仓库测试必须验证严格 schema、唯一且连续编号、类别与 HTTP 状态映射、重试
-语义、翻译覆盖、确定性摘要和禁止直接 `frappe.throw`。锁定 Bench 必须验证
+语义、翻译覆盖、确定性摘要和禁止直接 `frappe.throw`/`frappe.only_for`。锁定 Bench 必须验证
 管理员目录查询、Guest/普通用户错误响应、状态码、响应头、脱敏审计及零数据
 写入。若 Frappe 提供等价且稳定的应用级机器错误契约，可由新 ADR 取代本决策。
 

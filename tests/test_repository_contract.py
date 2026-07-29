@@ -155,6 +155,21 @@ class RepositoryContractTest(unittest.TestCase):
 		self.assertEqual(len(violations), 1)
 		self.assertIn("calls frappe.throw outside", violations[0])
 
+	def test_rejects_direct_frappe_only_for_outside_error_service(self) -> None:
+		with tempfile.TemporaryDirectory() as temp:
+			root = Path(temp)
+			source = root / "ione_hrp" / "services" / "unsafe.py"
+			source.parent.mkdir(parents=True)
+			source.write_text(
+				'import frappe\n\n\ndef unsafe():\n\tfrappe.only_for("System Manager")\n',
+				encoding="utf-8",
+			)
+
+			violations = find_direct_frappe_throws(root)
+
+		self.assertEqual(len(violations), 1)
+		self.assertIn("calls frappe.only_for outside", violations[0])
+
 
 if __name__ == "__main__":
 	unittest.main()

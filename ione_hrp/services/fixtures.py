@@ -11,7 +11,7 @@ from ione_hrp.common.fixture_policy import (
 	load_fixture_policy,
 )
 from ione_hrp.services.environment import get_environment_status
-from ione_hrp.services.errors import raise_ione_error
+from ione_hrp.services.errors import raise_ione_error, require_roles
 
 
 def _fixture_directory() -> Path:
@@ -19,7 +19,7 @@ def _fixture_directory() -> Path:
 
 
 def _require_system_manager() -> None:
-	frappe.only_for("System Manager")
+	require_roles({"System Manager"})
 
 
 def get_fixture_governance_status() -> dict[str, object]:
