@@ -5,7 +5,6 @@ import re
 import frappe
 from frappe.model.document import Document
 
-
 _FEATURE_KEY = re.compile(r"^[a-z][a-z0-9_.-]{2,119}$")
 
 
