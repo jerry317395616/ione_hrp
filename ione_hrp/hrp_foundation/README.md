@@ -15,3 +15,7 @@
 `IONE-CORE-xxxx` 代码、标准 HTTP 状态、中英文消息、安全响应头和脱敏审计。
 错误目录由 Git 管理，不建立站点内可编辑模型。规则见
 `architecture/errors.md`。
+
+测试数据工厂通过源码登记的场景和静态 builder 生成确定性合成数据，只允许受管
+development/test Site。生成复用领域服务的角色、幂等、savepoint 和脱敏审计；
+`PLT-017` 只公开只读契约。规则见 `architecture/test_data_factory.md`。

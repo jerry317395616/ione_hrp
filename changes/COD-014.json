@@ -1,0 +1,51 @@
+{
+	"schema_version": 1,
+	"task_id": "COD-014",
+	"title": "建立测试数据工厂",
+	"status": "Implemented",
+	"risk_level": "high",
+	"change_types": [
+		"application",
+		"architecture",
+		"configuration",
+		"documentation",
+		"governance",
+		"security"
+	],
+	"affected_modules": ["HRP Foundation"],
+	"breaking_change": false,
+	"adr_ids": ["ADR-0009"],
+	"path_globs": [
+		"README.md",
+		"DELIVERY_MANIFEST.json",
+		"VALIDATION_REPORT.json",
+		"SHA256SUMS.txt",
+		"api/**",
+		"architecture/**",
+		"backlog/**",
+		"changes/COD-014.json",
+		"ione_hrp/**",
+		"scripts/**",
+		"tests/**"
+	],
+	"permissions_impact": "测试数据生成仅允许 System Manager 或 HRP System Manager，经领域服务在环境和幂等预留前校验；PLT-017 为相同角色的只读契约。",
+	"migration_impact": "不新增生产 DocType、表、Fixture、Workspace 或数据 patch。常规 migrate 只同步 Python/API 元数据；非生产合成标记只在显式服务调用时创建。",
+	"rollback_plan": "回滚应用提交。测试事务自动回滚；持久 development/test 合成数据通过重建 replaceable Site 清除，禁止在生产运行删除脚本。",
+	"security_impact": "未受管、demo、生产、公开访问、外部集成开启和非合成环境均在写入前失败；不接受任意 DocType/字段，不生成 PII，不在审计记录种子、数据集或记录名。",
+	"test_plan": [
+		"注册表严格模式、场景版本、步骤 DAG、builder 白名单和危险配置纯单元测试",
+		"种子规范化、SHA-256 数据集和确定性记录标识测试",
+		"系统角色先于环境读取和幂等预留的集成测试",
+		"development/test 允许及未受管、demo、公开环境写前拒绝测试",
+		"真实 HRP Feature Flag 控制器、同键重放和异键 changed=false 测试",
+		"第二步骤异常时记录和幂等预留整体回滚测试",
+		"既有记录冲突不覆盖和未知场景无预留测试",
+		"builder 静态映射漂移在幂等预留前失败测试",
+		"种子、数据集 ID 和记录名不进入审计测试",
+		"PLT-017 真实 HTTP 成功、访客拒绝和三份 API 契约测试",
+		"禁止 HTTP 写、生产 profile、任意 DocType 输入和服务提交事务的仓库门禁"
+	],
+	"owner": "I-ONE HRP Maintainers",
+	"created_on": "2026-07-30",
+	"updated_on": "2026-07-30"
+}

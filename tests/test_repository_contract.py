@@ -27,6 +27,7 @@ from scripts.repository_contract import (
 	validate_module_boundaries,
 	validate_push_guard,
 	validate_quality_tooling,
+	validate_test_data_factory_contract,
 	validate_transactional_message_contract,
 )
 
@@ -159,6 +160,9 @@ class RepositoryContractTest(unittest.TestCase):
 
 	def test_current_transactional_message_contract_is_mandatory(self) -> None:
 		self.assertEqual(validate_transactional_message_contract(ROOT), [])
+
+	def test_current_test_data_factory_contract_is_mandatory(self) -> None:
+		self.assertEqual(validate_test_data_factory_contract(ROOT), [])
 
 	def test_rejects_direct_transaction_commit(self) -> None:
 		with tempfile.TemporaryDirectory() as temp:
