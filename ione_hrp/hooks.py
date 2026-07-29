@@ -1,3 +1,5 @@
+from ione_hrp.common.fixture_policy import get_frappe_fixture_hooks
+
 app_name = "ione_hrp"
 app_title = "美妍伊人医院 HRP"
 app_publisher = "美妍伊人医疗科技有限公司"
@@ -34,6 +36,9 @@ scheduler_events = {
 		"ione_hrp.setup.maintenance.daily_maintenance",
 	],
 }
+
+fixture_auto_order = True
+fixtures = get_frappe_fixture_hooks()
 
 export_python_type_annotations = True
 require_type_annotated_api_methods = True

@@ -13,6 +13,7 @@ from scripts.repository_contract import (
 	validate_branch_policy,
 	validate_ci_pipeline,
 	validate_environment_profiles,
+	validate_fixture_governance,
 	validate_module_boundaries,
 	validate_push_guard,
 	validate_quality_tooling,
@@ -126,6 +127,9 @@ class RepositoryContractTest(unittest.TestCase):
 
 	def test_current_environment_profiles_are_mandatory(self) -> None:
 		self.assertEqual(validate_environment_profiles(ROOT), [])
+
+	def test_current_fixture_governance_is_mandatory(self) -> None:
+		self.assertEqual(validate_fixture_governance(ROOT), [])
 
 
 if __name__ == "__main__":
