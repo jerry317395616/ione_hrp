@@ -1,13 +1,38 @@
 {
-  "status": "PASS_COD_002",
+  "status": "PASS_COD_004",
   "checks": {
     "python_compile": true,
     "pyproject_parse": true,
     "json_parse": true,
     "yaml_parse": true,
     "repository_contract": true,
-    "repository_contract_tests": 18,
-    "frappe_integration_tests": 2,
+    "repository_contract_tests": 34,
+    "frappe_integration_tests": 9,
+    "quality_gate": true,
+    "quality_steps": [
+      "repository-contract",
+      "package-validation",
+      "python-compile",
+      "ruff-lint",
+      "ruff-format",
+      "unit-tests",
+      "checksums",
+      "pyright",
+      "eslint",
+      "prettier"
+    ],
+    "ruff_version": "0.15.9",
+    "pyright_version": "1.1.411",
+    "eslint_version": "10.8.0",
+    "prettier_version": "3.9.6",
+    "npm_audit_high_vulnerabilities": 0,
+    "isolated_quality_commit": "a8fead9ae10b036954d0d7aa4926c665aba2ba01",
+    "isolated_quality_bench": "/home/zyd/validation/cod-002-bench",
+    "isolated_quality_site": "cod002.localhost",
+    "isolated_quality_node": "v24.18.0",
+    "isolated_quality_pyright_errors": 0,
+    "isolated_migration": true,
+    "isolated_error_log_count": 0,
     "upstream_version_lock": true,
     "upstream_remote_heads_verified": true,
     "upstream_isolated_bench_validation": true,
@@ -65,5 +90,5 @@
   "not_run": [
     "full upstream Frappe/ERPNext/HRMS application test suites"
   ],
-  "reason_not_run": "COD-002 validates the custom app contract, isolated full-stack installation, repeated migration, integration tests, production migration and data preservation. Running every upstream application's complete test suite is outside this lock-baseline task."
+  "reason_not_run": "COD-004 validates the pinned quality toolchain locally and against the locked Frappe, ERPNext and HRMS dependencies in an isolated Bench. It includes an isolated migration and all ione_hrp integration tests; running every upstream application's complete suite or promoting tooling-only changes to production is outside this task."
 }
