@@ -2,7 +2,7 @@
   "schema_version": 1,
   "task_id": "COD-010",
   "title": "建立审计上下文与关联ID",
-  "status": "In Progress",
+  "status": "Implemented",
   "risk_level": "critical",
   "change_types": [
     "application",
