@@ -98,7 +98,7 @@ jobs:
           DB_ROOT_PASSWORD: ci_root_password
           DB_ROOT_USERNAME: root
           PYTHON_BIN: python3.14
-          SITE_NAME: test_site
+          SITE_NAME: hrp-test.localhost
         run: bash scripts/ci_integration.sh
       - name: Upload integration logs on failure
         if: failure()

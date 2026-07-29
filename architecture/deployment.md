@@ -7,7 +7,10 @@
 - 多 Site、集团数据平台：隔离更强，通过主数据中心、事件和数据仓库汇总；
 - 不建议在第一期把每个领域拆成独立微服务。Frappe App 是代码边界，Site 内事务是核心一致性边界。
 
-环境至少包括 local、CI、dev、SIT、UAT、preprod、prod、DR。配置和秘密不得进入 Git；使用 Vault/KMS/Secret Manager。生产发布采用不可变镜像、数据库备份、迁移预演、滚动发布和自动回滚闸门。
+环境至少包括 local、CI、dev、SIT、UAT、preprod、prod、DR。COD-006 的
+development、test、demo 非生产基线见 `architecture/environments.md`；三者
+不得承载生产数据。配置和秘密不得进入 Git；使用 Vault/KMS/Secret Manager。
+生产发布采用不可变镜像、数据库备份、迁移预演、滚动发布和自动回滚闸门。
 
 ## 上游版本推广闸门
 

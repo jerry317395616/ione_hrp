@@ -39,6 +39,7 @@ typing-modules = ["frappe.types.DF"]
 
 [tool.ruff.lint.per-file-ignores]
 "scripts/create_module.py" = ["E402"]
+"scripts/environment_manager.py" = ["E402"]
 "scripts/repository_contract.py" = ["E402"]
 "scripts/validate_package.py" = ["E402"]
 

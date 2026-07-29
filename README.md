@@ -30,19 +30,27 @@ scripts/                      初始化、安装、加模块、版本锁定和�
 AGENTS.md                      Codex 仓库级强制规则
 ```
 
-## 首次使用
+## 非生产环境
 
 ```bash
 cp .env.example .env
-# 修改 .env 中密码及目录
+# 修改 .env 中两个密码
 set -a && source .env && set +a
-./scripts/bootstrap_latest_develop.sh
+python scripts/environment_manager.py validate
+python scripts/environment_manager.py plan development
+python scripts/environment_manager.py provision development
 ```
 
-已有 Bench：
+仓库内置彼此隔离的 `development`、`test`、`demo` 三种配置档。它们分别使用
+独立 Bench、Site、数据库和服务端口，默认只允许合成数据，并关闭外部集成和
+邮件。测试和演示环境还关闭调度器；演示环境禁止测试接口。完整创建、验证、
+审计、演示初始化和回滚方法见 `architecture/environments.md`。
+
+安装到已有非生产 Bench：
 
 ```bash
-BENCH_DIR=/path/to/frappe-bench SITE_NAME=hrp.localhost   ./scripts/install_into_existing_bench.sh
+BENCH_DIR=/path/to/frappe-bench SITE_NAME=hrp.localhost \
+  ./scripts/install_into_existing_bench.sh
 ```
 
 只验证已有 Bench，不安装应用：
