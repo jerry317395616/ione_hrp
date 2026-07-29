@@ -83,3 +83,24 @@ python -m unittest discover -s tests -p "test_*.py"
 
 只允许仓库根目录的 `ione_hrp` 一个自研 App。禁止将 Frappe、ERPNext、Frappe HR
 源码复制到本仓库，禁止新建 `ione_hrp_*` 业务 App。
+
+## 开发质量工具
+
+安装锁定的开发工具：
+
+```bash
+python -m pip install -e ".[dev]"
+npm ci
+```
+
+运行统一质量门禁：
+
+```bash
+python scripts/quality.py
+```
+
+该命令依次执行仓库契约、包校验、Python 编译、Ruff lint/format、仓库单元
+测试、校验和、Pyright、ESLint 和 Prettier。工具缺失或任一步失败都会返回
+非零状态，不允许静默跳过。只检查 Python 或 Node 工具可分别使用
+`--mode python`、`--mode node`。详细规则见
+`architecture/quality_tooling.md`。

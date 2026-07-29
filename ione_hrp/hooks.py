@@ -11,14 +11,14 @@ required_apps = ["frappe/erpnext", "frappe/hrms"]
 app_logo_url = "/assets/ione_hrp/images/ione-hrp-logo.svg"
 app_home = "/desk/hrp"
 add_to_apps_screen = [
-    {
-        "name": app_name,
-        "logo": app_logo_url,
-        "title": app_title,
-        "route": app_home,
-        "has_permission": "ione_hrp.permissions.check_app_permission",
-        "sequence_id": 3,
-    }
+	{
+		"name": app_name,
+		"logo": app_logo_url,
+		"title": app_title,
+		"route": app_home,
+		"has_permission": "ione_hrp.permissions.check_app_permission",
+		"sequence_id": 3,
+	}
 ]
 
 after_install = "ione_hrp.setup.install.after_install"
@@ -30,9 +30,9 @@ extend_doctype_class = {}
 doc_events = {}
 
 scheduler_events = {
-    "daily": [
-        "ione_hrp.setup.maintenance.daily_maintenance",
-    ],
+	"daily": [
+		"ione_hrp.setup.maintenance.daily_maintenance",
+	],
 }
 
 export_python_type_annotations = True

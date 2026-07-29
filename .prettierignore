@@ -1,0 +1,8 @@
+**/assets/**
+**/build/**
+**/dist/**
+**/node_modules/**
+**/*.bundle.js
+**/*.min.js
+coverage/
+htmlcov/

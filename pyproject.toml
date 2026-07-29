@@ -9,6 +9,11 @@ readme = "README.md"
 dynamic = ["version"]
 dependencies = []
 
+[project.optional-dependencies]
+dev = [
+    "ruff==0.15.9",
+]
+
 [build-system]
 requires = ["flit_core >=3.4,<4"]
 build-backend = "flit_core.buildapi"
@@ -24,15 +29,22 @@ max_module_depth = 1
 [tool.ruff]
 line-length = 110
 target-version = "py310"
+extend-exclude = ["apps", "build", "dist", "node_modules"]
 
 [tool.ruff.lint]
 select = ["F", "E", "W", "I", "UP", "B", "RUF"]
-ignore = ["B017", "B018", "B023", "B904", "E101", "E402", "E501", "E741", "F401", "F403", "F405", "F722", "W191", "RUF001"]
+ignore = ["E501", "W191", "RUF001"]
 typing-modules = ["frappe.types.DF"]
+
+[tool.ruff.lint.per-file-ignores]
+"scripts/create_module.py" = ["E402"]
+"scripts/repository_contract.py" = ["E402"]
+"scripts/validate_package.py" = ["E402"]
 
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "tab"
+line-ending = "lf"
 docstring-code-format = true
 
 [tool.ruff.lint.isort.sections]

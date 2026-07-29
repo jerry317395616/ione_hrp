@@ -1,0 +1,13 @@
+{
+	"include": ["ione_hrp", "scripts", "tests"],
+	"exclude": ["**/__pycache__", ".venv", "apps", "build", "dist", "node_modules", "venv"],
+	"extraPaths": [".", "apps/frappe", "apps/erpnext", "apps/hrms"],
+	"pythonVersion": "3.10",
+	"typeCheckingMode": "basic",
+	"useLibraryCodeForTypes": true,
+	"reportMissingImports": "none",
+	"reportMissingTypeStubs": "none",
+	"reportDuplicateImport": "error",
+	"reportPrivateUsage": "error",
+	"reportUnnecessaryTypeIgnoreComment": "warning"
+}

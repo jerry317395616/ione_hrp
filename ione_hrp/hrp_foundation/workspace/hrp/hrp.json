@@ -1,93 +1,93 @@
 {
-  "app": "ione_hrp",
-  "charts": [],
-  "content": "[{\"id\":\"hrp-header\",\"type\":\"header\",\"data\":{\"text\":\"医院 HRP\",\"col\":12}},{\"id\":\"settings-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"HRP System Settings\",\"col\":4}},{\"id\":\"modules-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"HRP Module Setting\",\"col\":4}},{\"id\":\"feature-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"HRP Feature Flag\",\"col\":4}}]",
-  "creation": "2026-07-28 00:00:00.000000",
-  "custom_blocks": [],
-  "docstatus": 0,
-  "doctype": "Workspace",
-  "for_user": "",
-  "hide_custom": 0,
-  "icon": "heart",
-  "idx": 0,
-  "is_hidden": 0,
-  "label": "HRP",
-  "links": [
-    {
-      "hidden": 0,
-      "is_query_report": 0,
-      "label": "Configuration",
-      "link_count": 0,
-      "onboard": 0,
-      "type": "Card Break"
-    },
-    {
-      "dependencies": "",
-      "hidden": 0,
-      "is_query_report": 0,
-      "label": "HRP System Settings",
-      "link_count": 0,
-      "link_to": "HRP System Settings",
-      "link_type": "DocType",
-      "onboard": 1,
-      "type": "Link"
-    },
-    {
-      "dependencies": "",
-      "hidden": 0,
-      "is_query_report": 0,
-      "label": "HRP Module Setting",
-      "link_count": 0,
-      "link_to": "HRP Module Setting",
-      "link_type": "DocType",
-      "onboard": 1,
-      "type": "Link"
-    },
-    {
-      "dependencies": "",
-      "hidden": 0,
-      "is_query_report": 0,
-      "label": "HRP Feature Flag",
-      "link_count": 0,
-      "link_to": "HRP Feature Flag",
-      "link_type": "DocType",
-      "onboard": 1,
-      "type": "Link"
-    }
-  ],
-  "modified": "2026-07-28 00:00:00.000000",
-  "modified_by": "Administrator",
-  "module": "HRP Foundation",
-  "name": "HRP",
-  "number_cards": [],
-  "owner": "Administrator",
-  "parent_page": "",
-  "public": 1,
-  "quick_lists": [],
-  "restrict_to_domain": "",
-  "roles": [
-    {
-      "role": "System Manager"
-    }
-  ],
-  "sequence_id": 3.0,
-  "shortcuts": [
-    {
-      "label": "HRP System Settings",
-      "link_to": "HRP System Settings",
-      "type": "DocType"
-    },
-    {
-      "label": "HRP Module Setting",
-      "link_to": "HRP Module Setting",
-      "type": "DocType"
-    },
-    {
-      "label": "HRP Feature Flag",
-      "link_to": "HRP Feature Flag",
-      "type": "DocType"
-    }
-  ],
-  "title": "HRP",
-  "type": "Workspace"
+	"app": "ione_hrp",
+	"charts": [],
+	"content": "[{\"id\":\"hrp-header\",\"type\":\"header\",\"data\":{\"text\":\"医院 HRP\",\"col\":12}},{\"id\":\"settings-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"HRP System Settings\",\"col\":4}},{\"id\":\"modules-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"HRP Module Setting\",\"col\":4}},{\"id\":\"feature-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"HRP Feature Flag\",\"col\":4}}]",
+	"creation": "2026-07-28 00:00:00.000000",
+	"custom_blocks": [],
+	"docstatus": 0,
+	"doctype": "Workspace",
+	"for_user": "",
+	"hide_custom": 0,
+	"icon": "heart",
+	"idx": 0,
+	"is_hidden": 0,
+	"label": "HRP",
+	"links": [
+		{
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "Configuration",
+			"link_count": 0,
+			"onboard": 0,
+			"type": "Card Break"
+		},
+		{
+			"dependencies": "",
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "HRP System Settings",
+			"link_count": 0,
+			"link_to": "HRP System Settings",
+			"link_type": "DocType",
+			"onboard": 1,
+			"type": "Link"
+		},
+		{
+			"dependencies": "",
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "HRP Module Setting",
+			"link_count": 0,
+			"link_to": "HRP Module Setting",
+			"link_type": "DocType",
+			"onboard": 1,
+			"type": "Link"
+		},
+		{
+			"dependencies": "",
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "HRP Feature Flag",
+			"link_count": 0,
+			"link_to": "HRP Feature Flag",
+			"link_type": "DocType",
+			"onboard": 1,
+			"type": "Link"
+		}
+	],
+	"modified": "2026-07-28 00:00:00.000000",
+	"modified_by": "Administrator",
+	"module": "HRP Foundation",
+	"name": "HRP",
+	"number_cards": [],
+	"owner": "Administrator",
+	"parent_page": "",
+	"public": 1,
+	"quick_lists": [],
+	"restrict_to_domain": "",
+	"roles": [
+		{
+			"role": "System Manager"
+		}
+	],
+	"sequence_id": 3.0,
+	"shortcuts": [
+		{
+			"label": "HRP System Settings",
+			"link_to": "HRP System Settings",
+			"type": "DocType"
+		},
+		{
+			"label": "HRP Module Setting",
+			"link_to": "HRP Module Setting",
+			"type": "DocType"
+		},
+		{
+			"label": "HRP Feature Flag",
+			"link_to": "HRP Feature Flag",
+			"type": "DocType"
+		}
+	],
+	"title": "HRP",
+	"type": "Workspace"
 }
