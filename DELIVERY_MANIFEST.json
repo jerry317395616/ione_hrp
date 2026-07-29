@@ -1,6 +1,6 @@
 {
   "name": "美妍伊人医院HRP平台V4.0_Frappe_v17_单应用多模块_Codex开发包",
-  "generated_at": "2026-07-29",
+  "generated_at": "2026-07-30",
   "architecture": "one custom app (ione_hrp), 36 Frappe modules",
   "source_baseline": "frappe/erpnext/hrms develop, v17.0.0-dev markers",
   "counts": {
@@ -10,13 +10,13 @@
     "design_fields": 10036,
     "doctype_blueprints": 398,
     "starter_doctypes": 4,
-    "repository_contract_tests": 146,
-    "frappe_integration_tests": 74,
+    "repository_contract_tests": 155,
+    "frappe_integration_tests": 85,
     "environment_profiles": 3,
     "fixture_rules": 3,
     "fixture_files": 3,
-    "architecture_decisions": 8,
-    "change_records": 13,
+    "architecture_decisions": 9,
+    "change_records": 14,
     "change_risk_rules": 5,
     "error_definitions": 12,
     "error_translations": 28
@@ -35,6 +35,7 @@
     "architecture/domain_services.md",
     "architecture/immutable_ledgers.md",
     "architecture/transactional_messages.md",
+    "architecture/test_data_factory.md",
     "architecture/ADR_TEMPLATE.md",
     "architecture/adr",
     "architecture/module_registry.yaml",
@@ -42,6 +43,7 @@
     "ione_hrp/config/fixture_policy.json",
     "ione_hrp/config/change_governance.json",
     "ione_hrp/config/error_catalog.json",
+    "ione_hrp/config/test_data_scenarios.json",
     "ione_hrp/fixtures",
     "changes",
     "pyproject.toml",
@@ -68,6 +70,7 @@
     "ione_hrp/services/idempotency.py",
     "ione_hrp/services/immutable_ledger.py",
     "ione_hrp/services/transactional_message.py",
+    "ione_hrp/services/test_data_factory.py",
     "backlog/COD-005.md",
     "backlog/COD-006.md",
     "backlog/COD-007.md",
@@ -77,6 +80,7 @@
     "backlog/COD-011.md",
     "backlog/COD-012.md",
     "backlog/COD-013.md",
+    "backlog/COD-014.md",
     "backlog/backlog.csv"
   ]
 }

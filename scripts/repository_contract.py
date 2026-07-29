@@ -33,6 +33,10 @@ from ione_hrp.common.fixture_policy import (
 	load_fixture_policy,
 )
 from ione_hrp.common.immutable_ledger import BASE_LEDGER_FIELDS
+from ione_hrp.common.test_data_factory import (
+	TestDataFactoryContractError,
+	load_test_data_scenario_registry,
+)
 from ione_hrp.common.transactional_message import BASE_MESSAGE_FIELDS
 from ione_hrp.services.module_registry import validate_module_source_tree
 
@@ -1242,6 +1246,114 @@ def validate_transactional_message_contract(root: Path) -> list[str]:
 	return violations
 
 
+def validate_test_data_factory_contract(root: Path) -> list[str]:
+	config_path = root / APP_NAME / "config" / "test_data_scenarios.json"
+	common_path = root / APP_NAME / "common" / "test_data_factory.py"
+	service_path = root / APP_NAME / "services" / "test_data_factory.py"
+	facade_path = root / APP_NAME / "hrp_foundation" / "services" / "test_data.py"
+	api_path = root / APP_NAME / "api" / "v1" / "test_data.py"
+	documentation_path = root / "architecture" / "test_data_factory.md"
+	adr_path = root / "architecture" / "adr" / "ADR-0009-source-controlled-test-data-factory.md"
+	task_path = root / "backlog" / "COD-014.md"
+	change_path = root / "changes" / "COD-014.json"
+	test_paths = (
+		root / "tests" / "test_test_data_factory.py",
+		root / APP_NAME / "hrp_foundation" / "tests" / "test_test_data_factory.py",
+	)
+	catalog_paths = (
+		root / "api" / "api_catalog.csv",
+		root / "api" / "api_catalog.yaml",
+		root / "api" / "openapi.yaml",
+	)
+	required_paths = (
+		config_path,
+		common_path,
+		service_path,
+		facade_path,
+		api_path,
+		documentation_path,
+		adr_path,
+		task_path,
+		change_path,
+		*test_paths,
+		*catalog_paths,
+	)
+	missing = [str(path.relative_to(root)) for path in required_paths if not path.is_file()]
+	if missing:
+		return [f"missing test data factory contract file: {path}" for path in missing]
+
+	violations: list[str] = []
+	try:
+		registry = load_test_data_scenario_registry(config_path)
+	except TestDataFactoryContractError as exc:
+		return [f"invalid test data scenario registry: {exc}"]
+	if not registry.scenarios:
+		violations.append("test data factory must declare at least one source-controlled scenario")
+	for scenario in registry.scenarios:
+		if set(scenario.allowed_profiles) - {"development", "test"}:
+			violations.append(f"{scenario.scenario_id} permits a non-test environment")
+		if scenario.contains_personal_data:
+			violations.append(f"{scenario.scenario_id} permits personal data")
+		scenario.ordered_steps()
+
+	common_text = common_path.read_text(encoding="utf-8")
+	for token in (
+		"class TestDataScenarioDefinition",
+		"class TestDataScenarioRegistry",
+		"ordered_steps",
+		"normalize_test_data_seed",
+		"test_dataset_id",
+		"synthetic_identifier",
+		'"arbitrary_doctype_input": False',
+		'"contains_personal_data": False',
+		'"http_write_enabled": False',
+	):
+		if token not in common_text:
+			violations.append(f"test data factory model is missing: {token}")
+
+	service_text = service_path.read_text(encoding="utf-8")
+	for token in (
+		"class GenerateTestDataService",
+		"DomainServiceDefinition",
+		"require_roles",
+		"_assert_generation_allowed",
+		"synthetic_data_only",
+		"allow_tests",
+		"_STEP_BUILDERS",
+		"document.insert(ignore_permissions=True)",
+		"test_data_factory_generated",
+	):
+		if token not in service_text:
+			violations.append(f"test data factory service is missing: {token}")
+	if "frappe.db.commit" in service_text:
+		violations.append("test data factory service must not own the transaction commit")
+	if "GL Entry" in service_text or "Stock Ledger Entry" in service_text or '"Bin"' in service_text:
+		violations.append("test data factory must not write protected ERPNext ledgers")
+	if "importlib" in common_text or "importlib" in service_text:
+		violations.append("test data factory builders must not use dynamic imports")
+
+	api_text = api_path.read_text(encoding="utf-8")
+	if '@frappe.whitelist(allow_guest=True, methods=["GET"])' not in api_text:
+		violations.append("PLT-017 test data factory contract must be GET-only")
+	if "generate_test_data" in api_text:
+		violations.append("test data generation must not be exposed through HTTP")
+
+	factory_api = "/api/method/ione_hrp.api.v1.test_data.get_test_data_factory_contract"
+	for catalog_path in catalog_paths:
+		if factory_api not in catalog_path.read_text(encoding="utf-8"):
+			violations.append(f"{catalog_path.relative_to(root)} is missing the test data factory endpoint")
+	openapi = yaml.safe_load((root / "api" / "openapi.yaml").read_text(encoding="utf-8"))
+	path_contract = openapi.get("paths", {}).get(factory_api, {})
+	operation = path_contract.get("get", {})
+	if operation.get("x-transaction-boundary") != "Read-only":
+		violations.append("PLT-017 test data factory contract API must be read-only")
+	if operation.get("x-required-role") != "System Manager or HRP System Manager":
+		violations.append("PLT-017 test data factory contract API has the wrong role contract")
+	if set(path_contract) != {"get"}:
+		violations.append("PLT-017 test data factory contract must not expose writes")
+	return violations
+
+
 def validate_environment_profiles(root: Path) -> list[str]:
 	profile_path = root / APP_NAME / "config" / "environment_profiles.json"
 	manager_path = root / "scripts" / "environment_manager.py"
@@ -1496,6 +1608,7 @@ def collect_violations(root: Path) -> list[str]:
 	violations.extend(validate_domain_service_contract(root))
 	violations.extend(validate_immutable_ledger_contract(root))
 	violations.extend(validate_transactional_message_contract(root))
+	violations.extend(validate_test_data_factory_contract(root))
 	return violations
 
 
