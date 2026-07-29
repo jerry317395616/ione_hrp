@@ -46,6 +46,18 @@ python scripts/environment_manager.py provision development
 邮件。测试和演示环境还关闭调度器；演示环境禁止测试接口。完整创建、验证、
 审计、演示初始化和回滚方法见 `architecture/environments.md`。
 
+## 测试数据工厂
+
+`ione_hrp/config/test_data_scenarios.json` 登记版本化合成场景。生成只允许受管
+`development`/`test` Site，并同时要求测试开关、仅合成数据、非公开访问和外部集成关闭。
+场景由应用内静态 builder 实现，不接受任意 DocType/字段、SQL 或动态导入；写入复用
+领域服务权限、savepoint、加密幂等和标准控制器。
+
+`PLT-017` 只读接口可查询场景和安全策略，生成动作只通过
+`ione_hrp.hrp_foundation.services.generate_test_data` 执行。工厂不生成 PII、不记录
+种子或记录名，也不提供通用删除；持久测试数据通过 replaceable Site 重建清理。完整
+模型、调用、验证和回滚方法见 `architecture/test_data_factory.md`。
+
 ## Fixtures 治理
 
 Fixture 只用于 `ione_hrp` 对标准 Frappe/ERPNext/HRMS 对象的受控配置扩展。

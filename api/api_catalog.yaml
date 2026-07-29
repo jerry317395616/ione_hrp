@@ -1076,6 +1076,20 @@
   transaction_boundary: Read-only
   audit: Redacted site log
   version: v1
+- api_code: PLT-017
+  app: ione_hrp
+  domain_group: Platform
+  method: GET
+  path: /api/method/ione_hrp.api.v1.test_data.get_test_data_factory_contract
+  description: 查询测试数据工厂公共契约
+  request_schema: 无
+  response_schema: schema_version,scenario_count,scenarios,seed_policy,generation_policy,environment,generation_available
+  required_role: System Manager or HRP System Manager
+  idempotency: Read-only deterministic
+  async: 'No'
+  transaction_boundary: Read-only
+  audit: Redacted site log
+  version: v1
 - api_code: POR-001
   app: ione_hrp
   domain_group: Portal
