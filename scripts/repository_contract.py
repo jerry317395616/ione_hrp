@@ -504,9 +504,10 @@ def validate_protected_ledgers(root: Path) -> list[str]:
 
 
 def find_direct_frappe_throws(root: Path) -> list[str]:
-	"""Keep one application-level Frappe adapter instead of endpoint-specific throws."""
+	"""Keep one application-level adapter for Frappe error and permission helpers."""
 	app_root = root / APP_NAME
 	allowed_path = app_root / "services" / "errors.py"
+	forbidden_helpers = frozenset({"only_for", "throw"})
 	violations: list[str] = []
 	if not app_root.is_dir():
 		return [f"missing {APP_NAME} package directory"]
@@ -517,31 +518,29 @@ def find_direct_frappe_throws(root: Path) -> list[str]:
 			tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
 		except SyntaxError:
 			continue
-		imported_throw_names = {
-			alias.asname or alias.name
+		imported_helpers = {
+			alias.asname or alias.name: alias.name
 			for node in ast.walk(tree)
 			if isinstance(node, ast.ImportFrom) and node.module == "frappe"
 			for alias in node.names
-			if alias.name == "throw"
+			if alias.name in forbidden_helpers
 		}
 		for node in ast.walk(tree):
-			direct_attribute = (
-				isinstance(node, ast.Call)
-				and isinstance(node.func, ast.Attribute)
+			if not isinstance(node, ast.Call):
+				continue
+			helper_name: str | None = None
+			if (
+				isinstance(node.func, ast.Attribute)
 				and isinstance(node.func.value, ast.Name)
 				and node.func.value.id == "frappe"
-				and node.func.attr == "throw"
-			)
-			imported_call = (
-				isinstance(node, ast.Call)
-				and isinstance(node.func, ast.Name)
-				and node.func.id in imported_throw_names
-			)
-			if direct_attribute or imported_call:
-				if not isinstance(node, ast.Call):
-					continue
+				and node.func.attr in forbidden_helpers
+			):
+				helper_name = node.func.attr
+			elif isinstance(node.func, ast.Name):
+				helper_name = imported_helpers.get(node.func.id)
+			if helper_name is not None:
 				violations.append(
-					f"{path.relative_to(root)}:{node.lineno} calls frappe.throw outside "
+					f"{path.relative_to(root)}:{node.lineno} calls frappe.{helper_name} outside "
 					"ione_hrp.services.errors"
 				)
 	return violations
