@@ -4,13 +4,18 @@
 
 ## 源码基线
 
-- Frappe GitHub：`frappe/frappe`，分支 `develop`，当前源码版本标识 `17.0.0-dev`
-- ERPNext GitHub：`frappe/erpnext`，分支 `develop`，当前源码版本标识 `17.0.0-dev`
-- Frappe HR GitHub：`frappe/hrms`，分支 `develop`，当前源码版本标识 `17.0.0-dev`
+- Frappe：`frappe/frappe@883224ff626c4635a58c47133f1ba6101cdbd938`
+- ERPNext：`frappe/erpnext@372dff2ffa232f54595f48c2639d828c4a64ddde`
+- Frappe HR：`frappe/hrms@2d9e4a0bc7a8d18c42c25cc7ff95eb52b460c6b1`
+- 三个提交均解析自官方 `develop`，版本标识均为 `17.0.0-dev`
 - Python：`>=3.10,<3.15`（兼容当前 Press v17 运行时）
 - 默认数据库：MariaDB
 
-`develop` 是滚动/nightly 源码。`scripts/bootstrap_latest_develop.sh` 会拉取运行时最新提交，并立即把各仓库分支、版本和 commit SHA 写入 `resolved_versions.lock.json`。后续环境必须使用该锁文件，而不是继续无条件漂移。
+`develop` 是滚动/nightly 源码，不能直接作为可重复部署基线。
+`resolved_versions.lock.json` 是唯一机器权威；初始化脚本即使从 `develop`
+克隆，也会在创建 Site 前切换到锁定 SHA 并验证远程地址、版本、工作树和
+提交。更新基线必须单独提交锁文件、完成隔离 Bench 迁移测试，再经 PR 推广，
+禁止部署时自动改写锁文件。
 
 ## 核心目录
 
@@ -38,6 +43,19 @@ set -a && source .env && set +a
 
 ```bash
 BENCH_DIR=/path/to/frappe-bench SITE_NAME=hrp.localhost   ./scripts/install_into_existing_bench.sh
+```
+
+只验证已有 Bench，不安装应用：
+
+```bash
+python scripts/version_lock.py --bench /path/to/frappe-bench
+```
+
+查看锁定提交是否仍是官方 `develop` 当前头部（只用于基线刷新评估，不是日常
+部署门禁）：
+
+```bash
+python scripts/version_lock.py --verify-remote-heads
 ```
 
 新增代码模块（应用安装进 Bench 后）：

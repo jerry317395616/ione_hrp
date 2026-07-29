@@ -66,5 +66,6 @@ PLT-003,ione_hrp,POST,/api/method/ione_hrp.api.v1.platform.integration.retry,重
 PLT-004,ione_hrp,POST,/api/method/ione_hrp.api.v1.platform.reconciliation.run,执行跨系统对账,"job,date_range,scope","job_run,differences",HRP Reconciliation Operator,Required for write,Yes,Single DB transaction,Always,v1,Platform
 PLT-005,ione_hrp,POST,/api/method/ione_hrp.api.v1.platform.metric.refresh,刷新指标,"metric,date_range,dimensions","job_id,snapshot_count",HRP Data Operator,Required for write,Yes,Single DB transaction,Always,v1,Platform
 PLT-006,ione_hrp,POST,/api/method/ione_hrp.api.v1.platform.ai.invoke,受控调用AI能力,"agent,task,context,confirmation_token","invocation,result,citations",HRP AI User,Required for write,Optional,Single DB transaction,Always,v1,Platform
+PLT-007,ione_hrp,GET,/api/method/ione_hrp.api.v1.health.get_upstream_version_status,查询上游版本锁匹配状态,无,"status,lock,runtime,issues",Authenticated User,Not applicable,No,Read-only,Request log,v1,Platform
 POR-001,ione_hrp,GET,/api/method/ione_hrp.api.v1.portal.home.get,获取个性化门户首页,context,"cards,tasks,alerts,shortcuts",Authenticated User,Not applicable,No,Single DB transaction,Always,v1,Portal
 POR-002,ione_hrp,POST,/api/method/ione_hrp.api.v1.portal.service.submit,提交统一服务表单,"service_form,payload,attachments","submission,workflow_state",Authenticated User,Required for write,No,Single DB transaction,Always,v1,Portal

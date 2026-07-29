@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "resolved_at": "2026-07-29T02:10:04Z",
+  "release_family": "v17 develop",
+  "source_policy": "official GitHub develop heads captured together and immutable until an explicit refresh",
+  "apps": {
+    "frappe": {
+      "repository": "https://github.com/frappe/frappe.git",
+      "branch": "develop",
+      "commit": "883224ff626c4635a58c47133f1ba6101cdbd938",
+      "version": "17.0.0-dev"
+    },
+    "erpnext": {
+      "repository": "https://github.com/frappe/erpnext.git",
+      "branch": "develop",
+      "commit": "372dff2ffa232f54595f48c2639d828c4a64ddde",
+      "version": "17.0.0-dev"
+    },
+    "hrms": {
+      "repository": "https://github.com/frappe/hrms.git",
+      "branch": "develop",
+      "commit": "2d9e4a0bc7a8d18c42c25cc7ff95eb52b460c6b1",
+      "version": "17.0.0-dev"
+    }
+  },
+  "runtime": {
+    "python": ">=3.10,<3.15",
+    "database": "MariaDB",
+    "node": "follow the locked Frappe commit"
+  },
+  "compatibility_validation": {
+    "status": "pending",
+    "environment": null,
+    "validated_at": null
+  }
+}

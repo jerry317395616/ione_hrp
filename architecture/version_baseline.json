@@ -1,31 +1,32 @@
 {
-  "as_of": "2026-07-28",
-  "source_policy": "latest GitHub develop at bootstrap time; then pin exact SHA",
+  "as_of": "2026-07-29",
+  "lock_file": "../resolved_versions.lock.json",
+  "source_policy": "official GitHub develop heads resolved together and pinned before any environment is promoted",
   "release_family": "v17 nightly/develop",
   "repositories": {
     "frappe": {
       "url": "https://github.com/frappe/frappe.git",
       "branch": "develop",
       "version_marker": "17.0.0-dev",
-      "commit": "RESOLVE_AT_BOOTSTRAP"
+      "commit": "883224ff626c4635a58c47133f1ba6101cdbd938"
     },
     "erpnext": {
       "url": "https://github.com/frappe/erpnext.git",
       "branch": "develop",
       "version_marker": "17.0.0-dev",
-      "commit": "RESOLVE_AT_BOOTSTRAP"
+      "commit": "372dff2ffa232f54595f48c2639d828c4a64ddde"
     },
     "hrms": {
       "url": "https://github.com/frappe/hrms.git",
       "branch": "develop",
       "version_marker": "17.0.0-dev",
-      "commit": "RESOLVE_AT_BOOTSTRAP"
+      "commit": "2d9e4a0bc7a8d18c42c25cc7ff95eb52b460c6b1"
     },
     "ione_hrp": {
       "path": ".",
       "branch": "project-defined",
       "version_marker": "0.1.0",
-      "commit": "RESOLVE_AFTER_GIT_INIT"
+      "commit": "tracked by the protected ione_hrp main branch"
     }
   },
   "runtime": {
