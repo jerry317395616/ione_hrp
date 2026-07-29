@@ -6,7 +6,7 @@ import frappe
 
 from erpnext.setup.setup_wizard.setup_wizard import setup_complete
 
-from ione_hrp.services.audit_context import emit_audit_event
+from ione_hrp.services.audit_context import emit_audit_event, service_audit_scope
 from ione_hrp.services.environment import get_environment_status
 from ione_hrp.services.errors import raise_ione_error
 
@@ -15,6 +15,11 @@ SYNTHETIC_COMPANY_ABBR = "IOHD"
 
 
 def setup_synthetic_demo() -> dict[str, object]:
+	with service_audit_scope():
+		return _setup_synthetic_demo()
+
+
+def _setup_synthetic_demo() -> dict[str, object]:
 	status = get_environment_status()
 	if status.get("name") != "demo" or not status.get("synthetic_data_only"):
 		raise_ione_error("OPERATION_NOT_ALLOWED")

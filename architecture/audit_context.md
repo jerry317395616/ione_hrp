@@ -34,6 +34,17 @@ response       -> X-Correlation-ID + X-Request-ID
 `IONE-CORE-0003` 返回 400；非法原值不会进入响应或日志。统一错误体新增
 `correlation_id` 和 `request_id`，`error_id` 仍只标识单次错误。
 
+## 直接服务调用
+
+不经过 HTTP 或后台任务钩子的公开服务入口必须使用
+`ione_hrp.services.audit_context.service_audit_scope`。每个最外层服务调用获得
+独立的 `request_id`，退出时自动清理上下文；同一作用域内的嵌套服务复用上下文，
+且不能替换 `correlation_id`。若已经存在 HTTP 或任务上下文，服务作用域只校验并
+继承该上下文，不会提前清理或覆盖它。
+
+这一区分避免 Bench 测试、控制台脚本和安装钩子在同一 Python 进程内顺序调用时
+复用上一项工作的上下文，同时仍保证单次真实执行中的上下文不可变。
+
 ## 后台任务传播
 
 跨队列调用必须使用 `ione_hrp.services.audit_context.enqueue_with_audit`。该服务

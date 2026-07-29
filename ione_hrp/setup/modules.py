@@ -5,7 +5,7 @@ from typing import Any, cast
 import frappe
 
 from ione_hrp.common.constants import APP_NAME
-from ione_hrp.services.audit_context import emit_audit_event
+from ione_hrp.services.audit_context import emit_audit_event, service_audit_scope
 from ione_hrp.services.errors import raise_ione_error
 from ione_hrp.services.module_registry import ModuleSpec, load_module_registry
 
@@ -35,6 +35,11 @@ def _audit_sync(operation: str, report: dict[str, list[str]]) -> None:
 
 def sync_module_defs() -> dict[str, list[str]]:
 	"""Create missing Module Def rows after checking all ownership conflicts."""
+	with service_audit_scope():
+		return _sync_module_defs()
+
+
+def _sync_module_defs() -> dict[str, list[str]]:
 	registry = load_module_registry()
 	report: dict[str, list[str]] = {
 		"created": [],
@@ -84,6 +89,11 @@ def _module_setting_values(module: ModuleSpec) -> dict[str, Any]:
 
 def sync_module_settings() -> dict[str, list[str]]:
 	"""Upsert registry metadata while preserving each site's enabled choices."""
+	with service_audit_scope():
+		return _sync_module_settings()
+
+
+def _sync_module_settings() -> dict[str, list[str]]:
 	report: dict[str, list[str]] = {
 		"created": [],
 		"updated": [],
