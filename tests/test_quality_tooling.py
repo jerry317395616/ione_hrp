@@ -62,6 +62,8 @@ class QualityToolingTest(unittest.TestCase):
 		second = build_quality_steps(python_executable="python", npm_executable="npm")
 		self.assertEqual(tuple(step.name for step in first), expected)
 		self.assertEqual(first, second)
+		pyright_step = next(step for step in first if step.name == "pyright")
+		self.assertEqual(pyright_step.command[-2:], ("--pythonpath", "python"))
 
 	def test_missing_npm_is_an_explicit_error(self) -> None:
 		with (

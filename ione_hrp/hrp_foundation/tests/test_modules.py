@@ -73,7 +73,7 @@ class TestModuleRegistry(IntegrationTestCase):
 		get_doc.assert_not_called()
 
 	def test_module_list_rejects_guest(self) -> None:
-		original_user = frappe.session.user
+		original_user = frappe.session.user or "Administrator"
 		try:
 			frappe.set_user("Guest")
 			with self.assertRaises(frappe.AuthenticationError):
