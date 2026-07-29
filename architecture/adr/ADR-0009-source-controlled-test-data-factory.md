@@ -2,7 +2,7 @@
 id: ADR-0009
 title: 使用源码注册且仅限非生产的测试数据工厂
 status: Accepted
-date: 2026-07-30
+date: 2026-07-29
 deciders:
   - 产品负责人
   - 架构负责人
