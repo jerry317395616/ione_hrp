@@ -39,22 +39,47 @@ bench --site "$SITE_NAME" run-tests --app ione_hrp
 
 "$BENCH_DIR/env/bin/python" - "$BENCH_DIR" "$SITE_NAME" <<'PY'
 import json
+import os
+import subprocess
 import sys
 from pathlib import Path
 
-import frappe
-
 bench_dir = Path(sys.argv[1]).resolve()
 site_name = sys.argv[2]
-frappe.init(site=site_name, sites_path=str(bench_dir / "sites"))
-frappe.connect()
-try:
-	error_log_count = frappe.db.count("Error Log")
-	print(json.dumps({"site": site_name, "error_log_count": error_log_count}))
-	if error_log_count:
-		raise SystemExit("Fresh CI site contains Error Log records")
-finally:
-	frappe.destroy()
+site_config = json.loads(
+	(bench_dir / "sites" / site_name / "site_config.json").read_text(encoding="utf-8")
+)
+common_config = json.loads(
+	(bench_dir / "sites" / "common_site_config.json").read_text(encoding="utf-8")
+)
+database_name = site_config["db_name"]
+database_password = site_config["db_password"]
+database_host = site_config.get("db_host") or common_config.get("db_host") or "127.0.0.1"
+database_port = str(site_config.get("db_port") or common_config.get("db_port") or 3306)
+result = subprocess.run(
+	[
+		"mariadb",
+		"--batch",
+		"--skip-column-names",
+		"--host",
+		database_host,
+		"--port",
+		database_port,
+		"--user",
+		database_name,
+		database_name,
+		"--execute",
+		"SELECT COUNT(*) FROM `tabError Log`;",
+	],
+	env={**os.environ, "MYSQL_PWD": database_password},
+	capture_output=True,
+	text=True,
+	check=True,
+)
+error_log_count = int(result.stdout.strip())
+print(json.dumps({"site": site_name, "error_log_count": error_log_count}))
+if error_log_count:
+	raise SystemExit("Fresh CI site contains Error Log records")
 PY
 
 for app in frappe erpnext hrms ione_hrp; do
