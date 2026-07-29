@@ -1,5 +1,5 @@
 {
-  "status": "PASS_COD_001_PARTIAL_COD_002",
+  "status": "PASS_COD_002",
   "checks": {
     "python_compile": true,
     "pyproject_parse": true,
@@ -11,7 +11,7 @@
     "upstream_version_lock": true,
     "upstream_remote_heads_verified": true,
     "upstream_isolated_bench_validation": true,
-    "upstream_production_promotion": false,
+    "upstream_production_promotion": true,
     "upstream_lock_commits": {
       "frappe": "883224ff626c4635a58c47133f1ba6101cdbd938",
       "erpnext": "372dff2ffa232f54595f48c2639d828c4a64ddde",
@@ -36,11 +36,23 @@
     "single_app_catalog": [
       "ione_hrp"
     ],
-    "press_build": "golc2jiqdo",
-    "press_deploy_candidate": "deploy-0002-000022",
-    "press_bench": "bench-0002-000022-f1",
+    "press_build": "fp4bt4i1r2",
+    "press_deploy_candidate": "deploy-0002-000027",
+    "press_bench": "bench-0002-000027-f1",
     "press_site": "manager.myyr.top",
     "press_site_installation": true,
+    "press_site_update": "hfe860f3or",
+    "press_site_update_status": "Success",
+    "press_installed_apps": 19,
+    "press_scheduler_enabled": true,
+    "press_workers_online": 2,
+    "production_upstream_lock_enforced": true,
+    "production_upstream_status": "match",
+    "production_database_table_count": 1364,
+    "production_database_table_name_sha256": "e271719b6ab4f8b88c642e7298423155569e1ba770b02abc451b380b0d448c79",
+    "production_data_matches_qa": true,
+    "production_full_backup_prefix": "20260729_124229-manager_myyr_top",
+    "production_http_ping": 200,
     "installed_module_defs": 36,
     "installed_module_settings": 36,
     "installed_core_roles": 4,
@@ -48,8 +60,7 @@
     "post_install_error_log_count": 0
   },
   "not_run": [
-    "bench init against live GitHub develop",
-    "ERPNext/HRMS integration tests"
+    "full upstream Frappe/ERPNext/HRMS application test suites"
   ],
-  "reason_not_run": "The application was already built and installed on the existing Press-managed manager.myyr.top site. Pinned Frappe, ERPNext and HRMS integration belongs to COD-002. COD-001 changes repository governance only and require no production migration."
+  "reason_not_run": "COD-002 validates the custom app contract, isolated full-stack installation, repeated migration, integration tests, production migration and data preservation. Running every upstream application's complete test suite is outside this lock-baseline task."
 }
