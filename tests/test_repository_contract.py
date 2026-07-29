@@ -11,6 +11,7 @@ from scripts.repository_contract import (
 	discover_custom_apps,
 	find_legacy_prefix_references,
 	validate_branch_policy,
+	validate_ci_pipeline,
 	validate_module_boundaries,
 	validate_push_guard,
 	validate_quality_tooling,
@@ -74,6 +75,7 @@ class RepositoryContractTest(unittest.TestCase):
 			)
 			violations = validate_branch_policy(root)
 			self.assertIn("pull requests must be required before merging", violations)
+			self.assertIn("required CI checks must use the latest main branch", violations)
 			self.assertIn("force pushes must be disabled", violations)
 
 	def test_solo_maintainer_policy_still_requires_pull_requests(self) -> None:
@@ -117,6 +119,9 @@ class RepositoryContractTest(unittest.TestCase):
 
 	def test_current_quality_tooling_is_mandatory(self) -> None:
 		self.assertEqual(validate_quality_tooling(ROOT), [])
+
+	def test_current_ci_pipeline_is_mandatory(self) -> None:
+		self.assertEqual(validate_ci_pipeline(ROOT), [])
 
 
 if __name__ == "__main__":
