@@ -13,6 +13,7 @@ from scripts.repository_contract import (
 	find_direct_frappe_throws,
 	find_direct_immutable_ledger_bypasses,
 	find_direct_transaction_commits,
+	find_direct_transactional_message_bypasses,
 	find_legacy_prefix_references,
 	validate_audit_context_contract,
 	validate_branch_policy,
@@ -26,6 +27,7 @@ from scripts.repository_contract import (
 	validate_module_boundaries,
 	validate_push_guard,
 	validate_quality_tooling,
+	validate_transactional_message_contract,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -155,6 +157,9 @@ class RepositoryContractTest(unittest.TestCase):
 	def test_current_immutable_ledger_contract_is_mandatory(self) -> None:
 		self.assertEqual(validate_immutable_ledger_contract(ROOT), [])
 
+	def test_current_transactional_message_contract_is_mandatory(self) -> None:
+		self.assertEqual(validate_transactional_message_contract(ROOT), [])
+
 	def test_rejects_direct_transaction_commit(self) -> None:
 		with tempfile.TemporaryDirectory() as temp:
 			root = Path(temp)
@@ -229,6 +234,21 @@ class RepositoryContractTest(unittest.TestCase):
 
 		self.assertEqual(len(violations), 1)
 		self.assertIn("bypasses the immutable-ledger service", violations[0])
+
+	def test_rejects_direct_transactional_message_bypass(self) -> None:
+		with tempfile.TemporaryDirectory() as temp:
+			root = Path(temp)
+			source = root / "ione_hrp" / "hrp_budget" / "services" / "unsafe.py"
+			source.parent.mkdir(parents=True)
+			source.write_text(
+				'import frappe\n\n\ndef unsafe():\n\treturn frappe.get_doc("HRP Budget Outbox", "x")\n',
+				encoding="utf-8",
+			)
+
+			violations = find_direct_transactional_message_bypasses(root)
+
+		self.assertEqual(len(violations), 1)
+		self.assertIn("bypasses the transactional-message service", violations[0])
 
 
 if __name__ == "__main__":
