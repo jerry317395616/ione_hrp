@@ -5,6 +5,7 @@ from typing import Any, cast
 import frappe
 
 from ione_hrp.common.constants import APP_NAME
+from ione_hrp.services.errors import raise_ione_error
 from ione_hrp.services.module_registry import ModuleSpec, load_module_registry
 
 MODULE_SETTING_FIELDS = (
@@ -49,7 +50,10 @@ def sync_module_defs() -> dict[str, list[str]]:
 			report["conflicts"].append(f"{module.module} -> {owner}")
 
 	if report["conflicts"]:
-		frappe.throw("Module Def ownership conflict: " + "; ".join(report["conflicts"]))
+		raise_ione_error(
+			"CONFIGURATION_INVALID",
+			cause=RuntimeError("Module Def ownership conflict"),
+		)
 
 	for module in registry.modules:
 		if owners[module.module] == APP_NAME:

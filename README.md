@@ -81,6 +81,24 @@ CI 会对 Pull Request 的 base commit 和 `main` 推送的 before commit 执行
 ADR 状态机、风险门禁、审计与回滚规则见
 `architecture/change_governance.md`。
 
+## 统一异常与错误码
+
+所有 `ione_hrp` 模块通过 `ione_hrp.services.errors` 抛出受控异常，不直接调用
+`frappe.throw`。`ione_hrp/config/error_catalog.json` 定义稳定的
+`IONE-CORE-xxxx` 机器码、HTTP 状态、重试语义和日志级别；英文源消息通过
+标准 `ione_hrp/translations/zh.csv` 提供中文。错误响应包含安全的
+`ione_error` 摘要、`X-Ione-Error-Code` 与随机 `X-Ione-Error-ID`，不包含
+原因消息、堆栈、路径或业务载荷。
+
+管理员可只读查询错误目录：
+
+```text
+GET /api/method/ione_hrp.api.v1.errors.get_error_catalog
+```
+
+错误目录没有 HTTP 写入口，也不创建 DocType 或站点数据。命名、兼容、安全、
+开发用法与回滚规则见 `architecture/errors.md`。
+
 安装到已有非生产 Bench：
 
 ```bash

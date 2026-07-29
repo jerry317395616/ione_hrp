@@ -26,8 +26,12 @@ paths:
                 $ref: '#/components/schemas/FrappeResponse'
         '401':
           description: Authentication required
-        '422':
-          description: Environment configuration drift
+        '500':
+          description: Environment configuration invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
       x-required-role: Authenticated User
       x-transaction-boundary: Read-only
       x-idempotency: Not applicable
@@ -50,8 +54,12 @@ paths:
           description: Authentication required
         '403':
           description: System Manager role required
-        '422':
+        '500':
           description: Fixture policy or repository validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
       x-required-role: System Manager
       x-transaction-boundary: Read-only
       x-idempotency: Not applicable
@@ -87,8 +95,54 @@ paths:
           description: Authentication required
         '403':
           description: System Manager or HRP System Manager role required
-        '422':
+        '400':
+          description: Invalid correlation identifier
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '500':
           description: ADR, change record or repository governance validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+      x-required-role: System Manager or HRP System Manager
+      x-transaction-boundary: Read-only
+      x-idempotency: Read-only deterministic
+  /api/method/ione_hrp.api.v1.errors.get_error_catalog:
+    get:
+      operationId: platform_013
+      summary: 查询统一错误码目录
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Stable translated I-ONE error catalog
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '403':
+          description: System Manager or HRP System Manager role required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '500':
+          description: Error catalog or translations are invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
       x-required-role: System Manager or HRP System Manager
       x-transaction-boundary: Read-only
       x-idempotency: Read-only deterministic
@@ -3206,6 +3260,53 @@ components:
           type: array
           items:
             type: string
+    IoneErrorResponse:
+      type: object
+      required:
+      - ione_error
+      properties:
+        ione_error:
+          $ref: '#/components/schemas/IoneError'
+        exc_type:
+          type: string
+        exception:
+          type: string
+          description: Present only when the locked Frappe traceback policy permits it.
+    IoneError:
+      type: object
+      additionalProperties: false
+      required:
+      - schema_version
+      - code
+      - category
+      - message
+      - error_id
+      - retryable
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        code:
+          type: string
+          pattern: ^IONE-CORE-[0-9]{4}$
+        category:
+          type: string
+          enum:
+          - authentication
+          - authorization
+          - validation
+          - not_found
+          - conflict
+          - policy
+          - dependency
+          - throttling
+          - internal
+        message:
+          type: string
+        error_id:
+          type: string
+        retryable:
+          type: boolean
     Problem:
       type: object
       required:

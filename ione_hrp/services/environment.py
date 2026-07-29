@@ -8,6 +8,7 @@ from ione_hrp.common.environment_profiles import (
 	EnvironmentProfileError,
 	load_environment_registry,
 )
+from ione_hrp.services.errors import raise_ione_error
 
 
 def _normalized_config_value(value: Any, expected: object) -> object:
@@ -34,7 +35,7 @@ def get_environment_status() -> dict[str, object]:
 	try:
 		profile = registry.get(environment_name)
 	except EnvironmentProfileError as exc:
-		frappe.throw(str(exc), frappe.ValidationError)
+		raise_ione_error("CONFIGURATION_INVALID", cause=exc)
 
 	expected_config = profile.expected_site_config(registry.schema_version)
 	drift = [
@@ -43,9 +44,11 @@ def get_environment_status() -> dict[str, object]:
 		if _normalized_config_value(frappe.conf.get(key), expected) != expected
 	]
 	if drift:
-		frappe.throw(
-			f"Environment configuration drift: {', '.join(sorted(drift))}",
-			frappe.ValidationError,
+		raise_ione_error(
+			"CONFIGURATION_INVALID",
+			cause=EnvironmentProfileError(
+				f"Environment configuration drift fields: {', '.join(sorted(drift))}"
+			),
 		)
 	return profile.as_public_dict(registry.schema_version)
 
@@ -53,7 +56,4 @@ def get_environment_status() -> dict[str, object]:
 def assert_external_integrations_allowed() -> None:
 	status = get_environment_status()
 	if not status.get("managed") or not status.get("external_integrations_enabled"):
-		frappe.throw(
-			"External integrations are disabled for this environment",
-			frappe.PermissionError,
-		)
+		raise_ione_error("OPERATION_NOT_ALLOWED")

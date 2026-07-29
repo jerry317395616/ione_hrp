@@ -10,6 +10,7 @@ from ione_hrp.common.change_governance import (
 	inspect_change_governance,
 )
 from ione_hrp.common.constants import APP_NAME
+from ione_hrp.services.errors import raise_ione_error, require_roles
 
 GOVERNANCE_ROLES = frozenset({"System Manager", "HRP System Manager"})
 CORRELATION_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:/-]{0,139}$")
@@ -20,10 +21,7 @@ def _repository_root() -> Path:
 
 
 def _require_governance_reader() -> None:
-	if frappe.session.user == "Guest":
-		frappe.throw("Authentication required", frappe.AuthenticationError)
-	if not GOVERNANCE_ROLES.intersection(frappe.get_roles()):
-		frappe.throw("HRP change governance permission is required", frappe.PermissionError)
+	require_roles(GOVERNANCE_ROLES)
 
 
 def _correlation_id(value: str | None) -> str:
@@ -35,7 +33,7 @@ def _correlation_id(value: str | None) -> str:
 	if not correlation_id:
 		correlation_id = frappe.generate_hash(length=16)
 	if CORRELATION_ID_PATTERN.fullmatch(correlation_id) is None:
-		frappe.throw("Invalid correlation_id", frappe.ValidationError)
+		raise_ione_error("INVALID_REQUEST")
 	return correlation_id
 
 
@@ -46,7 +44,7 @@ def get_change_governance_status(correlation_id: str | None = None) -> dict[str,
 	try:
 		report = inspect_change_governance(_repository_root())
 	except ChangeGovernanceError as exc:
-		frappe.throw(str(exc), frappe.ValidationError)
+		raise_ione_error("CONFIGURATION_INVALID", cause=exc)
 	result = report.as_public_dict()
 	result["correlation_id"] = request_id
 	result["write_channel"] = "Git pull request only"

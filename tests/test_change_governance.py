@@ -44,8 +44,8 @@ class TestChangeGovernance(unittest.TestCase):
 		repeated = inspect_change_governance(ROOT)
 
 		self.assertEqual(len(self.report.tasks), 116)
-		self.assertEqual(len(self.report.changes), 8)
-		self.assertEqual(len(self.report.decisions), 2)
+		self.assertEqual(len(self.report.changes), 9)
+		self.assertEqual(len(self.report.decisions), 4)
 		self.assertEqual(self.report.sha256, repeated.sha256)
 		self.assertRegex(self.report.sha256, r"^[0-9a-f]{64}$")
 
@@ -57,6 +57,7 @@ class TestChangeGovernance(unittest.TestCase):
 		self.assertNotIn("产品负责人", serialized)
 		self.assertNotIn("背景与问题", serialized)
 		self.assertIn("ADR-0002", serialized)
+		self.assertIn("ADR-0004", serialized)
 
 	def test_policy_rejects_unknown_fields_and_invalid_risk_order(self) -> None:
 		payload = json.loads((ROOT / "ione_hrp/config/change_governance.json").read_text(encoding="utf-8"))
@@ -139,6 +140,36 @@ class TestChangeGovernance(unittest.TestCase):
 		self.assertEqual(first.required_risk, "critical")
 		self.assertIn("application-boundary", first.matched_rule_ids)
 		self.assertEqual(first.accepted_adr_ids, ("ADR-0002",))
+
+	def test_required_task_metadata_is_risk_neutral_but_still_hashed(self) -> None:
+		metadata = (
+			ChangedPath("A", "changes/COD-009.json"),
+			ChangedPath("A", "backlog/COD-009.md"),
+			ChangedPath("M", "backlog/backlog.csv"),
+		)
+
+		assessment = assess_changed_paths(self.report, metadata, task_id="COD-009")
+
+		self.assertEqual(assessment.required_risk, "low")
+		self.assertEqual(assessment.matched_rule_ids, ())
+		self.assertEqual(len(assessment.changed_paths), 3)
+		self.assertRegex(assessment.sha256, r"^[0-9a-f]{64}$")
+
+	def test_substantive_governance_path_still_requires_high_risk_accepted_adr(self) -> None:
+		assessment = assess_changed_paths(
+			self.report,
+			(
+				ChangedPath("A", "changes/COD-009.json"),
+				ChangedPath("A", "backlog/COD-009.md"),
+				ChangedPath("M", "backlog/backlog.csv"),
+				ChangedPath("M", "architecture/change_governance.md"),
+			),
+			task_id="COD-009",
+		)
+
+		self.assertEqual(assessment.required_risk, "high")
+		self.assertIn("governance-control", assessment.matched_rule_ids)
+		self.assertEqual(assessment.accepted_adr_ids, ("ADR-0003", "ADR-0004"))
 
 	def test_assessment_rejects_missing_governance_files_and_uncovered_paths(self) -> None:
 		with self.assertRaisesRegex(ChangeGovernanceError, "missing required governance files"):

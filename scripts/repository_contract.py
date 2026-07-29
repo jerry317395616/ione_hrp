@@ -22,6 +22,11 @@ from ione_hrp.common.environment_profiles import (
 	EnvironmentProfileError,
 	load_environment_registry,
 )
+from ione_hrp.common.error_catalog import (
+	ErrorCatalogError,
+	load_error_catalog,
+	validate_error_translations,
+)
 from ione_hrp.common.fixture_policy import (
 	FixturePolicyError,
 	inspect_fixture_repository,
@@ -96,6 +101,20 @@ TEXT_SUFFIXES = {
 	".txt",
 	".yaml",
 	".yml",
+}
+BASELINE_ERROR_CODES = {
+	"AUTHENTICATION_REQUIRED": "IONE-CORE-0001",
+	"PERMISSION_DENIED": "IONE-CORE-0002",
+	"INVALID_REQUEST": "IONE-CORE-0003",
+	"RESOURCE_NOT_FOUND": "IONE-CORE-0004",
+	"CONFLICT": "IONE-CORE-0005",
+	"INVALID_STATE_TRANSITION": "IONE-CORE-0006",
+	"IDEMPOTENCY_CONFLICT": "IONE-CORE-0007",
+	"OPERATION_NOT_ALLOWED": "IONE-CORE-0008",
+	"CONFIGURATION_INVALID": "IONE-CORE-0009",
+	"DEPENDENCY_UNAVAILABLE": "IONE-CORE-0010",
+	"RATE_LIMITED": "IONE-CORE-0011",
+	"INTERNAL_ERROR": "IONE-CORE-0012",
 }
 
 
@@ -484,6 +503,111 @@ def validate_protected_ledgers(root: Path) -> list[str]:
 	return violations
 
 
+def find_direct_frappe_throws(root: Path) -> list[str]:
+	"""Keep one application-level Frappe adapter instead of endpoint-specific throws."""
+	app_root = root / APP_NAME
+	allowed_path = app_root / "services" / "errors.py"
+	violations: list[str] = []
+	if not app_root.is_dir():
+		return [f"missing {APP_NAME} package directory"]
+	for path in app_root.rglob("*.py"):
+		if path == allowed_path:
+			continue
+		try:
+			tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+		except SyntaxError:
+			continue
+		imported_throw_names = {
+			alias.asname or alias.name
+			for node in ast.walk(tree)
+			if isinstance(node, ast.ImportFrom) and node.module == "frappe"
+			for alias in node.names
+			if alias.name == "throw"
+		}
+		for node in ast.walk(tree):
+			direct_attribute = (
+				isinstance(node, ast.Call)
+				and isinstance(node.func, ast.Attribute)
+				and isinstance(node.func.value, ast.Name)
+				and node.func.value.id == "frappe"
+				and node.func.attr == "throw"
+			)
+			imported_call = (
+				isinstance(node, ast.Call)
+				and isinstance(node.func, ast.Name)
+				and node.func.id in imported_throw_names
+			)
+			if direct_attribute or imported_call:
+				if not isinstance(node, ast.Call):
+					continue
+				violations.append(
+					f"{path.relative_to(root)}:{node.lineno} calls frappe.throw outside "
+					"ione_hrp.services.errors"
+				)
+	return violations
+
+
+def validate_error_contract(root: Path) -> list[str]:
+	catalog_path = root / APP_NAME / "config" / "error_catalog.json"
+	translation_path = root / APP_NAME / "translations" / "zh.csv"
+	common_path = root / APP_NAME / "common" / "error_catalog.py"
+	service_path = root / APP_NAME / "services" / "errors.py"
+	api_path = root / APP_NAME / "api" / "v1" / "errors.py"
+	documentation_path = root / "architecture" / "errors.md"
+	task_path = root / "backlog" / "COD-009.md"
+	catalog_paths = (
+		root / "api" / "api_catalog.csv",
+		root / "api" / "api_catalog.yaml",
+		root / "api" / "openapi.yaml",
+	)
+	required_paths = (
+		catalog_path,
+		translation_path,
+		common_path,
+		service_path,
+		api_path,
+		documentation_path,
+		task_path,
+		*catalog_paths,
+	)
+	missing = [str(path.relative_to(root)) for path in required_paths if not path.is_file()]
+	if missing:
+		return [f"missing error contract file: {path}" for path in missing]
+
+	try:
+		catalog = load_error_catalog(catalog_path)
+		validate_error_translations(catalog, translation_path)
+	except ErrorCatalogError as exc:
+		return [f"invalid error contract: {exc}"]
+
+	violations = find_direct_frappe_throws(root)
+	actual_baseline = {key: catalog.get(key).code for key in BASELINE_ERROR_CODES if key in catalog.by_key}
+	if actual_baseline != BASELINE_ERROR_CODES:
+		violations.append("error catalog must preserve all baseline IONE-CORE error codes")
+
+	service_text = service_path.read_text(encoding="utf-8")
+	for token in (
+		'"ione_error"',
+		'"X-Ione-Error-Code"',
+		'"X-Ione-Error-ID"',
+		'"ione_hrp.errors"',
+		"http_write_enabled",
+	):
+		if token not in service_text:
+			violations.append(f"error service is missing contract token: {token}")
+
+	error_api = "/api/method/ione_hrp.api.v1.errors.get_error_catalog"
+	for catalog_file in catalog_paths:
+		if error_api not in catalog_file.read_text(encoding="utf-8"):
+			violations.append(f"{catalog_file.relative_to(root)} is missing the error catalog endpoint")
+	api_text = api_path.read_text(encoding="utf-8")
+	if '@frappe.whitelist(allow_guest=True, methods=["GET"])' not in api_text:
+		violations.append("error catalog endpoint must enter the application layer for uniform guest errors")
+	if "IoneError" not in (root / "api" / "openapi.yaml").read_text(encoding="utf-8"):
+		violations.append("OpenAPI must define the IoneError response schema")
+	return violations
+
+
 def validate_environment_profiles(root: Path) -> list[str]:
 	profile_path = root / APP_NAME / "config" / "environment_profiles.json"
 	manager_path = root / "scripts" / "environment_manager.py"
@@ -733,6 +857,7 @@ def collect_violations(root: Path) -> list[str]:
 	violations.extend(validate_environment_profiles(root))
 	violations.extend(validate_fixture_governance(root))
 	violations.extend(validate_change_governance(root))
+	violations.extend(validate_error_contract(root))
 	return violations
 
 

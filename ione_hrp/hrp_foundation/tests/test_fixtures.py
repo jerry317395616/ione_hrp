@@ -7,6 +7,7 @@ from frappe.tests import IntegrationTestCase
 
 from ione_hrp.api.v1.fixtures import get_fixture_governance_status as get_api_status
 from ione_hrp.common.environment_profiles import load_environment_registry
+from ione_hrp.common.error_catalog import IoneApplicationError
 from ione_hrp.services.fixtures import (
 	assert_fixture_export_allowed,
 	get_fixture_governance_status,
@@ -56,8 +57,9 @@ class TestFixtureGovernance(IntegrationTestCase):
 
 	def test_fixture_api_rejects_guest(self) -> None:
 		frappe.set_user("Guest")
-		with self.assertRaises(frappe.AuthenticationError):
+		with self.assertRaises(IoneApplicationError) as raised:
 			get_api_status()
+		self.assertEqual(raised.exception.code, "IONE-CORE-0001")
 
 	def test_fixture_api_requires_system_manager_role(self) -> None:
 		user_email = f"fixture-policy-{frappe.generate_hash(length=8)}@example.invalid"
@@ -73,13 +75,15 @@ class TestFixtureGovernance(IntegrationTestCase):
 		user.insert(ignore_permissions=True)
 		user.add_roles("HRP User")
 		frappe.set_user(user_email)
-		with self.assertRaises(frappe.PermissionError):
+		with self.assertRaises(IoneApplicationError) as raised:
 			get_api_status()
+		self.assertEqual(raised.exception.code, "IONE-CORE-0002")
 
 	def test_export_guard_requires_managed_development_environment(self) -> None:
 		self._apply_profile("test")
-		with self.assertRaises(frappe.PermissionError):
+		with self.assertRaises(IoneApplicationError) as raised:
 			assert_fixture_export_allowed()
+		self.assertEqual(raised.exception.code, "IONE-CORE-0008")
 		self._apply_profile("development")
 		result = assert_fixture_export_allowed()
 		self.assertEqual(result["status"], "ok")

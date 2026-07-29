@@ -3,13 +3,13 @@ from __future__ import annotations
 import frappe
 
 from ione_hrp.services.environment import get_environment_status
+from ione_hrp.services.errors import require_authenticated_user
 from ione_hrp.setup.versions import get_runtime_versions, get_version_status
 
 
 @frappe.whitelist(methods=["GET"])
 def get_health() -> dict[str, object]:
-	if frappe.session.user == "Guest":
-		frappe.throw("Authentication required", frappe.AuthenticationError)
+	require_authenticated_user()
 	return {
 		"status": "ok",
 		"site": frappe.local.site,
@@ -22,6 +22,5 @@ def get_health() -> dict[str, object]:
 
 @frappe.whitelist(methods=["GET"])
 def get_upstream_version_status() -> dict[str, object]:
-	if frappe.session.user == "Guest":
-		frappe.throw("Authentication required", frappe.AuthenticationError)
+	require_authenticated_user()
 	return get_version_status()

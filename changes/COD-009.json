@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "task_id": "COD-009",
+  "title": "建立统一异常和错误码",
+  "status": "Implemented",
+  "risk_level": "high",
+  "change_types": [
+    "architecture",
+    "configuration",
+    "documentation",
+    "governance",
+    "security"
+  ],
+  "affected_modules": [
+    "HRP Foundation"
+  ],
+  "breaking_change": false,
+  "adr_ids": [
+    "ADR-0003",
+    "ADR-0004"
+  ],
+  "path_globs": [
+    "README.md",
+    "DELIVERY_MANIFEST.json",
+    "VALIDATION_REPORT.json",
+    "SHA256SUMS.txt",
+    "api/**",
+    "architecture/**",
+    "backlog/**",
+    "changes/COD-009.json",
+    "ione_hrp/**",
+    "scripts/**",
+    "tests/**"
+  ],
+  "permissions_impact": "错误目录只读 API 仅限 System Manager 或 HRP System Manager；统一错误保持原端点权限边界。",
+  "migration_impact": "不新增 DocType、Fixture、Patch 或数据库记录；错误目录随应用源码发布。",
+  "rollback_plan": "整体回滚 COD-009 提交恢复原异常调用；不删除错误码历史且不修改站点业务数据。",
+  "security_impact": "公开响应不含堆栈、原因消息、文件路径或业务载荷；审计仅记录安全元数据。",
+  "test_plan": [
+    "错误目录 schema、编号、HTTP 映射、翻译、确定性和失败路径单元测试",
+    "禁止 ione_hrp 在统一服务外直接调用 frappe.throw 的仓库契约测试",
+    "管理员目录查询、Guest/普通用户错误响应、状态码、响应头和审计脱敏集成测试",
+    "真实 Git 差异验证治理元数据风险中性且实质治理路径仍升级"
+  ],
+  "owner": "I-ONE HRP Maintainers",
+  "created_on": "2026-07-29",
+  "updated_on": "2026-07-29"
+}

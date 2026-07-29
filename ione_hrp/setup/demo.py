@@ -7,6 +7,7 @@ import frappe
 from erpnext.setup.setup_wizard.setup_wizard import setup_complete
 
 from ione_hrp.services.environment import get_environment_status
+from ione_hrp.services.errors import raise_ione_error
 
 SYNTHETIC_COMPANY_NAME = "I-ONE HRP Synthetic Demonstration Hospital"
 SYNTHETIC_COMPANY_ABBR = "IOHD"
@@ -15,10 +16,7 @@ SYNTHETIC_COMPANY_ABBR = "IOHD"
 def setup_synthetic_demo() -> dict[str, object]:
 	status = get_environment_status()
 	if status.get("name") != "demo" or not status.get("synthetic_data_only"):
-		frappe.throw(
-			"Synthetic demo setup is only allowed in the managed demo environment",
-			frappe.PermissionError,
-		)
+		raise_ione_error("OPERATION_NOT_ALLOWED")
 
 	existing_companies = frappe.get_all("Company", pluck="name")
 	if existing_companies:
@@ -28,10 +26,7 @@ def setup_synthetic_demo() -> dict[str, object]:
 				"company": SYNTHETIC_COMPANY_NAME,
 				"changed": False,
 			}
-		frappe.throw(
-			"Demo setup refused because the site already contains another company",
-			frappe.ValidationError,
-		)
+		raise_ione_error("CONFLICT")
 
 	year = date.today().year
 	setup_complete(

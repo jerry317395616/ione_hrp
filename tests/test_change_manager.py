@@ -51,9 +51,8 @@ class TestChangeManager(unittest.TestCase):
 		for directory in ("architecture/adr", "changes"):
 			shutil.copytree(ROOT / directory, self.root / directory)
 		(self.root / "backlog").mkdir(exist_ok=True)
-		for task_number in range(1, 9):
-			filename = f"COD-{task_number:03d}.md"
-			shutil.copy2(ROOT / "backlog" / filename, self.root / "backlog" / filename)
+		for task_document in sorted((ROOT / "backlog").glob("COD-*.md")):
+			shutil.copy2(task_document, self.root / "backlog" / task_document.name)
 		_git(self.root, "init", "-b", "main")
 		_git(self.root, "config", "user.name", "COD Test")
 		_git(self.root, "config", "user.email", "cod-test@example.invalid")

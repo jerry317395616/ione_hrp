@@ -6,6 +6,7 @@ from unittest.mock import patch
 import frappe
 from frappe.tests.test_api import FrappeAPITestCase
 
+from ione_hrp.common.error_catalog import IoneApplicationError
 from ione_hrp.services.change_governance import get_change_governance_status
 
 METHOD = "ione_hrp.api.v1.change_governance.get_change_governance_status"
@@ -24,8 +25,8 @@ class TestChangeGovernanceAPI(FrappeAPITestCase):
 		payload = response.get_json()["message"]
 		self.assertEqual(payload["status"], "ok")
 		self.assertEqual(payload["correlation_id"], "COD-008-http-success")
-		self.assertEqual(payload["change_record_count"], 8)
-		self.assertEqual(payload["decision_count"], 2)
+		self.assertEqual(payload["change_record_count"], 9)
+		self.assertEqual(payload["decision_count"], 4)
 		self.assertFalse(payload["http_write_enabled"])
 		self.assertEqual(payload["write_channel"], "Git pull request only")
 		serialized = json.dumps(payload, ensure_ascii=False)
@@ -46,13 +47,15 @@ class TestChangeGovernanceAPI(FrappeAPITestCase):
 				"ione_hrp.services.change_governance.frappe.get_roles",
 				return_value=["HRP User"],
 			),
-			self.assertRaises(frappe.PermissionError),
+			self.assertRaises(IoneApplicationError) as raised,
 		):
 			get_change_governance_status("COD-008-permission")
+		self.assertEqual(raised.exception.code, "IONE-CORE-0002")
 
 	def test_invalid_correlation_id_is_rejected(self) -> None:
-		with self.assertRaises(frappe.ValidationError):
+		with self.assertRaises(IoneApplicationError) as raised:
 			get_change_governance_status("invalid correlation id")
+		self.assertEqual(raised.exception.code, "IONE-CORE-0003")
 
 	def test_service_is_idempotent_read_only_and_audited(self) -> None:
 		before = {
