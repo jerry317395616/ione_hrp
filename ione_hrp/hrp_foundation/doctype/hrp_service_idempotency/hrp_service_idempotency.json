@@ -1,0 +1,149 @@
+{
+	"actions": [],
+	"allow_rename": 0,
+	"autoname": "Prompt",
+	"creation": "2026-07-29 00:00:00.000000",
+	"doctype": "DocType",
+	"engine": "InnoDB",
+	"field_order": [
+		"service_name",
+		"service_version",
+		"idempotency_key_hash",
+		"request_fingerprint",
+		"status",
+		"correlation_id",
+		"request_id",
+		"expires_at",
+		"completed_at",
+		"response_schema_version",
+		"response_fingerprint",
+		"response_snapshot"
+	],
+	"fields": [
+		{
+			"fieldname": "service_name",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"in_standard_filter": 1,
+			"label": "Service Name",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "service_version",
+			"fieldtype": "Int",
+			"label": "Service Version",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "idempotency_key_hash",
+			"fieldtype": "Data",
+			"hidden": 1,
+			"label": "Idempotency Key Hash",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "request_fingerprint",
+			"fieldtype": "Data",
+			"hidden": 1,
+			"label": "Request Fingerprint",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "status",
+			"fieldtype": "Select",
+			"in_list_view": 1,
+			"in_standard_filter": 1,
+			"label": "Status",
+			"options": "In Progress\nCompleted",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "correlation_id",
+			"fieldtype": "Data",
+			"label": "Correlation ID",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "request_id",
+			"fieldtype": "Data",
+			"label": "Request ID",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "expires_at",
+			"fieldtype": "Datetime",
+			"in_list_view": 1,
+			"in_standard_filter": 1,
+			"label": "Expires At",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "completed_at",
+			"fieldtype": "Datetime",
+			"label": "Completed At",
+			"read_only": 1
+		},
+		{
+			"default": "1",
+			"fieldname": "response_schema_version",
+			"fieldtype": "Int",
+			"hidden": 1,
+			"label": "Response Schema Version",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "response_fingerprint",
+			"fieldtype": "Data",
+			"hidden": 1,
+			"label": "Response Fingerprint",
+			"read_only": 1
+		},
+		{
+			"fieldname": "response_snapshot",
+			"fieldtype": "Long Text",
+			"hidden": 1,
+			"label": "Encrypted Response Snapshot",
+			"no_copy": 1,
+			"read_only": 1
+		}
+	],
+	"index_web_pages_for_search": 0,
+	"links": [],
+	"modified": "2026-07-29 00:00:00.000000",
+	"modified_by": "Administrator",
+	"module": "HRP Foundation",
+	"name": "HRP Service Idempotency",
+	"naming_rule": "Set by user",
+	"owner": "Administrator",
+	"permissions": [
+		{
+			"read": 1,
+			"report": 1,
+			"role": "System Manager",
+			"select": 1
+		},
+		{
+			"read": 1,
+			"report": 1,
+			"role": "HRP System Manager",
+			"select": 1
+		}
+	],
+	"show_name_in_global_search": 0,
+	"sort_field": "creation",
+	"sort_order": "DESC",
+	"states": [],
+	"track_changes": 0
+}

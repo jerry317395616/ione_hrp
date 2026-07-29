@@ -634,6 +634,34 @@ def find_direct_audit_loggers(root: Path) -> list[str]:
 	return violations
 
 
+def find_direct_transaction_commits(root: Path) -> list[str]:
+	"""Keep the final transaction commit owned by the Frappe request or job."""
+	app_root = root / APP_NAME
+	violations: list[str] = []
+	if not app_root.is_dir():
+		return [f"missing {APP_NAME} package directory"]
+	for path in app_root.rglob("*.py"):
+		try:
+			tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+		except SyntaxError:
+			continue
+		for node in ast.walk(tree):
+			if (
+				isinstance(node, ast.Call)
+				and isinstance(node.func, ast.Attribute)
+				and node.func.attr == "commit"
+				and isinstance(node.func.value, ast.Attribute)
+				and node.func.value.attr == "db"
+				and isinstance(node.func.value.value, ast.Name)
+				and node.func.value.value.id == "frappe"
+			):
+				violations.append(
+					f"{path.relative_to(root)}:{node.lineno} calls frappe.db.commit; "
+					"the outer Frappe transaction owns the commit"
+				)
+	return violations
+
+
 def validate_audit_context_contract(root: Path) -> list[str]:
 	common_path = root / APP_NAME / "common" / "audit_context.py"
 	service_path = root / APP_NAME / "services" / "audit_context.py"
@@ -730,6 +758,167 @@ def validate_audit_context_contract(root: Path) -> list[str]:
 			)
 		if "CORRELATION_ID_PATTERN" in text:
 			violations.append(f"{path.relative_to(root)} defines a duplicate correlation ID pattern")
+	return violations
+
+
+def validate_domain_service_contract(root: Path) -> list[str]:
+	common_path = root / APP_NAME / "common" / "domain_service.py"
+	service_path = root / APP_NAME / "services" / "domain_service.py"
+	idempotency_path = root / APP_NAME / "services" / "idempotency.py"
+	doctype_root = root / APP_NAME / "hrp_foundation" / "doctype" / "hrp_service_idempotency"
+	doctype_json_path = doctype_root / "hrp_service_idempotency.json"
+	doctype_controller_path = doctype_root / "hrp_service_idempotency.py"
+	facade_path = root / APP_NAME / "hrp_foundation" / "services" / "__init__.py"
+	example_service_path = root / APP_NAME / "hrp_foundation" / "services" / "module_settings.py"
+	api_path = root / APP_NAME / "api" / "v1" / "modules.py"
+	documentation_path = root / "architecture" / "domain_services.md"
+	adr_path = root / "architecture" / "adr" / "ADR-0006-domain-service-and-durable-idempotency.md"
+	task_path = root / "backlog" / "COD-011.md"
+	change_path = root / "changes" / "COD-011.json"
+	test_paths = (
+		root / "tests" / "test_domain_service.py",
+		root / APP_NAME / "hrp_foundation" / "tests" / "test_domain_service.py",
+		root / APP_NAME / "hrp_foundation" / "tests" / "test_modules.py",
+	)
+	catalog_paths = (
+		root / "api" / "api_catalog.csv",
+		root / "api" / "api_catalog.yaml",
+		root / "api" / "openapi.yaml",
+	)
+	required_paths = (
+		common_path,
+		service_path,
+		idempotency_path,
+		doctype_json_path,
+		doctype_controller_path,
+		facade_path,
+		example_service_path,
+		api_path,
+		documentation_path,
+		adr_path,
+		task_path,
+		change_path,
+		*test_paths,
+		*catalog_paths,
+	)
+	missing = [str(path.relative_to(root)) for path in required_paths if not path.is_file()]
+	if missing:
+		return [f"missing domain service contract file: {path}" for path in missing]
+
+	violations = find_direct_transaction_commits(root)
+
+	common_text = common_path.read_text(encoding="utf-8")
+	for token in (
+		"class DomainServiceDefinition",
+		"class DomainServiceExecution",
+		"canonical_json_object",
+		"idempotency_key_hash",
+		"idempotency_record_name",
+		"MAX_JSON_SNAPSHOT_BYTES",
+	):
+		if token not in common_text:
+			violations.append(f"domain service model is missing: {token}")
+
+	service_text = service_path.read_text(encoding="utf-8")
+	for token in (
+		"class DomainService",
+		"require_roles",
+		"frappe.db.savepoint",
+		"frappe.db.rollback",
+		"reserve_idempotency",
+		"complete_idempotency",
+		"domain_service_started",
+		"domain_service_completed",
+		"domain_service_replayed",
+		"domain_service_failed",
+	):
+		if token not in service_text:
+			violations.append(f"domain service template is missing: {token}")
+
+	idempotency_text = idempotency_path.read_text(encoding="utf-8")
+	for token in (
+		'request.headers.get("Idempotency-Key")',
+		"idempotency_key_hash",
+		"request_fingerprint",
+		"response_fingerprint",
+		"encrypt(serialized)",
+		"decrypt(record.response_snapshot)",
+		'raise_ione_error("IDEMPOTENCY_CONFLICT")',
+	):
+		if token not in idempotency_text:
+			violations.append(f"idempotency service is missing: {token}")
+
+	doctype_payload = json.loads(doctype_json_path.read_text(encoding="utf-8"))
+	if doctype_payload.get("module") != "HRP Foundation":
+		violations.append("HRP Service Idempotency must belong to HRP Foundation")
+	fields = {
+		str(field.get("fieldname")): field
+		for field in doctype_payload.get("fields", [])
+		if isinstance(field, dict)
+	}
+	for forbidden_field in ("idempotency_key", "request_payload", "request_snapshot"):
+		if forbidden_field in fields:
+			violations.append(f"HRP Service Idempotency must not persist plaintext field {forbidden_field}")
+	response_snapshot = fields.get("response_snapshot", {})
+	if (
+		response_snapshot.get("fieldtype") != "Long Text"
+		or response_snapshot.get("hidden") != 1
+		or response_snapshot.get("read_only") != 1
+		or response_snapshot.get("no_copy") != 1
+	):
+		violations.append("encrypted response_snapshot must be hidden, read-only and non-copyable")
+	allowed_permission_keys = {"role", "read", "report", "select"}
+	for permission in doctype_payload.get("permissions", []):
+		if not isinstance(permission, dict):
+			violations.append("HRP Service Idempotency contains an invalid permission row")
+			continue
+		if permission.get("role") not in {"System Manager", "HRP System Manager"}:
+			violations.append("HRP Service Idempotency has an unauthorized role")
+		if any(key not in allowed_permission_keys and bool(value) for key, value in permission.items()):
+			violations.append("HRP Service Idempotency permissions must be read-only")
+
+	facade_text = facade_path.read_text(encoding="utf-8")
+	if "set_module_enabled" not in facade_text:
+		violations.append("HRP Foundation facade must expose the module command")
+	api_text = api_path.read_text(encoding="utf-8")
+	if "set_module_enabled_service" not in api_text:
+		violations.append("module write API must delegate to the HRP Foundation service facade")
+	if ".save(" in api_text:
+		violations.append("module write API must not save DocTypes directly")
+	api_tree = ast.parse(api_text, filename=str(api_path))
+	module_write_functions = [
+		node
+		for node in api_tree.body
+		if isinstance(node, ast.FunctionDef) and node.name == "set_module_enabled"
+	]
+	if len(module_write_functions) != 1:
+		violations.append("module write API must define exactly one set_module_enabled endpoint")
+	elif "idempotency_key" in {argument.arg for argument in module_write_functions[0].args.args}:
+		violations.append("HTTP idempotency keys must be accepted only through the request header")
+
+	module_api = "/api/method/ione_hrp.api.v1.modules.set_module_enabled"
+	for catalog_path in catalog_paths:
+		catalog_text = catalog_path.read_text(encoding="utf-8")
+		if module_api not in catalog_text:
+			violations.append(
+				f"{catalog_path.relative_to(root)} is missing the domain service example endpoint"
+			)
+		if "Idempotency-Key" not in catalog_text:
+			violations.append(f"{catalog_path.relative_to(root)} is missing the idempotency header contract")
+
+	openapi_payload = yaml.safe_load((root / "api" / "openapi.yaml").read_text(encoding="utf-8"))
+	operation = openapi_payload.get("paths", {}).get(module_api, {}).get("post", {})
+	idempotency_headers = [
+		parameter
+		for parameter in operation.get("parameters", [])
+		if isinstance(parameter, dict)
+		and parameter.get("in") == "header"
+		and parameter.get("name") == "Idempotency-Key"
+	]
+	if len(idempotency_headers) != 1 or idempotency_headers[0].get("required") is not True:
+		violations.append("PLT-009 OpenAPI must require exactly one Idempotency-Key header")
+	if operation.get("x-idempotency") != "Required for write; encrypted response snapshot":
+		violations.append("PLT-009 OpenAPI must declare durable encrypted idempotency")
 	return violations
 
 
@@ -984,6 +1173,7 @@ def collect_violations(root: Path) -> list[str]:
 	violations.extend(validate_change_governance(root))
 	violations.extend(validate_error_contract(root))
 	violations.extend(validate_audit_context_contract(root))
+	violations.extend(validate_domain_service_contract(root))
 	return violations
 
 

@@ -970,13 +970,13 @@
   method: POST
   path: /api/method/ione_hrp.api.v1.modules.set_module_enabled
   description: 幂等启停已发布模块
-  request_schema: module_name,enabled,correlation_id
-  response_schema: module,enabled,changed,correlation_id
+  request_schema: Idempotency-Key,module_name,enabled,correlation_id
+  response_schema: module,enabled,changed,correlation_id,request_id,idempotency_replayed
   required_role: System Manager or HRP System Manager
-  idempotency: State-set idempotent
+  idempotency: Required for write
   async: 'No'
   transaction_boundary: Single DB transaction
-  audit: Version + Comment + site log
+  audit: Encrypted response snapshot + redacted site log
   version: v1
 - api_code: PLT-010
   app: ione_hrp

@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "task_id": "COD-011",
+  "title": "建立领域服务基类",
+  "status": "In Progress",
+  "risk_level": "high",
+  "change_types": [
+    "application",
+    "architecture",
+    "data",
+    "documentation",
+    "governance",
+    "security"
+  ],
+  "affected_modules": [
+    "HRP Foundation"
+  ],
+  "breaking_change": true,
+  "adr_ids": [
+    "ADR-0006"
+  ],
+  "path_globs": [
+    "README.md",
+    "DELIVERY_MANIFEST.json",
+    "VALIDATION_REPORT.json",
+    "SHA256SUMS.txt",
+    "api/**",
+    "architecture/**",
+    "backlog/**",
+    "changes/COD-011.json",
+    "ione_hrp/**",
+    "scripts/**",
+    "tests/**"
+  ],
+  "permissions_impact": "新增内部幂等 DocType，仅 System Manager 和 HRP System Manager 可只读；写入只允许领域服务使用受控的 ignore_permissions 路径。模块启停继续要求上述任一管理角色，且权限校验先于幂等预留。",
+  "migration_impact": "新增 HRP Service Idempotency 标准 DocType，由 bench migrate 同步，无数据 patch 或 Fixture。生产发布前必须同时备份数据库和 Site 加密密钥。",
+  "rollback_plan": "先恢复兼容客户端或暂停 PLT-009 写入，再回滚应用代码；保留幂等表及有效快照，不删除生产数据，后续清理由独立变更审批。",
+  "security_impact": "原始幂等键和请求正文不落库；响应以 Site 密钥加密并以 SHA-256 指纹校验；日志只记录服务名、版本、事件和受控错误码，不记录请求或响应载荷。",
+  "test_plan": [
+    "服务定义、确定性 JSON、大小限制、键校验、哈希和执行结果纯单元测试",
+    "权限先行、成功、重放、同键异参冲突、缺失和非法键、密文快照 Frappe 集成测试",
+    "未知异常与非法结果回滚领域写入和幂等预留的 Frappe 集成测试",
+    "Idempotency-Key 请求头、成功与重放的真实 HTTP 端到端测试",
+    "API 契约、禁止服务提交事务、禁止明文幂等数据的仓库门禁"
+  ],
+  "owner": "I-ONE HRP Maintainers",
+  "created_on": "2026-07-29",
+  "updated_on": "2026-07-29"
+}

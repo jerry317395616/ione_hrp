@@ -118,6 +118,26 @@ GET /api/method/ione_hrp.api.v1.audit.get_audit_context
 该能力不创建 DocType 或数据库记录。ID 规则、任务父子传播、权限、脱敏和回滚
 见 `architecture/audit_context.md`。
 
+## 领域服务与写入幂等
+
+所有新的业务写入必须通过 `ione_hrp.services.domain_service.DomainService` 执行，并由所属
+模块的 `services` 包暴露公共 facade。模板方法统一处理角色校验、领域校验、审计上下文、
+数据库 savepoint、稳定异常和持久化幂等；服务不得调用 `frappe.db.commit()`，最终提交归
+Frappe 请求或任务事务所有。
+
+写 API 必须提供 `Idempotency-Key`。应用只保存键和请求的 SHA-256，不保存原始键或请求
+正文；规范化响应使用 Site 密钥加密，并在重放前验证响应指纹。同键同参重放领域结果，
+同键异参返回 `IONE-CORE-0007`。首个实现是：
+
+```text
+POST /api/method/ione_hrp.api.v1.modules.set_module_enabled
+Idempotency-Key: deploy-20260729-budget-enable
+```
+
+内部 `HRP Service Idempotency` DocType 不加入 Workspace、Fixture 或全局搜索。服务开发、
+事务、安全、迁移和回滚规则见 `architecture/domain_services.md` 与
+`architecture/adr/ADR-0006-domain-service-and-durable-idempotency.md`。
+
 安装到已有非生产 Bench：
 
 ```bash
