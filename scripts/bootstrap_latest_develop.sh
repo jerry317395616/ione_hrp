@@ -137,7 +137,7 @@ if ! grep -qxF ione_hrp sites/apps.txt; then
   echo ione_hrp >> sites/apps.txt
 fi
 
-"$ROOT_DIR/scripts/lock_versions.sh" "$BENCH_DIR" "$LOCK_FILE"
+bash "$ROOT_DIR/scripts/lock_versions.sh" "$BENCH_DIR" "$LOCK_FILE"
 
 bench new-site "$SITE_NAME" \
   --db-type "$DB_TYPE" \

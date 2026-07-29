@@ -10,7 +10,7 @@ cd "$BENCH_DIR"
 for app in frappe erpnext hrms; do
   [[ -d "apps/$app" ]] || { echo "Missing dependency app: $app" >&2; exit 1; }
 done
-"$ROOT_DIR/scripts/lock_versions.sh" "$BENCH_DIR" "$LOCK_FILE"
+bash "$ROOT_DIR/scripts/lock_versions.sh" "$BENCH_DIR" "$LOCK_FILE"
 
 if [[ -e apps/ione_hrp ]]; then
   echo "apps/ione_hrp already exists; refusing to overwrite" >&2
