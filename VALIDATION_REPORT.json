@@ -88,7 +88,7 @@
     "change_governance_unit_tests": 21,
     "change_governance_integration_tests_defined": 5,
     "change_governance_integration_tests_passed": 5,
-    "change_governance_sha256": "61dafa44688a70816dfb3e0492ffbbb14ab8b39a320384112c930032eca28526",
+    "change_governance_sha256": "a0ba078fbcf1bd7ebf87d480451d41be6c7d2f8a583c31e658a72d6e8217aa45",
     "change_governance_diff_sha256": "1c3eef56e450ecf3f6b4b11f13a7a7f040e45e2974d64148747e821eb16f058d",
     "change_governance_changed_file_count": 24,
     "change_governance_required_risk": "high",
