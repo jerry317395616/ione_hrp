@@ -2,7 +2,7 @@
   "schema_version": 1,
   "task_id": "COD-011",
   "title": "建立领域服务基类",
-  "status": "In Progress",
+  "status": "Implemented",
   "risk_level": "high",
   "change_types": [
     "application",
