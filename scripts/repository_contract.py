@@ -354,6 +354,7 @@ def validate_ci_pipeline(root: Path) -> list[str]:
 	integration_script = integration_script_path.read_text(encoding="utf-8")
 	for required_token in (
 		"bootstrap_latest_develop.sh",
+		"KEEP_TEMPORARY_REDIS=1",
 		"version_lock.py",
 		"migrate --skip-search-index",
 		"run-tests --app ione_hrp",

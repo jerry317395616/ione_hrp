@@ -14,16 +14,22 @@ fi
 
 export PATH="$HOME/.local/bin:$PATH"
 
-bash "$ROOT_DIR/scripts/bootstrap_latest_develop.sh"
-
 stop_redis() {
   redis-cli -p "$REDIS_CACHE_PORT" shutdown nosave >/dev/null 2>&1 || true
   redis-cli -p "$REDIS_QUEUE_PORT" shutdown nosave >/dev/null 2>&1 || true
 }
 
-redis-server "$BENCH_DIR/config/redis_cache.conf" --daemonize yes
-redis-server "$BENCH_DIR/config/redis_queue.conf" --daemonize yes
 trap stop_redis EXIT
+
+export KEEP_TEMPORARY_REDIS=1
+bash "$ROOT_DIR/scripts/bootstrap_latest_develop.sh"
+
+for port in "$REDIS_CACHE_PORT" "$REDIS_QUEUE_PORT"; do
+  if [[ "$(redis-cli -p "$port" ping)" != "PONG" ]]; then
+    echo "CI Redis service on port $port is not ready" >&2
+    exit 1
+  fi
+done
 
 cd "$BENCH_DIR"
 

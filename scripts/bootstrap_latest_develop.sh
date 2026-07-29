@@ -11,6 +11,7 @@ DB_ROOT_USERNAME="${DB_ROOT_USERNAME:-root}"
 DB_HOST="${DB_HOST:-127.0.0.1}"
 DB_PORT="${DB_PORT:-3306}"
 DEVELOPER_MODE="${DEVELOPER_MODE:-1}"
+KEEP_TEMPORARY_REDIS="${KEEP_TEMPORARY_REDIS:-0}"
 REDIS_CACHE_PORT="${REDIS_CACHE_PORT:-13000}"
 REDIS_QUEUE_PORT="${REDIS_QUEUE_PORT:-11000}"
 SOCKETIO_PORT="${SOCKETIO_PORT:-9000}"
@@ -97,7 +98,9 @@ start_temporary_redis() {
   }
   redis-server "$BENCH_DIR/config/redis_cache.conf" --daemonize yes
   redis-server "$BENCH_DIR/config/redis_queue.conf" --daemonize yes
-  trap stop_temporary_redis EXIT
+  if [[ "$KEEP_TEMPORARY_REDIS" != "1" ]]; then
+    trap stop_temporary_redis EXIT
+  fi
 }
 
 FRAPPE_COMMIT="$(lock_value frappe commit)"
