@@ -11,11 +11,13 @@ from scripts.repository_contract import (
 	discover_custom_apps,
 	find_direct_audit_loggers,
 	find_direct_frappe_throws,
+	find_direct_transaction_commits,
 	find_legacy_prefix_references,
 	validate_audit_context_contract,
 	validate_branch_policy,
 	validate_change_governance,
 	validate_ci_pipeline,
+	validate_domain_service_contract,
 	validate_environment_profiles,
 	validate_error_contract,
 	validate_fixture_governance,
@@ -144,6 +146,24 @@ class RepositoryContractTest(unittest.TestCase):
 
 	def test_current_audit_context_contract_is_mandatory(self) -> None:
 		self.assertEqual(validate_audit_context_contract(ROOT), [])
+
+	def test_current_domain_service_contract_is_mandatory(self) -> None:
+		self.assertEqual(validate_domain_service_contract(ROOT), [])
+
+	def test_rejects_direct_transaction_commit(self) -> None:
+		with tempfile.TemporaryDirectory() as temp:
+			root = Path(temp)
+			source = root / "ione_hrp" / "hrp_budget" / "services" / "unsafe.py"
+			source.parent.mkdir(parents=True)
+			source.write_text(
+				"import frappe\n\n\ndef unsafe():\n\tfrappe.db.commit()\n",
+				encoding="utf-8",
+			)
+
+			violations = find_direct_transaction_commits(root)
+
+		self.assertEqual(len(violations), 1)
+		self.assertIn("the outer Frappe transaction owns the commit", violations[0])
 
 	def test_rejects_direct_audit_logger_outside_context_service(self) -> None:
 		with tempfile.TemporaryDirectory() as temp:

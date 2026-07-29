@@ -190,6 +190,114 @@ paths:
       x-required-role: Authenticated User
       x-transaction-boundary: Read-only
       x-idempotency: Read-only per request
+  /api/method/ione_hrp.api.v1.modules.set_module_enabled:
+    post:
+      operationId: platform_009
+      summary: Enable or disable a published HRP module
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+          pattern: ^[A-Za-z0-9][A-Za-z0-9._:/-]{0,139}$
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 140
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - module_name
+              - enabled
+              properties:
+                module_name:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                enabled:
+                  oneOf:
+                  - type: boolean
+                  - type: integer
+                    enum:
+                    - 0
+                    - 1
+                  - type: string
+                    enum:
+                    - '0'
+                    - '1'
+                correlation_id:
+                  type:
+                  - string
+                  - 'null'
+                  minLength: 1
+                  maxLength: 140
+                  pattern: ^[A-Za-z0-9][A-Za-z0-9._:/-]{0,139}$
+      responses:
+        '200':
+          description: Module state changed or a completed response was replayed
+          headers:
+            X-Correlation-ID:
+              $ref: '#/components/headers/CorrelationId'
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModuleEnabledFrappeResponse'
+        '400':
+          description: Invalid request or missing idempotency key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '403':
+          description: Module administration role required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '404':
+          description: Module not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '409':
+          description: Idempotency key conflict or operation still in progress
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '500':
+          description: Internal or idempotency snapshot error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+      x-required-role: System Manager or HRP System Manager
+      x-transaction-boundary: Single DB transaction owned by the request
+      x-idempotency: Required for write; encrypted response snapshot
   /api/method/ione_hrp_core.api.v1.scope.resolve:
     post:
       operationId: core_001
@@ -3315,6 +3423,37 @@ components:
           type: array
           items:
             type: string
+    ModuleEnabledFrappeResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - message
+      properties:
+        message:
+          type: object
+          additionalProperties: false
+          required:
+          - module
+          - enabled
+          - changed
+          - correlation_id
+          - request_id
+          - idempotency_replayed
+          properties:
+            module:
+              type: string
+            enabled:
+              type: boolean
+            changed:
+              type: boolean
+            correlation_id:
+              type: string
+              pattern: ^[A-Za-z0-9][A-Za-z0-9._:/-]{0,139}$
+            request_id:
+              type: string
+              pattern: ^req-[A-Za-z0-9]{20}$
+            idempotency_replayed:
+              type: boolean
     AuditContextResponse:
       type: object
       required:
