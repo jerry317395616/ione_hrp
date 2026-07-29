@@ -100,11 +100,26 @@ def read_version_marker(app_root: Path, app: str) -> str | None:
 
 def read_app_state(app_root: Path, app: str) -> dict[str, Any]:
     branch = run_git(app_root, "branch", "--show-current", required=False)
-    remote = run_git(app_root, "remote", "get-url", "origin", required=False)
+    remote_names = (run_git(app_root, "remote", required=False) or "").splitlines()
+    remote_name = (
+        "origin"
+        if "origin" in remote_names
+        else "upstream"
+        if "upstream" in remote_names
+        else remote_names[0]
+        if remote_names
+        else None
+    )
+    remote = (
+        run_git(app_root, "remote", "get-url", remote_name, required=False)
+        if remote_name
+        else None
+    )
     dirty_output = run_git(app_root, "status", "--porcelain")
     return {
         "commit": run_git(app_root, "rev-parse", "HEAD"),
         "branch": branch or "DETACHED",
+        "remote_name": remote_name,
         "repository": remote,
         "version": read_version_marker(app_root, app),
         "dirty": bool(dirty_output),
@@ -144,12 +159,12 @@ def compare_bench(
             issues.append(f"{app}: worktree is dirty")
         if require_official_remote:
             if not state["repository"]:
-                issues.append(f"{app}: origin remote is unavailable")
+                issues.append(f"{app}: Git remote is unavailable")
             elif normalize_repository(str(state["repository"])) != normalize_repository(
                 str(expected["repository"])
             ):
                 issues.append(
-                    f"{app}: origin mismatch, expected {expected['repository']}, "
+                    f"{app}: remote mismatch, expected {expected['repository']}, "
                     f"got {state['repository']}"
                 )
     return {

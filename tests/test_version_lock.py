@@ -44,6 +44,40 @@ class VersionLockTest(unittest.TestCase):
             normalize_repository("https://github.com/frappe/frappe"),
         )
 
+    def test_accepts_bench_upstream_remote_name(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            bench = Path(temp)
+            lock = {"schema_version": 1, "apps": {}}
+            for app in UPSTREAM_APPS:
+                app_root = bench / "apps" / app
+                package_root = app_root / app
+                package_root.mkdir(parents=True)
+                (package_root / "__init__.py").write_text(
+                    '__version__ = "17.0.0-dev"\n',
+                    encoding="utf-8",
+                )
+                self._git(app_root, "init")
+                self._git(app_root, "config", "user.email", "test@example.com")
+                self._git(app_root, "config", "user.name", "Version Lock Test")
+                self._git(app_root, "add", ".")
+                self._git(app_root, "commit", "-m", "fixture")
+                self._git(
+                    app_root,
+                    "remote",
+                    "add",
+                    "upstream",
+                    EXPECTED_REPOSITORIES[app],
+                )
+                lock["apps"][app] = {
+                    "repository": EXPECTED_REPOSITORIES[app],
+                    "branch": "develop",
+                    "commit": self._git(app_root, "rev-parse", "HEAD"),
+                    "version": "17.0.0-dev",
+                }
+            report = compare_bench(lock, bench)
+            self.assertEqual(report["status"], "ok", report["issues"])
+            self.assertEqual(report["apps"]["frappe"]["remote_name"], "upstream")
+
     def test_invalid_json_raises_version_lock_error(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             path = Path(temp) / "lock.json"
