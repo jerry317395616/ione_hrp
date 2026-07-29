@@ -1090,6 +1090,20 @@
   transaction_boundary: Read-only
   audit: Redacted site log
   version: v1
+- api_code: PLT-018
+  app: ione_hrp
+  domain_group: Platform
+  method: GET
+  path: /api/method/ione_hrp.api.v1.performance.get_performance_baseline_contract
+  description: 查询性能基线与非生产压测许可契约
+  request_schema: 无
+  response_schema: schema_version,scenario_count,scenarios,execution_policy,result_policy,environment,load_test_available
+  required_role: System Manager or HRP System Manager
+  idempotency: Read-only deterministic
+  async: 'No'
+  transaction_boundary: Read-only
+  audit: Redacted site log
+  version: v1
 - api_code: POR-001
   app: ione_hrp
   domain_group: Portal

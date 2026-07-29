@@ -1,0 +1,53 @@
+{
+	"schema_version": 1,
+	"task_id": "COD-015",
+	"title": "建立性能基线与压测脚本",
+	"status": "Implemented",
+	"risk_level": "high",
+	"change_types": [
+		"application",
+		"architecture",
+		"configuration",
+		"documentation",
+		"governance",
+		"security"
+	],
+	"affected_modules": ["HRP Foundation"],
+	"breaking_change": false,
+	"adr_ids": ["ADR-0010"],
+	"path_globs": [
+		".gitignore",
+		".github/**",
+		"README.md",
+		"DELIVERY_MANIFEST.json",
+		"VALIDATION_REPORT.json",
+		"SHA256SUMS.txt",
+		"api/**",
+		"architecture/**",
+		"backlog/**",
+		"changes/COD-015.json",
+		"ione_hrp/**",
+		"scripts/**",
+		"tests/**"
+	],
+	"permissions_impact": "PLT-018 仅允许 System Manager 或 HRP System Manager 读取。角色在注册表和环境读取前校验；压测只能由站点外执行器在受管 development/test 环境启动。",
+	"migration_impact": "不新增生产 DocType、表、Fixture、Workspace 或数据 patch。常规 migrate 只同步 Python/API 元数据；性能结果不写入 Site。",
+	"rollback_plan": "回滚应用提交。删除外部 .artifacts 性能报告并吊销临时测试 API Token；数据库没有性能记录需要迁移或删除。",
+	"security_impact": "拒绝生产、demo、未受管、公开、外部集成开启和非合成环境；只允许源码登记 GET 路径，限制 VU/次数/时长，报告限定在 .artifacts/performance，k6 子进程使用环境白名单，不持久化目标 URL、凭据或响应正文。",
+	"test_plan": [
+		"注册表严格模式、场景身份、执行档顺序和确定性 SHA 单元测试",
+		"GET-only、个人数据禁用、环境白名单和安全路径测试",
+		"VU、固定请求数、时长、阈值和可达吞吐硬上限测试",
+		"结果摘要严格解析、通过及身份/全部指标失败测试",
+		"目标 URL、loopback HTTP、HTTPS、受限报告路径、制品校验和排除、子进程环境白名单和 dry-run 脱敏计划测试",
+		"k6 contract gate、固定迭代、自定义指标、无 POST 和无 TLS 绕过门禁",
+		"系统角色先于注册表和环境读取的锁定 Bench 测试",
+		"test 环境放行及未受管、demo、公开和外部集成环境拒绝测试",
+		"配置异常映射稳定错误码、重复读取无写入和审计脱敏测试",
+		"PLT-018 真实 HTTP 成功、访客拒绝和三份 API 契约测试",
+		"禁止生产 profile、HTTP 写、命令行 Secret、上游源码修改和服务提交事务的仓库门禁"
+	],
+	"owner": "I-ONE HRP Maintainers",
+	"created_on": "2026-07-29",
+	"updated_on": "2026-07-29"
+}

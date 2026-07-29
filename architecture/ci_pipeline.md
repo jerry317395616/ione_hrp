@@ -28,7 +28,9 @@ COD-005 在 GitHub Actions 中建立 `ione_hrp` 的合并门禁。流水线只�
 2. 从精确版本声明安装 Python 开发依赖，并以 `npm ci` 恢复 Node 锁文件；
 3. 运行 `scripts/quality.py` 的仓库契约、包校验、编译、Ruff、34 项以上
    仓库测试、校验和、Pyright、ESLint 和 Prettier；
-4. 运行 `npm audit --audit-level=high`。
+4. 下载锁定的官方 k6 `2.1.0` Linux 发布包，校验 SHA-256 并对性能脚本执行
+   `k6 inspect`，不连接站点、不发送压测请求；
+5. 运行 `npm audit --audit-level=high`。
 
 ### Integration
 
@@ -57,7 +59,7 @@ GitHub API 中的稳定检查上下文名为 `Required`，页面显示为
 第三方 Action 必须固定到完整 40 位提交 SHA，禁止 `@main`、`@v6` 等浮动
 引用。Python 开发依赖使用精确版本，Node 依赖由 `package-lock.json` 完整
 锁定；Frappe 生态依赖仍只接受 `resolved_versions.lock.json` 的三个提交。
-仓库契约对触发器、权限、作业名、超时、依赖关系、命令、Action 引用和分支
+仓库契约对触发器、权限、作业名、超时、依赖关系、命令、k6 版本/发布包摘要、Action 引用和分支
 保护上下文执行失败关闭校验。
 
 ## 本地与隔离验证
