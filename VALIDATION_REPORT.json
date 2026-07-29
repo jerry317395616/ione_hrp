@@ -1,21 +1,21 @@
 {
-  "status": "PASS_COD_006",
+  "status": "PASS_COD_007",
   "checks": {
     "python_compile": true,
     "pyproject_parse": true,
     "json_parse": true,
     "yaml_parse": true,
     "repository_contract": true,
-    "repository_contract_tests": 56,
-    "frappe_integration_tests": 18,
+    "repository_contract_tests": 70,
+    "frappe_integration_tests": 22,
     "quality_gate": true,
     "ci_pipeline": true,
     "ci_workflow": ".github/workflows/ci.yml",
     "ci_required_context": "Required",
     "ci_required_display_name": "CI / Required",
-    "ci_github_run_id": 30436254750,
-    "ci_github_run_url": "https://github.com/jerry317395616/ione_hrp/actions/runs/30436254750",
-    "ci_github_run_commit": "21fcaa3fc0c389445964a194e15103ec66fbeb5e",
+    "ci_github_run_id": 30443592308,
+    "ci_github_run_url": "https://github.com/jerry317395616/ione_hrp/actions/runs/30443592308",
+    "ci_github_run_commit": "36cf339d396bec3796a73568a3012e23e49ff030",
     "ci_quality_job_success": true,
     "ci_secret_scan_success": true,
     "ci_dependency_audit_high_vulnerabilities": 0,
@@ -69,6 +69,17 @@
     "environment_audit_redacted": true,
     "environment_error_log_count_total": 0,
     "production_environment_untouched": true,
+    "fixture_policy_schema_version": 1,
+    "fixture_rule_count": 3,
+    "fixture_file_count": 3,
+    "fixture_record_count": 0,
+    "fixture_repository_sha256": "32c7daeffbcbac3dd3a19888a82c08d0e0c14b8066ce2089c054dcfc66034978",
+    "fixture_export_idempotent": true,
+    "fixture_export_changed": false,
+    "fixture_audit_redacted": true,
+    "fixture_http_write_disabled": true,
+    "fixture_system_manager_permission_verified": true,
+    "fixture_guest_and_ordinary_user_rejected": true,
     "upstream_validation_bench": "/home/zyd/validation/cod-002-bench",
     "upstream_validation_site": "cod002.localhost",
     "git_monorepo": true,
@@ -117,5 +128,5 @@
   "not_run": [
     "full upstream Frappe/ERPNext/HRMS application test suites"
   ],
-  "reason_not_run": "COD-006 validates the complete repository quality gate, all three managed nonproduction Site profiles, idempotent configuration and synthetic demo setup, and the ione_hrp integration suite on an isolated MariaDB 11.8 Runner using the locked Frappe, ERPNext and HRMS commits. Running every upstream application's complete suite or promoting these nonproduction-only changes to production is outside this task."
+  "reason_not_run": "COD-007 validates the complete repository quality gate, Frappe fixture synchronization on fresh isolated Sites, System Manager-only governance access, deterministic repeated export, redacted audit and the ione_hrp integration suite using the locked Frappe, ERPNext and HRMS commits. Running every upstream application's complete suite, exporting from production or promoting these changes to production is outside this task."
 }
