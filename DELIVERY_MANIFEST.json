@@ -10,9 +10,11 @@
     "design_fields": 10036,
     "doctype_blueprints": 398,
     "starter_doctypes": 3,
-    "repository_contract_tests": 56,
-    "frappe_integration_tests": 18,
-    "environment_profiles": 3
+    "repository_contract_tests": 70,
+    "frappe_integration_tests": 22,
+    "environment_profiles": 3,
+    "fixture_rules": 3,
+    "fixture_files": 3
   },
   "entrypoints": [
     "README.md",
@@ -21,8 +23,11 @@
     "architecture/ci_pipeline.md",
     "architecture/quality_tooling.md",
     "architecture/environments.md",
+    "architecture/fixtures.md",
     "architecture/module_registry.yaml",
     "ione_hrp/config/environment_profiles.json",
+    "ione_hrp/config/fixture_policy.json",
+    "ione_hrp/fixtures",
     "pyproject.toml",
     "pyrightconfig.json",
     "package.json",
@@ -39,8 +44,10 @@
     "scripts/bootstrap_latest_develop.sh",
     "scripts/create_module.py",
     "scripts/environment_manager.py",
+    "scripts/fixture_manager.py",
     "backlog/COD-005.md",
     "backlog/COD-006.md",
+    "backlog/COD-007.md",
     "backlog/backlog.csv"
   ]
 }

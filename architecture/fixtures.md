@@ -103,6 +103,16 @@ GET /api/method/ione_hrp.api.v1.fixtures.get_fixture_governance_status
 correlation ID、状态、变更标记、文件/记录数和摘要，不包含路径、命令输出、
 Fixture 内容、密码或令牌。
 
+## CI 证据
+
+GitHub Actions
+[`30443592308`](https://github.com/jerry317395616/ione_hrp/actions/runs/30443592308)
+在锁定 Bench 中安装三个 Site，并运行 22 项 Frappe 集成测试。development
+Site 的连续两次标准导出均规范化为 3 个文件、0 条记录，返回
+`changed=false`、`idempotent=true`，摘要为
+`32c7daeffbcbac3dd3a19888a82c08d0e0c14b8066ce2089c054dcfc66034978`。
+审计敏感标记、三个 Site Error Log 和四个 App 工作树检查均通过。
+
 ## 安装、升级与回滚
 
 Fixtures 由 Frappe 标准安装/迁移控制器同步。Custom Field、Property Setter 和
