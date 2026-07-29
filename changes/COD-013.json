@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "task_id": "COD-013",
+  "title": "建立Outbox/Inbox基类",
+  "status": "Implemented",
+  "risk_level": "high",
+  "change_types": [
+    "application",
+    "architecture",
+    "documentation",
+    "governance",
+    "security"
+  ],
+  "affected_modules": [
+    "HRP Integration"
+  ],
+  "breaking_change": false,
+  "adr_ids": [
+    "ADR-0008"
+  ],
+  "path_globs": [
+    "README.md",
+    "DELIVERY_MANIFEST.json",
+    "VALIDATION_REPORT.json",
+    "SHA256SUMS.txt",
+    "api/**",
+    "architecture/**",
+    "backlog/**",
+    "changes/COD-013.json",
+    "ione_hrp/**",
+    "scripts/**",
+    "tests/**"
+  ],
+  "permissions_impact": "具体 Outbox/Inbox DocType 只能授予读取、报表和选择权限；创建、状态迁移、结果和失败登记仅允许声明角色的领域服务上下文，并在幂等预留前校验权限。",
+  "migration_impact": "不新增生产 DocType、表、Workspace、Fixture 或数据 patch。锁定 Bench 测试动态创建并清理临时 Outbox/Inbox DocType；具体集成表由 COD-102、COD-103 单独迁移。",
+  "rollback_plan": "回滚应用提交。若后续具体消息表已上线，必须先暂停生产者与消费者、导出未完成消息并按对应 COD 的回滚方案恢复，禁止删除队列或死信数据。",
+  "security_impact": "直接 CRUD 和服务上下文外状态迁移失败；领取采用 FOR UPDATE NOWAIT、有限租约和令牌哈希；审计不记录事件 ID、令牌、幂等原始键、载荷、结果或错误正文。",
+  "test_plan": [
+    "定义、字段、状态、规范 JSON、哈希、确定性名称、令牌和错误摘要纯单元测试",
+    "服务专用插入、更新、db_set、删除和重命名拒绝的 Frappe 集成测试",
+    "Outbox 发布、领取、成功、失败、重试、死信和持久化幂等测试",
+    "Inbox 消费者范围去重、结果重放、载荷冲突、失败重试和终态测试",
+    "MariaDB 双连接 NOWAIT 行锁竞争和幂等预留回滚测试",
+    "PLT-016 真实 HTTP 成功、未认证拒绝和三份 API 契约测试",
+    "禁止消息服务提交事务、调用网络客户端或被业务模块直接 CRUD 的仓库门禁"
+  ],
+  "owner": "I-ONE HRP Maintainers",
+  "created_on": "2026-07-29",
+  "updated_on": "2026-07-29"
+}

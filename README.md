@@ -157,6 +157,27 @@ GET /api/method/ione_hrp.api.v1.ledgers.get_immutable_ledger_contract
 `architecture/immutable_ledgers.md` 与
 `architecture/adr/ADR-0007-immutable-ledger-base.md`。
 
+## Outbox / Inbox 事务消息
+
+COD-013 提供领域事件和集成消息的公共基类。Outbox 在业务事务中原子追加待发布消息，
+领取使用 MariaDB `FOR UPDATE NOWAIT`、有限租约和一次性令牌哈希；网络调用只能在领取
+事务提交后执行。Inbox 使用 `consumer + event_id` 的确定性哈希名称持久化去重，并要求
+消费者业务写入与 `Processed` 状态在同一事务完成。
+
+所有具体 MessageBox DocType 只授予读取权限，插入和状态迁移只能经继承公共基类的领域
+服务执行。服务复用加密持久化幂等、关联 ID、savepoint 和脱敏审计，不调用
+`frappe.db.commit()`，也不记录事件载荷、结果或处理令牌。
+
+公共只读契约：
+
+```text
+GET /api/method/ione_hrp.api.v1.messages.get_transactional_message_contract
+```
+
+本基线不创建通用生产消息表，也不提前实现外部系统网络投递。详细设计见
+`architecture/transactional_messages.md` 与
+`architecture/adr/ADR-0008-transactional-outbox-inbox.md`。
+
 安装到已有非生产 Bench：
 
 ```bash

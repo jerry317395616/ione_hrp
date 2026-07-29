@@ -33,6 +33,7 @@ from ione_hrp.common.fixture_policy import (
 	load_fixture_policy,
 )
 from ione_hrp.common.immutable_ledger import BASE_LEDGER_FIELDS
+from ione_hrp.common.transactional_message import BASE_MESSAGE_FIELDS
 from ione_hrp.services.module_registry import validate_module_source_tree
 
 if __package__:
@@ -1086,6 +1087,161 @@ def validate_immutable_ledger_contract(root: Path) -> list[str]:
 	return violations
 
 
+def find_direct_transactional_message_bypasses(root: Path) -> list[str]:
+	"""Keep concrete HRP Outbox and Inbox access behind the shared message service."""
+	app_root = root / APP_NAME
+	allowed_path = app_root / "services" / "transactional_message.py"
+	message_pattern = re.compile(r"^HRP [A-Za-z0-9][A-Za-z0-9 -]{1,126} (?:Outbox|Inbox)$")
+	forbidden_calls = frozenset(
+		{
+			"frappe.delete_doc",
+			"frappe.get_doc",
+			"frappe.new_doc",
+			"frappe.rename_doc",
+			"frappe.db.bulk_insert",
+			"frappe.db.bulk_update",
+			"frappe.db.delete",
+			"frappe.db.set_value",
+			"frappe.db.sql",
+		}
+	)
+	violations: list[str] = []
+
+	def attribute_path(node: ast.AST) -> str | None:
+		parts: list[str] = []
+		while isinstance(node, ast.Attribute):
+			parts.append(node.attr)
+			node = node.value
+		if not isinstance(node, ast.Name):
+			return None
+		return ".".join((node.id, *reversed(parts)))
+
+	if not app_root.is_dir():
+		return [f"missing {APP_NAME} package directory"]
+	for path in app_root.rglob("*.py"):
+		if path == allowed_path or "tests" in path.parts:
+			continue
+		try:
+			tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+		except SyntaxError:
+			continue
+		for node in ast.walk(tree):
+			if not isinstance(node, ast.Call) or attribute_path(node.func) not in forbidden_calls:
+				continue
+			literals = [
+				constant.value
+				for constant in ast.walk(node)
+				if isinstance(constant, ast.Constant) and isinstance(constant.value, str)
+			]
+			if any(message_pattern.fullmatch(value) or f"tab{value}" in value for value in literals):
+				violations.append(
+					f"{path.relative_to(root)}:{node.lineno} bypasses the transactional-message service"
+				)
+	return violations
+
+
+def validate_transactional_message_contract(root: Path) -> list[str]:
+	common_path = root / APP_NAME / "common" / "transactional_message.py"
+	service_path = root / APP_NAME / "services" / "transactional_message.py"
+	api_path = root / APP_NAME / "api" / "v1" / "messages.py"
+	documentation_path = root / "architecture" / "transactional_messages.md"
+	adr_path = root / "architecture" / "adr" / "ADR-0008-transactional-outbox-inbox.md"
+	task_path = root / "backlog" / "COD-013.md"
+	change_path = root / "changes" / "COD-013.json"
+	test_paths = (
+		root / "tests" / "test_transactional_message.py",
+		root / APP_NAME / "hrp_integration" / "tests" / "test_transactional_message.py",
+	)
+	catalog_paths = (
+		root / "api" / "api_catalog.csv",
+		root / "api" / "api_catalog.yaml",
+		root / "api" / "openapi.yaml",
+	)
+	required_paths = (
+		common_path,
+		service_path,
+		api_path,
+		documentation_path,
+		adr_path,
+		task_path,
+		change_path,
+		*test_paths,
+		*catalog_paths,
+	)
+	missing = [str(path.relative_to(root)) for path in required_paths if not path.is_file()]
+	if missing:
+		return [f"missing transactional message contract file: {path}" for path in missing]
+
+	violations = find_direct_transactional_message_bypasses(root)
+	common_text = common_path.read_text(encoding="utf-8")
+	for token in (
+		"class MessageBoxDefinition",
+		"BASE_MESSAGE_FIELDS",
+		"normalize_message_snapshot",
+		"message_record_name",
+		"processing_token_matches",
+		'"outbox_delivery": "at_least_once"',
+		'"inbox_deduplication": "consumer_and_event_id"',
+		'"http_write_enabled": False',
+	):
+		if token not in common_text:
+			violations.append(f"transactional message model is missing: {token}")
+	if len(BASE_MESSAGE_FIELDS) != 23:
+		violations.append("transactional message base must define exactly 23 fields")
+
+	service_text = service_path.read_text(encoding="utf-8")
+	for token in (
+		"class TransactionalMessageDocument",
+		"class PublishOutboxService",
+		"class ClaimOutboxService",
+		"class CompleteOutboxService",
+		"class FailOutboxService",
+		"class BeginInboxService",
+		"class CompleteInboxService",
+		"class FailInboxService",
+		"for_update=True",
+		"wait=False",
+		"processing_token_hash",
+		"transactional_outbox_published",
+		"transactional_inbox_started",
+		'raise_ione_error("OPERATION_NOT_ALLOWED")',
+	):
+		if token not in service_text:
+			violations.append(f"transactional message service is missing: {token}")
+	if "frappe.db.commit" in service_text:
+		violations.append("transactional message service must not own the transaction commit")
+	try:
+		service_tree = ast.parse(service_text, filename=str(service_path))
+	except SyntaxError as exc:
+		violations.append(f"transactional message service is invalid Python: {exc}")
+	else:
+		network_roots = {"aiohttp", "httpx", "requests", "socket", "urllib"}
+		imported_roots: set[str] = set()
+		for node in ast.walk(service_tree):
+			if isinstance(node, ast.Import):
+				imported_roots.update(alias.name.split(".", 1)[0] for alias in node.names)
+			elif isinstance(node, ast.ImportFrom) and node.module:
+				imported_roots.add(node.module.split(".", 1)[0])
+		if imported_roots.intersection(network_roots):
+			violations.append("transactional message base must not import a network client")
+
+	message_api = "/api/method/ione_hrp.api.v1.messages.get_transactional_message_contract"
+	for catalog_path in catalog_paths:
+		if message_api not in catalog_path.read_text(encoding="utf-8"):
+			violations.append(
+				f"{catalog_path.relative_to(root)} is missing the transactional message endpoint"
+			)
+	openapi = yaml.safe_load((root / "api" / "openapi.yaml").read_text(encoding="utf-8"))
+	operation = openapi.get("paths", {}).get(message_api, {}).get("get", {})
+	if operation.get("x-transaction-boundary") != "Read-only":
+		violations.append("PLT-016 transactional message contract API must be read-only")
+	if operation.get("x-required-role") != "System Manager or HRP System Manager":
+		violations.append("PLT-016 transactional message contract API has the wrong role contract")
+	if "post" in openapi.get("paths", {}).get(message_api, {}):
+		violations.append("PLT-016 transactional message contract must not expose writes")
+	return violations
+
+
 def validate_environment_profiles(root: Path) -> list[str]:
 	profile_path = root / APP_NAME / "config" / "environment_profiles.json"
 	manager_path = root / "scripts" / "environment_manager.py"
@@ -1339,6 +1495,7 @@ def collect_violations(root: Path) -> list[str]:
 	violations.extend(validate_audit_context_contract(root))
 	violations.extend(validate_domain_service_contract(root))
 	violations.extend(validate_immutable_ledger_contract(root))
+	violations.extend(validate_transactional_message_contract(root))
 	return violations
 
 
