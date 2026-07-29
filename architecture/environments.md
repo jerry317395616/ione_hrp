@@ -115,6 +115,12 @@ GET /api/method/ione_hrp.api.v1.environment.get_environment_status
 Error Log、脱敏审计和四个 App 工作树。CI 为节省构建时间共享临时代码 Bench，
 正式配置仍是一环境一 Bench。
 
+验收证据为 GitHub Actions
+[`30436254750`](https://github.com/jerry317395616/ione_hrp/actions/runs/30436254750)：
+56 项仓库契约与单元测试、18 项 Frappe 集成测试通过；三个 Site 均无配置漂移
+且 `Error Log` 为 0；测试配置和演示数据重复执行均保持幂等。该运行使用提交
+`21fcaa3fc0c389445964a194e15103ec66fbeb5e`，三个锁定上游工作树均为干净状态。
+
 ## 升级、重置与回滚
 
 环境代码升级必须走 PR、Required CI 和锁定版本校验。非生产环境可按
