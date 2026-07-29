@@ -2,7 +2,12 @@
   "repository": "jerry317395616/ione_hrp",
   "default_branch": "main",
   "protection": {
-    "required_status_checks": null,
+    "required_status_checks": {
+      "strict": true,
+      "contexts": [
+        "CI / Required"
+      ]
+    },
     "enforce_admins": true,
     "required_pull_request_reviews": {
       "dismiss_stale_reviews": true,

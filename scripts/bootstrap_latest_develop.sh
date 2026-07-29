@@ -8,6 +8,8 @@ SITE_NAME="${SITE_NAME:-hrp.localhost}"
 PYTHON_BIN="${PYTHON_BIN:-python3.10}"
 DB_TYPE="${DB_TYPE:-mariadb}"
 DB_ROOT_USERNAME="${DB_ROOT_USERNAME:-root}"
+DB_HOST="${DB_HOST:-127.0.0.1}"
+DB_PORT="${DB_PORT:-3306}"
 DEVELOPER_MODE="${DEVELOPER_MODE:-1}"
 REDIS_CACHE_PORT="${REDIS_CACHE_PORT:-13000}"
 REDIS_QUEUE_PORT="${REDIS_QUEUE_PORT:-11000}"
@@ -148,6 +150,8 @@ bash "$ROOT_DIR/scripts/lock_versions.sh" "$BENCH_DIR" "$LOCK_FILE"
 
 bench new-site "$SITE_NAME" \
   --db-type "$DB_TYPE" \
+  --db-host "$DB_HOST" \
+  --db-port "$DB_PORT" \
   --db-root-username "$DB_ROOT_USERNAME" \
   --db-root-password "$DB_ROOT_PASSWORD" \
   --admin-password "$ADMIN_PASSWORD" \

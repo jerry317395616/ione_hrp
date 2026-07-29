@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 import tomllib
+import yaml
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 if str(REPOSITORY_ROOT) not in sys.path:
@@ -22,6 +23,9 @@ else:
 
 APP_NAME = "ione_hrp"
 UPSTREAM_APPS = frozenset({"frappe", "erpnext", "hrms"})
+REQUIRED_CI_CONTEXT = "CI / Required"
+REQUIRED_CI_JOBS = frozenset({"quality", "integration", "required"})
+REQUIRED_PYTHON_DEV_DEPENDENCIES = frozenset({"pyyaml==6.0.3", "ruff==0.15.9"})
 LEGACY_PREFIXES = ("myi" + "_hrp", "myi" + "-hrp")
 PROTECTED_LEDGER_PATTERNS = (
 	re.compile(r"""(?:new_doc|get_doc)\(\s*["']GL Entry["']"""),
@@ -128,6 +132,14 @@ def validate_branch_policy(root: Path) -> list[str]:
 		violations.append("default branch must be main")
 	if protection.get("enforce_admins") is not True:
 		violations.append("branch protection must include administrators")
+	required_checks = protection.get("required_status_checks")
+	if not isinstance(required_checks, dict):
+		violations.append("branch protection must require CI status checks")
+	else:
+		if required_checks.get("strict") is not True:
+			violations.append("required CI checks must use the latest main branch")
+		if required_checks.get("contexts") != [REQUIRED_CI_CONTEXT]:
+			violations.append(f"branch protection must require only {REQUIRED_CI_CONTEXT}")
 	if not isinstance(reviews, dict):
 		violations.append("pull requests must be required before merging")
 	if protection.get("allow_force_pushes") is not False:
@@ -173,8 +185,11 @@ def validate_quality_tooling(root: Path) -> list[str]:
 
 	pyproject = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
 	dev_extras = pyproject.get("project", {}).get("optional-dependencies", {}).get("dev", [])
-	if not any(re.fullmatch(r"ruff==\d+\.\d+\.\d+(?:[-.][0-9A-Za-z]+)*", item) for item in dev_extras):
-		violations.append("Ruff must be pinned exactly in project.optional-dependencies.dev")
+	if set(dev_extras) != REQUIRED_PYTHON_DEV_DEPENDENCIES:
+		violations.append(
+			"project.optional-dependencies.dev must be exactly "
+			+ ", ".join(sorted(REQUIRED_PYTHON_DEV_DEPENDENCIES))
+		)
 	ruff = pyproject.get("tool", {}).get("ruff", {})
 	if ruff.get("target-version") != "py310":
 		violations.append("Ruff target-version must match the Python 3.10 application baseline")
@@ -216,6 +231,137 @@ def validate_quality_tooling(root: Path) -> list[str]:
 		violations.append("scripts/quality.sh must delegate to scripts/quality.py")
 	if "command -v ruff" in quality_shell:
 		violations.append("quality checks must fail instead of silently skipping missing Ruff")
+	return violations
+
+
+def validate_ci_pipeline(root: Path) -> list[str]:
+	workflow_path = root / ".github" / "workflows" / "ci.yml"
+	integration_script_path = root / "scripts" / "ci_integration.sh"
+	violations: list[str] = []
+	if not workflow_path.is_file():
+		violations.append("missing .github/workflows/ci.yml")
+	if not integration_script_path.is_file():
+		violations.append("missing scripts/ci_integration.sh")
+	if violations:
+		return violations
+
+	workflow_text = workflow_path.read_text(encoding="utf-8")
+	try:
+		workflow = yaml.load(workflow_text, Loader=yaml.BaseLoader)
+	except yaml.YAMLError as exc:
+		return [f"invalid CI workflow YAML: {exc}"]
+	if not isinstance(workflow, dict):
+		return ["CI workflow must be a mapping"]
+
+	if workflow.get("name") != "CI":
+		violations.append("CI workflow name must remain CI")
+	triggers = workflow.get("on")
+	if not isinstance(triggers, dict):
+		violations.append("CI workflow triggers must be a mapping")
+	else:
+		required_triggers = {"pull_request", "push", "workflow_dispatch"}
+		if not required_triggers.issubset(triggers):
+			violations.append("CI must run for pull requests, main pushes and manual dispatch")
+		if "pull_request_target" in triggers:
+			violations.append("CI must not use pull_request_target")
+		push = triggers.get("push")
+		if not isinstance(push, dict) or push.get("branches") != ["main"]:
+			violations.append("CI push trigger must be restricted to main")
+
+	permissions = workflow.get("permissions")
+	if permissions != {"contents": "read"}:
+		violations.append("CI workflow permissions must be contents: read only")
+	if "secrets." in workflow_text:
+		violations.append("CI must not consume repository secrets")
+
+	concurrency = workflow.get("concurrency")
+	if not isinstance(concurrency, dict) or concurrency.get("cancel-in-progress") != "true":
+		violations.append("CI must cancel superseded runs")
+
+	jobs = workflow.get("jobs")
+	if not isinstance(jobs, dict):
+		return [*violations, "CI workflow jobs must be a mapping"]
+	missing_jobs = sorted(REQUIRED_CI_JOBS - set(jobs))
+	if missing_jobs:
+		violations.append("CI workflow is missing jobs: " + ", ".join(missing_jobs))
+		return violations
+
+	expected_names = {
+		"quality": "Quality",
+		"integration": "Integration",
+		"required": "Required",
+	}
+	for job_name, display_name in expected_names.items():
+		job = jobs.get(job_name)
+		if not isinstance(job, dict) or job.get("name") != display_name:
+			violations.append(f"CI job {job_name} must keep stable name {display_name}")
+			continue
+		timeout = job.get("timeout-minutes")
+		if not isinstance(timeout, str) or not timeout.isdigit() or int(timeout) <= 0:
+			violations.append(f"CI job {job_name} must define a positive timeout")
+
+	integration = jobs["integration"]
+	if isinstance(integration, dict):
+		if integration.get("needs") != "quality":
+			violations.append("CI integration job must depend on quality")
+		services = integration.get("services")
+		mariadb = services.get("mariadb") if isinstance(services, dict) else None
+		if not isinstance(mariadb, dict) or mariadb.get("image") != "mariadb:11.8":
+			violations.append("CI integration job must use MariaDB 11.8")
+
+	required = jobs["required"]
+	if isinstance(required, dict):
+		if set(required.get("needs", [])) != {"quality", "integration"}:
+			violations.append("CI required job must aggregate quality and integration")
+		if required.get("if") != "always()":
+			violations.append("CI required job must run with always()")
+
+	action_pattern = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_./-]+@[0-9a-f]{40}$")
+	actions: list[str] = []
+	for job_name, job in jobs.items():
+		if not isinstance(job, dict):
+			continue
+		for step in job.get("steps", []):
+			if not isinstance(step, dict):
+				continue
+			action = step.get("uses")
+			if action:
+				actions.append(str(action))
+			if action and not str(action).startswith("./") and not action_pattern.fullmatch(str(action)):
+				violations.append(f"CI action must pin a full commit SHA: {job_name}: {action}")
+	if not any(action.startswith("gitleaks/gitleaks-action@") for action in actions):
+		violations.append("CI quality job must scan repository history with Gitleaks")
+
+	quality = jobs["quality"]
+	quality_commands = "\n".join(
+		str(step.get("run", "")) for step in quality.get("steps", []) if isinstance(step, dict)
+	)
+	for required_command in (
+		'pip install --disable-pip-version-check -e ".[dev]"',
+		"npm ci",
+		"python scripts/quality.py",
+		"npm audit --audit-level=high",
+	):
+		if required_command not in quality_commands:
+			violations.append(f"CI quality job is missing command: {required_command}")
+
+	integration_commands = "\n".join(
+		str(step.get("run", "")) for step in integration.get("steps", []) if isinstance(step, dict)
+	)
+	if "bash scripts/ci_integration.sh" not in integration_commands:
+		violations.append("CI integration job must invoke scripts/ci_integration.sh")
+
+	integration_script = integration_script_path.read_text(encoding="utf-8")
+	for required_token in (
+		"bootstrap_latest_develop.sh",
+		"version_lock.py",
+		"migrate --skip-search-index",
+		"run-tests --app ione_hrp",
+		'frappe.db.count("Error Log")',
+		"git -C",
+	):
+		if required_token not in integration_script:
+			violations.append(f"CI integration script is missing: {required_token}")
 	return violations
 
 
@@ -350,6 +496,7 @@ def collect_violations(root: Path) -> list[str]:
 	violations.extend(validate_branch_policy(root))
 	violations.extend(validate_push_guard(root))
 	violations.extend(validate_quality_tooling(root))
+	violations.extend(validate_ci_pipeline(root))
 	violations.extend(validate_version_baseline(root))
 	violations.extend(validate_catalog_ownership(root))
 	violations.extend(validate_module_structure(root))

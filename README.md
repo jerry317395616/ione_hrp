@@ -104,3 +104,16 @@ python scripts/quality.py
 非零状态，不允许静默跳过。只检查 Python 或 Node 工具可分别使用
 `--mode python`、`--mode node`。详细规则见
 `architecture/quality_tooling.md`。
+
+## 持续集成
+
+Pull Request、`main` 推送和人工运行都会触发 `.github/workflows/ci.yml`：
+
+- `Quality` 执行秘密扫描、统一质量门禁和 Node 依赖漏洞扫描；
+- `Integration` 用锁定的 Frappe、ERPNext、Frappe HR 提交创建临时 Bench，
+  迁移新站点并运行全部 `ione_hrp` 集成测试；
+- `Required` 只在两个作业都成功时通过，并由分支保护要求
+  `CI / Required`。
+
+CI 使用一次性测试密码且不连接 Press 或生产环境。完整设计、安全边界和本地
+复现命令见 `architecture/ci_pipeline.md`。

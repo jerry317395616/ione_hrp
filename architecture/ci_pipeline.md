@@ -1,0 +1,88 @@
+# CI 流水线
+
+## 目标与边界
+
+COD-005 在 GitHub Actions 中建立 `ione_hrp` 的合并门禁。流水线只读取代码并
+创建一次性测试环境，不连接 Press、生产数据库、对象存储或外部业务系统，也
+不使用仓库 Secret。它不会修改 Frappe、ERPNext 或 Frappe HR 源码。
+
+## 触发与并发
+
+`.github/workflows/ci.yml` 在以下事件运行：
+
+- Pull Request；
+- 合并到 `main` 后；
+- 人工 `workflow_dispatch`。
+
+同一 PR 或分支的新运行会取消旧运行，所有作业都有明确超时。工作流权限仅为
+`contents: read`，禁止 `pull_request_target`，防止不受信任的 PR 取得高权限
+令牌。
+
+## 作业
+
+### Quality
+
+`Quality` 使用 Python 3.14 和 Node.js 24：
+
+1. 检出完整 Git 历史并执行 Gitleaks；
+2. 从精确版本声明安装 Python 开发依赖，并以 `npm ci` 恢复 Node 锁文件；
+3. 运行 `scripts/quality.py` 的仓库契约、包校验、编译、Ruff、34 项以上
+   仓库测试、校验和、Pyright、ESLint 和 Prettier；
+4. 运行 `npm audit --audit-level=high`。
+
+### Integration
+
+`Integration` 只在 `Quality` 成功后运行。它使用 MariaDB 11.8 服务容器和
+本机临时 Redis，通过 `scripts/ci_integration.sh`：
+
+1. 从 `resolved_versions.lock.json` 获取并检出 Frappe、ERPNext、Frappe HR
+   的不可变提交；
+2. 创建新的 Bench 与 `test_site`，安装 ERPNext、Frappe HR 和唯一自研 App
+   `ione_hrp`；
+3. 再次验证上游锁、执行幂等迁移和全部 `ione_hrp` Frappe 集成测试；
+4. 验证新站点没有 Error Log，四个 App 工作树均保持洁净。
+
+临时站点使用固定的非生产测试密码，运行结束后随 GitHub Runner 销毁。失败时
+只保留 Bench 日志 7 天；日志不得写入凭据或业务敏感数据。
+
+### Required
+
+`Required` 使用 `always()` 汇总前两个作业。只有 `Quality` 和 `Integration`
+都为 `success` 才返回成功，因此前置作业失败、跳过或取消都不能绕过门禁。
+稳定检查名为 `CI / Required`，是 `main` 分支唯一要求的 CI 状态检查。
+
+## 供应链约束
+
+第三方 Action 必须固定到完整 40 位提交 SHA，禁止 `@main`、`@v6` 等浮动
+引用。Python 开发依赖使用精确版本，Node 依赖由 `package-lock.json` 完整
+锁定；Frappe 生态依赖仍只接受 `resolved_versions.lock.json` 的三个提交。
+仓库契约对触发器、权限、作业名、超时、依赖关系、命令、Action 引用和分支
+保护上下文执行失败关闭校验。
+
+## 本地与隔离验证
+
+本地执行：
+
+```bash
+python -m pip install -e ".[dev]"
+npm ci
+python scripts/quality.py
+npm audit --audit-level=high
+```
+
+具备 MariaDB、Redis、uv、Python 3.14 和 Node.js 24 的一次性 Linux 环境可执行：
+
+```bash
+BENCH_DIR=/tmp/ione-hrp-ci \
+SITE_NAME=test_site \
+DB_ROOT_PASSWORD=ci_root_password \
+ADMIN_PASSWORD=ci_admin_password \
+PYTHON_BIN=python3.14 \
+bash scripts/ci_integration.sh
+```
+
+## 回滚
+
+回滚工作流、`scripts/ci_integration.sh`、分支保护策略和对应契约测试即可恢复
+COD-004 状态。该任务没有 DocType、Patch、Fixture 或生产数据迁移，禁止以
+关闭必需检查的方式临时绕过失败；应修复失败原因后重新运行。
