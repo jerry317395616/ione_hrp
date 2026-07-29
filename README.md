@@ -138,6 +138,25 @@ Idempotency-Key: deploy-20260729-budget-enable
 事务、安全、迁移和回滚规则见 `architecture/domain_services.md` 与
 `architecture/adr/ADR-0006-domain-service-and-durable-idempotency.md`。
 
+## 不可变台账
+
+新的 HRP 业务台账必须保留在所属模块中，使用结构化 DocType，并继承
+`ImmutableLedgerDocument`、`AppendImmutableLedgerService` 和
+`ReverseImmutableLedgerService`。公共基类统一强制服务专用追加、只读 DocPerm、
+持久化幂等、`FOR UPDATE NOWAIT` 行锁、一次冲销以及等额反向校验；不提供任意
+DocType 的通用写 API，也不创建万能 JSON 台账。
+
+该能力不适用于 ERPNext `GL Entry`、`Stock Ledger Entry` 或 `Bin`。财务和库存过账
+仍须调用 ERPNext 标准控制器。平台公共契约可由系统管理员只读查询：
+
+```text
+GET /api/method/ione_hrp.api.v1.ledgers.get_immutable_ledger_contract
+```
+
+模型字段、具体模块接入方法、并发语义、安全边界和回滚规则见
+`architecture/immutable_ledgers.md` 与
+`architecture/adr/ADR-0007-immutable-ledger-base.md`。
+
 安装到已有非生产 Bench：
 
 ```bash

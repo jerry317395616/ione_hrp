@@ -32,6 +32,7 @@ from ione_hrp.common.fixture_policy import (
 	inspect_fixture_repository,
 	load_fixture_policy,
 )
+from ione_hrp.common.immutable_ledger import BASE_LEDGER_FIELDS
 from ione_hrp.services.module_registry import validate_module_source_tree
 
 if __package__:
@@ -50,6 +51,15 @@ PROTECTED_LEDGER_PATTERNS = (
 	re.compile(r"""(?:new_doc|get_doc)\(\s*["']Stock Ledger Entry["']"""),
 	re.compile(r"""(?:new_doc|get_doc)\(\s*["']Bin["']"""),
 	re.compile(r"""tab(?:GL Entry|Stock Ledger Entry|Bin)"""),
+)
+IMMUTABLE_LEDGER_FORBIDDEN_PERMISSIONS = (
+	"create",
+	"write",
+	"delete",
+	"submit",
+	"cancel",
+	"amend",
+	"import",
 )
 REQUIRED_NODE_DEV_DEPENDENCIES = frozenset(
 	{
@@ -922,6 +932,160 @@ def validate_domain_service_contract(root: Path) -> list[str]:
 	return violations
 
 
+def find_direct_immutable_ledger_bypasses(root: Path) -> list[str]:
+	"""Keep concrete HRP ledger access behind the shared immutable-ledger service."""
+	app_root = root / APP_NAME
+	allowed_path = app_root / "services" / "immutable_ledger.py"
+	ledger_pattern = re.compile(r"^HRP [A-Za-z0-9][A-Za-z0-9 -]{1,134} Ledger$")
+	forbidden_calls = frozenset(
+		{
+			"frappe.delete_doc",
+			"frappe.get_doc",
+			"frappe.new_doc",
+			"frappe.rename_doc",
+			"frappe.db.bulk_insert",
+			"frappe.db.bulk_update",
+			"frappe.db.delete",
+			"frappe.db.set_value",
+			"frappe.db.sql",
+		}
+	)
+	violations: list[str] = []
+
+	def attribute_path(node: ast.AST) -> str | None:
+		parts: list[str] = []
+		while isinstance(node, ast.Attribute):
+			parts.append(node.attr)
+			node = node.value
+		if not isinstance(node, ast.Name):
+			return None
+		return ".".join((node.id, *reversed(parts)))
+
+	for path in app_root.rglob("*.py"):
+		if path == allowed_path or "tests" in path.parts:
+			continue
+		try:
+			tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+		except SyntaxError:
+			continue
+		for node in ast.walk(tree):
+			if not isinstance(node, ast.Call) or attribute_path(node.func) not in forbidden_calls:
+				continue
+			literals = [
+				constant.value
+				for constant in ast.walk(node)
+				if isinstance(constant, ast.Constant) and isinstance(constant.value, str)
+			]
+			if any(ledger_pattern.fullmatch(value) or f"tab{value}" in value for value in literals):
+				violations.append(
+					f"{path.relative_to(root)}:{node.lineno} bypasses the immutable-ledger service"
+				)
+	return violations
+
+
+def validate_immutable_ledger_contract(root: Path) -> list[str]:
+	common_path = root / APP_NAME / "common" / "immutable_ledger.py"
+	service_path = root / APP_NAME / "services" / "immutable_ledger.py"
+	api_path = root / APP_NAME / "api" / "v1" / "ledgers.py"
+	documentation_path = root / "architecture" / "immutable_ledgers.md"
+	adr_path = root / "architecture" / "adr" / "ADR-0007-immutable-ledger-base.md"
+	task_path = root / "backlog" / "COD-012.md"
+	change_path = root / "changes" / "COD-012.json"
+	test_paths = (
+		root / "tests" / "test_immutable_ledger.py",
+		root / APP_NAME / "hrp_foundation" / "tests" / "test_immutable_ledger.py",
+	)
+	blueprint_paths = (
+		root / "doctype_blueprints" / "hrp_budget" / "hrp_budget_ledger.json",
+		root / "doctype_blueprints" / "hrp_inventory_spd" / "hrp_department_stock_ledger.json",
+	)
+	catalog_paths = (
+		root / "api" / "api_catalog.csv",
+		root / "api" / "api_catalog.yaml",
+		root / "api" / "openapi.yaml",
+	)
+	required_paths = (
+		common_path,
+		service_path,
+		api_path,
+		documentation_path,
+		adr_path,
+		task_path,
+		change_path,
+		*test_paths,
+		*blueprint_paths,
+		*catalog_paths,
+	)
+	missing = [str(path.relative_to(root)) for path in required_paths if not path.is_file()]
+	if missing:
+		return [f"missing immutable ledger contract file: {path}" for path in missing]
+
+	violations = find_direct_immutable_ledger_bypasses(root)
+	common_text = common_path.read_text(encoding="utf-8")
+	for token in (
+		"class ImmutableLedgerDefinition",
+		"BASE_LEDGER_FIELDS",
+		"build_reversal_values",
+		"assert_reversal_matches",
+		"one_reversal_per_entry",
+		'"http_write_enabled": False',
+	):
+		if token not in common_text:
+			violations.append(f"immutable ledger model is missing: {token}")
+
+	service_text = service_path.read_text(encoding="utf-8")
+	for token in (
+		"class ImmutableLedgerDocument",
+		"class AppendImmutableLedgerService",
+		"class ReverseImmutableLedgerService",
+		"for_update=True",
+		"wait=False",
+		"immutable_ledger_appended",
+		"immutable_ledger_reversed",
+		'raise_ione_error("OPERATION_NOT_ALLOWED")',
+	):
+		if token not in service_text:
+			violations.append(f"immutable ledger service is missing: {token}")
+	if "frappe.db.commit" in service_text:
+		violations.append("immutable ledger service must not own the transaction commit")
+
+	expected_fields = {field.fieldname: (field.fieldtype, field.required) for field in BASE_LEDGER_FIELDS}
+	for blueprint_path in blueprint_paths:
+		payload = json.loads(blueprint_path.read_text(encoding="utf-8"))
+		fields = {
+			str(field.get("fieldname")): field
+			for field in payload.get("fields", [])
+			if isinstance(field, dict)
+		}
+		for fieldname, (fieldtype, required) in expected_fields.items():
+			field = fields.get(fieldname)
+			if field is None or field.get("fieldtype") != fieldtype or (required and field.get("reqd") != 1):
+				violations.append(
+					f"{blueprint_path.relative_to(root)} violates base ledger field {fieldname}"
+				)
+		if payload.get("is_submittable") != 0 or payload.get("allow_rename") != 0:
+			violations.append(f"{blueprint_path.relative_to(root)} must be append-only")
+		for permission in payload.get("permissions", []):
+			if any(
+				bool(permission.get(permission_name))
+				for permission_name in IMMUTABLE_LEDGER_FORBIDDEN_PERMISSIONS
+				if permission_name in permission
+			):
+				violations.append(f"{blueprint_path.relative_to(root)} contains a ledger write permission")
+
+	ledger_api = "/api/method/ione_hrp.api.v1.ledgers.get_immutable_ledger_contract"
+	for catalog_path in catalog_paths:
+		if ledger_api not in catalog_path.read_text(encoding="utf-8"):
+			violations.append(f"{catalog_path.relative_to(root)} is missing the immutable ledger endpoint")
+	openapi = yaml.safe_load((root / "api" / "openapi.yaml").read_text(encoding="utf-8"))
+	operation = openapi.get("paths", {}).get(ledger_api, {}).get("get", {})
+	if operation.get("x-transaction-boundary") != "Read-only":
+		violations.append("PLT-015 immutable ledger contract API must be read-only")
+	if operation.get("x-required-role") != "System Manager or HRP System Manager":
+		violations.append("PLT-015 immutable ledger contract API has the wrong role contract")
+	return violations
+
+
 def validate_environment_profiles(root: Path) -> list[str]:
 	profile_path = root / APP_NAME / "config" / "environment_profiles.json"
 	manager_path = root / "scripts" / "environment_manager.py"
@@ -1174,6 +1338,7 @@ def collect_violations(root: Path) -> list[str]:
 	violations.extend(validate_error_contract(root))
 	violations.extend(validate_audit_context_contract(root))
 	violations.extend(validate_domain_service_contract(root))
+	violations.extend(validate_immutable_ledger_contract(root))
 	return violations
 
 

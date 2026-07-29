@@ -190,6 +190,42 @@ paths:
       x-required-role: Authenticated User
       x-transaction-boundary: Read-only
       x-idempotency: Read-only per request
+  /api/method/ione_hrp.api.v1.ledgers.get_immutable_ledger_contract:
+    get:
+      operationId: platform_015
+      summary: 查询不可变台账公共契约
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Shared append-only and equal-and-opposite reversal contract
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImmutableLedgerContractResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '403':
+          description: System Manager or HRP System Manager role required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '500':
+          description: Immutable ledger platform contract is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+      x-required-role: System Manager or HRP System Manager
+      x-transaction-boundary: Read-only
+      x-idempotency: Read-only deterministic
   /api/method/ione_hrp.api.v1.modules.set_module_enabled:
     post:
       operationId: platform_009
@@ -3461,6 +3497,13 @@ components:
       properties:
         message:
           $ref: '#/components/schemas/AuditContext'
+    ImmutableLedgerContractResponse:
+      type: object
+      required:
+      - message
+      properties:
+        message:
+          $ref: '#/components/schemas/ImmutableLedgerContract'
     IoneErrorResponse:
       type: object
       required:
@@ -3547,6 +3590,47 @@ components:
           - http
           - job
           - service
+        http_write_enabled:
+          type: boolean
+          const: false
+    ImmutableLedgerContract:
+      type: object
+      additionalProperties: false
+      required:
+      - schema_version
+      - base_fields
+      - mutation_policy
+      - reversal_policy
+      - http_write_enabled
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        base_fields:
+          type: array
+          minItems: 17
+          items:
+            type: object
+            additionalProperties: false
+            required:
+            - fieldname
+            - fieldtype
+            - required
+            properties:
+              fieldname:
+                type: string
+              fieldtype:
+                type: string
+              required:
+                type: boolean
+        mutation_policy:
+          type: object
+          additionalProperties:
+            type: boolean
+        reversal_policy:
+          type: object
+          additionalProperties:
+            type: boolean
         http_write_enabled:
           type: boolean
           const: false

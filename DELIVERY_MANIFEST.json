@@ -10,13 +10,13 @@
     "design_fields": 10036,
     "doctype_blueprints": 398,
     "starter_doctypes": 4,
-    "repository_contract_tests": 126,
-    "frappe_integration_tests": 54,
+    "repository_contract_tests": 135,
+    "frappe_integration_tests": 63,
     "environment_profiles": 3,
     "fixture_rules": 3,
     "fixture_files": 3,
-    "architecture_decisions": 6,
-    "change_records": 11,
+    "architecture_decisions": 7,
+    "change_records": 12,
     "change_risk_rules": 5,
     "error_definitions": 12,
     "error_translations": 28
@@ -33,6 +33,7 @@
     "architecture/errors.md",
     "architecture/audit_context.md",
     "architecture/domain_services.md",
+    "architecture/immutable_ledgers.md",
     "architecture/ADR_TEMPLATE.md",
     "architecture/adr",
     "architecture/module_registry.yaml",
@@ -64,6 +65,7 @@
     "ione_hrp/services/audit_context.py",
     "ione_hrp/services/domain_service.py",
     "ione_hrp/services/idempotency.py",
+    "ione_hrp/services/immutable_ledger.py",
     "backlog/COD-005.md",
     "backlog/COD-006.md",
     "backlog/COD-007.md",
@@ -71,6 +73,7 @@
     "backlog/COD-009.md",
     "backlog/COD-010.md",
     "backlog/COD-011.md",
+    "backlog/COD-012.md",
     "backlog/backlog.csv"
   ]
 }

@@ -1048,6 +1048,20 @@
   transaction_boundary: Read-only
   audit: Redacted context log
   version: v1
+- api_code: PLT-015
+  app: ione_hrp
+  domain_group: Platform
+  method: GET
+  path: /api/method/ione_hrp.api.v1.ledgers.get_immutable_ledger_contract
+  description: 查询不可变台账公共契约
+  request_schema: 无
+  response_schema: schema_version,base_fields,mutation_policy,reversal_policy,http_write_enabled
+  required_role: System Manager or HRP System Manager
+  idempotency: Read-only deterministic
+  async: 'No'
+  transaction_boundary: Read-only
+  audit: Redacted site log
+  version: v1
 - api_code: POR-001
   app: ione_hrp
   domain_group: Portal
