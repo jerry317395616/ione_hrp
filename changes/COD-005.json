@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "task_id": "COD-005",
+  "title": "建立CI单元/集成/前端测试流水线",
+  "status": "Implemented",
+  "risk_level": "high",
+  "change_types": [
+    "governance",
+    "security"
+  ],
+  "affected_modules": [
+    "HRP Foundation"
+  ],
+  "breaking_change": false,
+  "adr_ids": [],
+  "path_globs": [
+    ".github/workflows/ci.yml",
+    ".github/branch-protection.json",
+    "architecture/ci_pipeline.md",
+    "architecture/quality_tooling.md",
+    "scripts/ci_integration.sh",
+    "scripts/quality.py",
+    "tests/test_ci_pipeline.py",
+    "tests/test_quality_tooling.py",
+    "backlog/COD-005.md"
+  ],
+  "permissions_impact": "GitHub Actions 仅有 contents: read；Required 检查成为 main 合并门禁。",
+  "migration_impact": "CI 使用临时 Bench 和数据库，不连接 Press 或生产站点。",
+  "rollback_plan": "回滚流水线提交后恢复上一版 Required 检查配置，不能绕过 main 保护。",
+  "security_impact": "加入历史秘密扫描、依赖漏洞扫描和锁定 Action SHA。",
+  "test_plan": [
+    "CI YAML 权限、触发器、Action SHA 和 Required 聚合测试",
+    "锁定 Bench 全新安装、重复迁移和应用集成测试"
+  ],
+  "owner": "I-ONE HRP Maintainers",
+  "created_on": "2026-07-28",
+  "updated_on": "2026-07-28"
+}

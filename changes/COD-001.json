@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "task_id": "COD-001",
+  "title": "建立mono-repo与分支保护",
+  "status": "Implemented",
+  "risk_level": "critical",
+  "change_types": [
+    "architecture",
+    "governance"
+  ],
+  "affected_modules": [
+    "HRP Foundation"
+  ],
+  "breaking_change": false,
+  "adr_ids": [],
+  "path_globs": [
+    ".github/**",
+    ".githooks/**",
+    "architecture/repository_governance.md",
+    "scripts/apply_branch_protection.py",
+    "tests/test_branch_protection.py",
+    "backlog/COD-001.md"
+  ],
+  "permissions_impact": "建立 GitHub 分支保护和 CODEOWNERS，不改变 Frappe 运行时角色。",
+  "migration_impact": "无数据库迁移；仓库根目录成为 Press 可直接构建的 App 根目录。",
+  "rollback_plan": "回滚对应提交并恢复经批准的仓库保护策略，不修改站点数据。",
+  "security_impact": "禁止 main 直接推送、强推和删除，CI 仅使用只读 contents 权限。",
+  "test_plan": [
+    "仓库契约验证只有一个自研 App",
+    "分支保护策略与本地 push guard 自动化测试"
+  ],
+  "owner": "I-ONE HRP Maintainers",
+  "created_on": "2026-07-28",
+  "updated_on": "2026-07-28"
+}

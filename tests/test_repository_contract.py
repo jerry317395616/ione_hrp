@@ -11,6 +11,7 @@ from scripts.repository_contract import (
 	discover_custom_apps,
 	find_legacy_prefix_references,
 	validate_branch_policy,
+	validate_change_governance,
 	validate_ci_pipeline,
 	validate_environment_profiles,
 	validate_fixture_governance,
@@ -130,6 +131,9 @@ class RepositoryContractTest(unittest.TestCase):
 
 	def test_current_fixture_governance_is_mandatory(self) -> None:
 		self.assertEqual(validate_fixture_governance(ROOT), [])
+
+	def test_current_change_governance_is_mandatory(self) -> None:
+		self.assertEqual(validate_change_governance(ROOT), [])
 
 
 if __name__ == "__main__":

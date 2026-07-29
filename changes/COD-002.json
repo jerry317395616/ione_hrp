@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "task_id": "COD-002",
+  "title": "锁定Frappe/ERPNext/HRMS版本与SHA",
+  "status": "Implemented",
+  "risk_level": "critical",
+  "change_types": [
+    "dependency",
+    "governance"
+  ],
+  "affected_modules": [
+    "HRP Foundation"
+  ],
+  "breaking_change": false,
+  "adr_ids": [],
+  "path_globs": [
+    "resolved_versions.lock.json",
+    "architecture/version_baseline.json",
+    "architecture/deployment.md",
+    "scripts/version_lock.py",
+    "scripts/bootstrap_latest_develop.sh",
+    "ione_hrp/setup/versions.py",
+    "ione_hrp/api/v1/health.py",
+    "tests/test_version_lock.py",
+    "backlog/COD-002.md"
+  ],
+  "permissions_impact": "版本状态 API 仅向认证用户开放；部署前版本校验失败关闭。",
+  "migration_impact": "锁定 Frappe、ERPNext、HRMS develop 解析提交，不自动升级生产 Bench。",
+  "rollback_plan": "恢复上一份锁文件并在隔离 Bench 完成安装、迁移和测试后再推广。",
+  "security_impact": "只接受官方上游仓库和完整提交 SHA，禁止部署时漂移。",
+  "test_plan": [
+    "锁文件 schema、仓库地址和提交格式测试",
+    "隔离 Bench 运行时提交匹配测试"
+  ],
+  "owner": "I-ONE HRP Maintainers",
+  "created_on": "2026-07-28",
+  "updated_on": "2026-07-29"
+}

@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "task_id": "COD-007",
+  "title": "建立fixtures导出规范",
+  "status": "Implemented",
+  "risk_level": "high",
+  "change_types": [
+    "configuration",
+    "governance"
+  ],
+  "affected_modules": [
+    "HRP Foundation"
+  ],
+  "breaking_change": false,
+  "adr_ids": [],
+  "path_globs": [
+    "ione_hrp/config/fixture_policy.json",
+    "ione_hrp/common/fixture_policy.py",
+    "ione_hrp/fixtures/**",
+    "ione_hrp/services/fixtures.py",
+    "ione_hrp/api/v1/fixtures.py",
+    "scripts/fixture_manager.py",
+    "architecture/fixtures.md",
+    "tests/test_fixture_*.py",
+    "ione_hrp/hrp_foundation/tests/test_fixtures.py",
+    "backlog/COD-007.md"
+  ],
+  "permissions_impact": "治理状态仅限 System Manager；没有 HTTP 导出写接口。",
+  "migration_impact": "三个空 Fixture 文件随迁移同步，不写入业务记录。",
+  "rollback_plan": "回滚代码不自动删除站点配置；未来删除必须使用显式 Patch。",
+  "security_impact": "严格白名单、敏感字段和值拒绝，导出仅限受管理 development Site。",
+  "test_plan": [
+    "策略、归属、敏感数据和确定性导出单元测试",
+    "System Manager 权限、重复导出和全新 Site Fixture 同步集成测试"
+  ],
+  "owner": "I-ONE HRP Maintainers",
+  "created_on": "2026-07-29",
+  "updated_on": "2026-07-29"
+}

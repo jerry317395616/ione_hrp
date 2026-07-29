@@ -936,6 +936,90 @@
   transaction_boundary: Single DB transaction
   audit: Always
   version: v1
+- api_code: PLT-007
+  app: ione_hrp
+  domain_group: Platform
+  method: GET
+  path: /api/method/ione_hrp.api.v1.health.get_upstream_version_status
+  description: 查询上游版本锁匹配状态
+  request_schema: 无
+  response_schema: status,lock,runtime,issues
+  required_role: Authenticated User
+  idempotency: Not applicable
+  async: 'No'
+  transaction_boundary: Read-only
+  audit: Request log
+  version: v1
+- api_code: PLT-008
+  app: ione_hrp
+  domain_group: Platform
+  method: GET
+  path: /api/method/ione_hrp.api.v1.modules.list_modules
+  description: 查询已发布模块及站点启停状态
+  request_schema: 无
+  response_schema: module,module_key,domain_group,label_cn,enabled,sequence,description
+  required_role: Authenticated User
+  idempotency: Not applicable
+  async: 'No'
+  transaction_boundary: Read-only
+  audit: Request log
+  version: v1
+- api_code: PLT-009
+  app: ione_hrp
+  domain_group: Platform
+  method: POST
+  path: /api/method/ione_hrp.api.v1.modules.set_module_enabled
+  description: 幂等启停已发布模块
+  request_schema: module_name,enabled,correlation_id
+  response_schema: module,enabled,changed,correlation_id
+  required_role: System Manager or HRP System Manager
+  idempotency: State-set idempotent
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Version + Comment + site log
+  version: v1
+- api_code: PLT-010
+  app: ione_hrp
+  domain_group: Platform
+  method: GET
+  path: /api/method/ione_hrp.api.v1.environment.get_environment_status
+  description: 查询当前非生产环境安全配置
+  request_schema: 无
+  response_schema: managed,name,schema_version,developer_mode,allow_tests,scheduler_enabled,external_integrations_enabled,email_queue_enabled,synthetic_data_only,public_access,reset_policy
+  required_role: Authenticated User
+  idempotency: Not applicable
+  async: 'No'
+  transaction_boundary: Read-only
+  audit: Request log
+  version: v1
+- api_code: PLT-011
+  app: ione_hrp
+  domain_group: Platform
+  method: GET
+  path: /api/method/ione_hrp.api.v1.fixtures.get_fixture_governance_status
+  description: 查询Fixtures导出治理状态
+  request_schema: 无
+  response_schema: policy,rules,repository,export
+  required_role: System Manager
+  idempotency: Not applicable
+  async: 'No'
+  transaction_boundary: Read-only
+  audit: Request log
+  version: v1
+- api_code: PLT-012
+  app: ione_hrp
+  domain_group: Platform
+  method: GET
+  path: /api/method/ione_hrp.api.v1.change_governance.get_change_governance_status
+  description: 查询ADR与变更治理状态
+  request_schema: correlation_id
+  response_schema: schema_version,task_count,change_record_count,decision_count,accepted_decisions,sha256,correlation_id,http_write_enabled
+  required_role: System Manager or HRP System Manager
+  idempotency: Read-only deterministic
+  async: 'No'
+  transaction_boundary: Read-only
+  audit: Redacted site log
+  version: v1
 - api_code: POR-001
   app: ione_hrp
   domain_group: Portal

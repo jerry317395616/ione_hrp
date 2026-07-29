@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "task_id": "COD-006",
+  "title": "建立开发测试演示环境",
+  "status": "Implemented",
+  "risk_level": "high",
+  "change_types": [
+    "configuration",
+    "governance"
+  ],
+  "affected_modules": [
+    "HRP Foundation"
+  ],
+  "breaking_change": false,
+  "adr_ids": [],
+  "path_globs": [
+    "ione_hrp/config/environment_profiles.json",
+    "ione_hrp/common/environment_profiles.py",
+    "ione_hrp/services/environment.py",
+    "ione_hrp/api/v1/environment.py",
+    "scripts/environment_manager.py",
+    "architecture/environments.md",
+    "tests/test_environment_*.py",
+    "ione_hrp/hrp_foundation/tests/test_environment.py",
+    "backlog/COD-006.md"
+  ],
+  "permissions_impact": "环境状态仅向认证用户开放，配置写入只通过本地受控 CLI。",
+  "migration_impact": "只创建隔离的 development、test、demo Site 和合成数据。",
+  "rollback_plan": "确认完整绝对路径和备份后由运维显式移除非生产 Site；无自动删除命令。",
+  "security_impact": "默认关闭外部集成、邮件和公开访问，禁止生产式目标。",
+  "test_plan": [
+    "配置档严格 schema、目标隔离和生产拒绝测试",
+    "三类 Site 幂等配置、迁移、权限和 Error Log 集成测试"
+  ],
+  "owner": "I-ONE HRP Maintainers",
+  "created_on": "2026-07-29",
+  "updated_on": "2026-07-29"
+}
