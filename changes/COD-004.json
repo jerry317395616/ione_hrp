@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "task_id": "COD-004",
+  "title": "配置ruff/pyright/eslint/prettier",
+  "status": "Implemented",
+  "risk_level": "critical",
+  "change_types": [
+    "configuration",
+    "governance"
+  ],
+  "affected_modules": [
+    "HRP Foundation"
+  ],
+  "breaking_change": false,
+  "adr_ids": [],
+  "path_globs": [
+    "pyproject.toml",
+    "pyrightconfig.json",
+    "package.json",
+    "package-lock.json",
+    "eslint.config.mjs",
+    ".prettierrc.json",
+    "architecture/quality_tooling.md",
+    "scripts/quality.py",
+    "scripts/quality.sh",
+    "tests/test_quality_tooling.py",
+    "backlog/COD-004.md"
+  ],
+  "permissions_impact": "无 Frappe 运行时角色变化；质量门禁只读执行。",
+  "migration_impact": "无数据库迁移；精确锁定 Python 和 Node 开发质量工具。",
+  "rollback_plan": "恢复上一版工具配置与锁文件，并在隔离环境重新执行全部门禁。",
+  "security_impact": "质量工具缺失或检查失败均返回非零，不允许静默跳过。",
+  "test_plan": [
+    "Ruff、Pyright、ESLint、Prettier 配置与精确版本测试",
+    "统一质量执行顺序、失败停止和只读幂等测试"
+  ],
+  "owner": "I-ONE HRP Maintainers",
+  "created_on": "2026-07-28",
+  "updated_on": "2026-07-28"
+}

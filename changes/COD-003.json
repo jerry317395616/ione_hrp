@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "task_id": "COD-003",
+  "title": "完善单应用多模块骨架",
+  "status": "Implemented",
+  "risk_level": "critical",
+  "change_types": [
+    "application",
+    "configuration"
+  ],
+  "affected_modules": [
+    "HRP Foundation"
+  ],
+  "breaking_change": false,
+  "adr_ids": [
+    "ADR-0001"
+  ],
+  "path_globs": [
+    "architecture/module_registry.yaml",
+    "ione_hrp/modules.txt",
+    "ione_hrp/services/module_registry.py",
+    "ione_hrp/setup/**",
+    "ione_hrp/api/v1/modules.py",
+    "ione_hrp/hrp_foundation/**",
+    "scripts/create_module.py",
+    "tests/test_module_registry.py",
+    "tests/test_module_scaffold.py",
+    "backlog/COD-003.md"
+  ],
+  "permissions_impact": "模块启停仅允许 System Manager 或 HRP System Manager。",
+  "migration_impact": "迁移时幂等同步 Module Def、HRP Module Setting 和核心角色。",
+  "rollback_plan": "回滚代码不会自动删除模块元数据；需要单独评审显式清理。",
+  "security_impact": "模块生成仅限开发期源码操作，生产用户不能生成 Python 代码。",
+  "test_plan": [
+    "注册表、modules.txt 和源码树一致性测试",
+    "模块 API 权限、审计、幂等和异常路径集成测试"
+  ],
+  "owner": "I-ONE HRP Maintainers",
+  "created_on": "2026-07-28",
+  "updated_on": "2026-07-29"
+}

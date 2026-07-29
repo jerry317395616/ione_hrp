@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "task_id": "COD-008",
+  "title": "建立ADR和变更治理",
+  "status": "Implemented",
+  "risk_level": "critical",
+  "change_types": [
+    "architecture",
+    "governance",
+    "security"
+  ],
+  "affected_modules": [
+    "HRP Foundation"
+  ],
+  "breaking_change": false,
+  "adr_ids": [
+    "ADR-0002"
+  ],
+  "path_globs": [
+    ".github/**",
+    "README.md",
+    "DELIVERY_MANIFEST.json",
+    "VALIDATION_REPORT.json",
+    "SHA256SUMS.txt",
+    "api/**",
+    "architecture/**",
+    "backlog/**",
+    "changes/**",
+    "ione_hrp/**",
+    "scripts/**",
+    "tests/**",
+    "pyproject.toml"
+  ],
+  "permissions_impact": "只读治理状态 API 仅限 System Manager 或 HRP System Manager；无 HTTP 写接口。",
+  "migration_impact": "不新增 DocType、Fixture、Patch 或数据库记录；Git 是唯一治理权威。",
+  "rollback_plan": "回滚本任务提交移除门禁和只读 API，不删除 Git/PR 历史且不修改站点数据。",
+  "security_impact": "关键路径、破坏性变更和 ADR 状态失败关闭；API 与审计不暴露路径、正文或凭据。",
+  "test_plan": [
+    "策略、ADR、变更记录、状态机、风险升级和差异覆盖单元测试",
+    "CLI 确定性摘要、审计脱敏和失败路径测试",
+    "System Manager 权限、Guest/普通用户拒绝和只读 API 集成测试",
+    "CI 对 PR 和 main 推送执行真实差异治理检查"
+  ],
+  "owner": "I-ONE HRP Maintainers",
+  "created_on": "2026-07-29",
+  "updated_on": "2026-07-29"
+}

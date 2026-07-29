@@ -14,6 +14,10 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 if str(REPOSITORY_ROOT) not in sys.path:
 	sys.path.insert(0, str(REPOSITORY_ROOT))
 
+from ione_hrp.common.change_governance import (
+	ChangeGovernanceError,
+	inspect_change_governance,
+)
 from ione_hrp.common.environment_profiles import (
 	EnvironmentProfileError,
 	load_environment_registry,
@@ -349,6 +353,7 @@ def validate_ci_pipeline(root: Path) -> list[str]:
 		'pip install --disable-pip-version-check -e ".[dev]"',
 		"npm ci",
 		"python scripts/quality.py",
+		"python scripts/change_manager.py",
 		"npm audit --audit-level=high",
 	):
 		if required_command not in quality_commands:
@@ -613,6 +618,85 @@ def validate_fixture_governance(root: Path) -> list[str]:
 	return violations
 
 
+def validate_change_governance(root: Path) -> list[str]:
+	policy_path = root / APP_NAME / "config" / "change_governance.json"
+	manager_path = root / "scripts" / "change_manager.py"
+	documentation_path = root / "architecture" / "change_governance.md"
+	template_path = root / "architecture" / "ADR_TEMPLATE.md"
+	adr_directory = root / "architecture" / "adr"
+	change_directory = root / "changes"
+	task_path = root / "backlog" / "COD-008.md"
+	pr_template_path = root / ".github" / "pull_request_template.md"
+	workflow_path = root / ".github" / "workflows" / "ci.yml"
+	catalog_paths = (
+		root / "api" / "api_catalog.csv",
+		root / "api" / "api_catalog.yaml",
+		root / "api" / "openapi.yaml",
+	)
+	required_paths = (
+		policy_path,
+		manager_path,
+		documentation_path,
+		template_path,
+		adr_directory,
+		change_directory,
+		task_path,
+		pr_template_path,
+		workflow_path,
+		*catalog_paths,
+	)
+	missing = [str(path.relative_to(root)) for path in required_paths if not path.exists()]
+	if missing:
+		return [f"missing change governance file: {path}" for path in missing]
+
+	try:
+		report = inspect_change_governance(root)
+	except ChangeGovernanceError as exc:
+		return [f"invalid change governance: {exc}"]
+	violations: list[str] = []
+	if report.policy.baseline_task_id != "COD-008":
+		violations.append("change governance baseline task must be COD-008")
+	if len(report.decisions) < 2:
+		violations.append("change governance must include the baseline architecture decisions")
+	if len(report.changes) < 8:
+		violations.append("change governance must backfill completed COD-001 through COD-007")
+	if "COD-008" not in report.change_by_task:
+		violations.append("change governance must include COD-008")
+
+	manager_text = manager_path.read_text(encoding="utf-8")
+	for token in (
+		"inspect_change_governance",
+		"assess_changed_paths",
+		"validate_adr_transition",
+		"merge-base",
+		"ione_hrp-change-governance-audit.jsonl",
+		"production_write_enabled",
+		"http_write_enabled",
+	):
+		if token not in manager_text:
+			violations.append(f"change manager is missing: {token}")
+
+	workflow_text = workflow_path.read_text(encoding="utf-8")
+	for token in (
+		"CHANGE_BASE",
+		"python scripts/change_manager.py check",
+		"python scripts/change_manager.py validate",
+	):
+		if token not in workflow_text:
+			violations.append(f"CI does not enforce change governance: {token}")
+
+	pr_template_text = pr_template_path.read_text(encoding="utf-8")
+	for token in ("ADR 编号", "变更记录", "破坏性变更", "change_manager.py"):
+		if token not in pr_template_text:
+			violations.append(f"PR template is missing change governance evidence: {token}")
+
+	governance_api = "/api/method/ione_hrp.api.v1.change_governance.get_change_governance_status"
+	for catalog_path in catalog_paths:
+		if governance_api not in catalog_path.read_text(encoding="utf-8"):
+			violations.append(f"{catalog_path.relative_to(root)} is missing the change governance endpoint")
+	return violations
+
+
 def collect_violations(root: Path) -> list[str]:
 	root = root.resolve()
 	violations: list[str] = []
@@ -648,6 +732,7 @@ def collect_violations(root: Path) -> list[str]:
 	violations.extend(validate_protected_ledgers(root))
 	violations.extend(validate_environment_profiles(root))
 	violations.extend(validate_fixture_governance(root))
+	violations.extend(validate_change_governance(root))
 	return violations
 
 

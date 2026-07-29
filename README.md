@@ -61,6 +61,26 @@ python scripts/fixture_manager.py validate
 校验确定性；生产、测试和演示 Site 均拒绝。完整白名单、敏感数据限制、审计、
 升级和回滚规则见 `architecture/fixtures.md`。
 
+## ADR 与变更治理
+
+Git 中的 ADR 和结构化 COD 变更记录是工程治理的唯一权威。每个已完成任务
+必须有 `changes/COD-XXX.json`；单应用边界、权限、上游基线、治理门禁和所有
+破坏性变更必须关联 Accepted ADR。提交前运行：
+
+```bash
+python scripts/change_manager.py validate
+python scripts/change_manager.py plan --base-ref origin/main --task COD-XXX
+python scripts/change_manager.py check \
+  --base-ref origin/main \
+  --task COD-XXX \
+  --correlation-id COD-XXX-local
+```
+
+CI 会对 Pull Request 的 base commit 和 `main` 推送的 before commit 执行相同
+差异检查。Frappe 仅提供管理员只读、脱敏的治理状态 API，没有 HTTP 写入口。
+ADR 状态机、风险门禁、审计与回滚规则见
+`architecture/change_governance.md`。
+
 安装到已有非生产 Bench：
 
 ```bash
@@ -99,6 +119,7 @@ bench --site hrp.localhost migrate
 
 ```bash
 python scripts/repository_contract.py
+python scripts/change_manager.py validate
 python scripts/validate_package.py
 python scripts/checksums.py
 python -m unittest discover -s tests -p "test_*.py"

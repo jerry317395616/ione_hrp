@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: 美妍伊人医院HRP API
   version: 3.0.0
-  description: Frappe v16 based Hospital Resource Planning API contract.
+  description: Frappe v17 based Hospital Resource Planning API contract.
 servers:
 - url: https://{host}
   variables:
@@ -55,6 +55,43 @@ paths:
       x-required-role: System Manager
       x-transaction-boundary: Read-only
       x-idempotency: Not applicable
+  /api/method/ione_hrp.api.v1.change_governance.get_change_governance_status:
+    get:
+      operationId: platform_012
+      summary: 查询 ADR 与变更治理状态
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: correlation_id
+        in: query
+        required: false
+        schema:
+          type: string
+          maxLength: 140
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+          maxLength: 140
+      responses:
+        '200':
+          description: Redacted deterministic ADR and change-governance status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '401':
+          description: Authentication required
+        '403':
+          description: System Manager or HRP System Manager role required
+        '422':
+          description: ADR, change record or repository governance validation failed
+      x-required-role: System Manager or HRP System Manager
+      x-transaction-boundary: Read-only
+      x-idempotency: Read-only deterministic
   /api/method/ione_hrp_core.api.v1.scope.resolve:
     post:
       operationId: core_001

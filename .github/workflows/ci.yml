@@ -44,6 +44,17 @@ jobs:
           npm ci
       - name: Run repository, unit, type and frontend checks
         run: python scripts/quality.py
+      - name: Validate governed Git change
+        env:
+          CHANGE_BASE: ${{ github.event.pull_request.base.sha || github.event.before || '' }}
+        run: |
+          if [[ -n "$CHANGE_BASE" && ! "$CHANGE_BASE" =~ ^0+$ ]]; then
+            python scripts/change_manager.py check \
+              --base-ref "$CHANGE_BASE" \
+              --correlation-id "CI-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          else
+            python scripts/change_manager.py validate
+          fi
       - name: Audit Node dependencies
         run: npm audit --audit-level=high
       - name: Scan repository history for secrets

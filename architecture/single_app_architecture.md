@@ -4,6 +4,11 @@
 
 HRP 自研能力统一放入 `ione_hrp` 一个 Frappe App。Frappe、ERPNext 和 Frappe HR 仍是独立上游依赖。业务边界使用 Frappe Module、Python 包、领域服务、权限和事件隔离，而不是拆成九个自研 App。
 
+该决策由
+`architecture/adr/ADR-0001-single-application-architecture.md` 正式记录。
+改变 App 边界必须创建新的 Accepted ADR，不能只修改模块注册表或
+`pyproject.toml`。
+
 ## 为什么采用一个 App
 
 - 一次安装、一次迁移、一次版本发布，降低医院项目交付复杂度。

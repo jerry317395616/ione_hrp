@@ -50,18 +50,27 @@ COD-005 已建立 GitHub Actions 流水线；`main` 分支保护必须要求 API
 ## 变更流程
 
 1. 从 backlog 选择一个未完成的 `COD-XXX`，一次只处理一个任务。
-2. 在任务分支完成模型、服务、权限、API、测试、迁移和文档中适用的部分。
-3. 运行：
+2. 创建或更新 `changes/COD-XXX.json`；受保护路径和破坏性变更同时创建或引用
+   Accepted ADR。
+3. 在任务分支完成模型、服务、权限、API、测试、迁移和文档中适用的部分。
+4. 运行：
 
    ```bash
+   python scripts/change_manager.py validate
+   python scripts/change_manager.py check --base-ref origin/main --task COD-XXX
    python scripts/repository_contract.py
    python scripts/validate_package.py
    python scripts/checksums.py
    python -m unittest discover -s tests -p "test_*.py"
    ```
 
-4. 使用 PR 模板记录设计依据、测试证据、迁移影响和回滚方法。
-5. 合并后由锁定提交构建 Press Bench；生产站点只执行经过备份验证的迁移。
+5. 使用 PR 模板记录 ADR、风险、设计依据、测试证据、权限/安全、迁移影响和
+   回滚方法。
+6. 合并后由锁定提交构建 Press Bench；生产站点只执行经过备份验证的迁移。
+
+ADR、变更记录、状态机、风险升级和差异覆盖的完整契约见
+`architecture/change_governance.md`。Git/PR/CI 是唯一写入和审计通道；
+Frappe 只提供管理员只读状态，不允许从生产 Site 改写架构决策。
 
 Press 不支持从 Git 仓库子目录加载 App，因此 `pyproject.toml` 必须位于仓库
 根目录，且 `ione_hrp/hooks.py` 必须可被 Press 的 App Source 直接发现。
