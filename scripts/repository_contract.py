@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import csv
 import json
 import re
@@ -7,7 +8,12 @@ import sys
 from pathlib import Path
 
 import tomllib
-import yaml
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+if str(REPOSITORY_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPOSITORY_ROOT))
+
+from ione_hrp.services.module_registry import validate_module_source_tree
 
 if __package__:
     from scripts.version_lock import UPSTREAM_APPS, load_lock
@@ -17,7 +23,6 @@ else:
 APP_NAME = "ione_hrp"
 UPSTREAM_APPS = frozenset({"frappe", "erpnext", "hrms"})
 LEGACY_PREFIXES = ("myi" + "_hrp", "myi" + "-hrp")
-REQUIRED_MODULE_SUBPACKAGES = ("doctype", "report", "page", "workspace", "services", "api", "tests")
 PROTECTED_LEDGER_PATTERNS = (
     re.compile(r"""(?:new_doc|get_doc)\(\s*["']GL Entry["']"""),
     re.compile(r"""(?:new_doc|get_doc)\(\s*["']Stock Ledger Entry["']"""),
@@ -155,31 +160,43 @@ def validate_catalog_ownership(root: Path) -> list[str]:
 
 
 def validate_module_structure(root: Path) -> list[str]:
+    return validate_module_source_tree(root, expected_module_count=36)
+
+
+def validate_module_boundaries(root: Path) -> list[str]:
+    """Require cross-module Python imports to use the target module's services facade."""
     package_root = root / APP_NAME
-    registry_path = root / "architecture" / "module_registry.yaml"
-    registry = yaml.safe_load(registry_path.read_text(encoding="utf-8"))
     violations: list[str] = []
-    if registry.get("app") != APP_NAME:
-        violations.append("module registry app must be ione_hrp")
-    rows = registry.get("modules", [])
-    declared = [
-        line.strip()
-        for line in (package_root / "modules.txt").read_text(encoding="utf-8").splitlines()
-        if line.strip()
-    ]
-    expected = [row["module"] for row in rows]
-    if declared != expected:
-        violations.append("modules.txt and module_registry.yaml differ")
-    if registry.get("module_count") != len(rows) or len(rows) != len(declared):
-        violations.append("module_count does not match declared modules")
-    for row in rows:
-        module_root = package_root / row["package"]
-        if not (module_root / "__init__.py").is_file():
-            violations.append(f"missing module package {row['package']}")
+    if not package_root.is_dir():
+        return [f"missing {APP_NAME} package directory"]
+    module_pattern = re.compile(r"^ione_hrp\.(hrp_[a-z0-9_]+)(?:\.(.+))?$")
+    for source_root in package_root.iterdir():
+        if not source_root.is_dir() or not source_root.name.startswith("hrp_"):
             continue
-        for subpackage in REQUIRED_MODULE_SUBPACKAGES:
-            if not (module_root / subpackage / "__init__.py").is_file():
-                violations.append(f"missing {row['package']}/{subpackage}/__init__.py")
+        for path in source_root.rglob("*.py"):
+            try:
+                tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+            except SyntaxError:
+                continue
+            imports: list[str] = []
+            for node in ast.walk(tree):
+                if isinstance(node, ast.ImportFrom) and node.module:
+                    imports.append(node.module)
+                elif isinstance(node, ast.Import):
+                    imports.extend(alias.name for alias in node.names)
+            for imported in imports:
+                match = module_pattern.match(imported)
+                if not match:
+                    continue
+                target_package, target_path = match.groups()
+                if target_package == source_root.name:
+                    continue
+                if target_path and target_path.split(".", 1)[0] == "services":
+                    continue
+                violations.append(
+                    f"{path.relative_to(root)} imports private cross-module path {imported}; "
+                    f"use ione_hrp.{target_package}.services"
+                )
     return violations
 
 
@@ -226,6 +243,7 @@ def collect_violations(root: Path) -> list[str]:
     violations.extend(validate_version_baseline(root))
     violations.extend(validate_catalog_ownership(root))
     violations.extend(validate_module_structure(root))
+    violations.extend(validate_module_boundaries(root))
     violations.extend(validate_protected_ledgers(root))
     return violations
 

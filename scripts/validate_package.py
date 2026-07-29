@@ -10,6 +10,14 @@ import yaml
 from version_lock import load_lock
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from ione_hrp.services.module_registry import (
+    load_module_registry,
+    validate_module_source_tree,
+)
+
 APP = ROOT
 PKG = ROOT / "ione_hrp"
 
@@ -24,18 +32,10 @@ def main() -> None:
         fail("pyproject project name mismatch")
     load_lock(ROOT / "resolved_versions.lock.json")
 
-    registry = yaml.safe_load((ROOT / "architecture" / "module_registry.yaml").read_text(encoding="utf-8"))
-    modules = [line.strip() for line in (PKG / "modules.txt").read_text(encoding="utf-8").splitlines() if line.strip()]
-    registry_names = [row["module"] for row in registry["modules"]]
-    if modules != registry_names:
-        fail("modules.txt and module_registry.yaml order/content mismatch")
-    for row in registry["modules"]:
-        package = PKG / row["package"]
-        if not package.is_dir() or not (package / "__init__.py").exists():
-            fail(f"missing module package: {package}")
-        for sub in ("doctype", "report", "page", "workspace", "services", "api", "tests"):
-            if not (package / sub / "__init__.py").exists():
-                fail(f"missing module subpackage: {package / sub}")
+    registry = load_module_registry(ROOT)
+    module_violations = validate_module_source_tree(ROOT, expected_module_count=36)
+    if module_violations:
+        fail("; ".join(module_violations))
 
     for json_file in PKG.rglob("*.json"):
         json.loads(json_file.read_text(encoding="utf-8"))
@@ -53,7 +53,17 @@ def main() -> None:
     if len(blueprint_files) != 398:
         fail(f"expected 398 blueprint files, got {len(blueprint_files)}")
 
-    print(json.dumps({"status": "ok", "modules": len(modules), "doctypes": len(rows), "blueprints": len(blueprint_files)}, ensure_ascii=False))
+    print(
+        json.dumps(
+            {
+                "status": "ok",
+                "modules": len(registry.modules),
+                "doctypes": len(rows),
+                "blueprints": len(blueprint_files),
+            },
+            ensure_ascii=False,
+        )
+    )
 
 
 if __name__ == "__main__":

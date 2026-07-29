@@ -1,81 +1,122 @@
 from __future__ import annotations
 
-from pathlib import Path
+from typing import Any
 
 import frappe
 
 from ione_hrp.common.constants import APP_NAME
+from ione_hrp.services.module_registry import ModuleSpec, load_module_registry
+
+MODULE_SETTING_FIELDS = (
+    "module_key",
+    "domain_group",
+    "label_cn",
+    "sequence",
+    "description",
+)
 
 
 def declared_modules() -> list[str]:
-    return frappe.get_module_list(APP_NAME)
+    return [row.module for row in load_module_registry().modules]
+
+
+def _audit_sync(operation: str, report: dict[str, list[str]]) -> None:
+    frappe.logger("ione_hrp.module_registry", allow_site=True).info(
+        {
+            "event": operation,
+            "app": APP_NAME,
+            "site": getattr(frappe.local, "site", None),
+            "created": report["created"],
+            "updated": report.get("updated", []),
+            "unchanged": report["unchanged"],
+        }
+    )
 
 
 def sync_module_defs() -> dict[str, list[str]]:
-    """Create missing Module Def rows declared in modules.txt.
+    """Create missing Module Def rows after checking all ownership conflicts."""
+    registry = load_module_registry()
+    report: dict[str, list[str]] = {
+        "created": [],
+        "unchanged": [],
+        "conflicts": [],
+    }
+    owners: dict[str, str | None] = {}
+    for module in registry.modules:
+        owner = frappe.db.get_value("Module Def", module.module, "app_name")
+        owners[module.module] = owner
+        if owner not in (None, APP_NAME):
+            report["conflicts"].append(f"{module.module} -> {owner}")
 
-    Existing rows are never deleted automatically because deleting a Module Def can cascade
-    to standard records. A conflicting app owner is treated as a hard error.
-    """
-    created: list[str] = []
-    existing: list[str] = []
-    conflicts: list[str] = []
+    if report["conflicts"]:
+        frappe.throw("Module Def ownership conflict: " + "; ".join(report["conflicts"]))
 
-    for module_name in declared_modules():
-        owner = frappe.db.get_value("Module Def", module_name, "app_name")
-        if owner is None:
-            frappe.get_doc(
-                {
-                    "doctype": "Module Def",
-                    "module_name": module_name,
-                    "app_name": APP_NAME,
-                    "custom": 0,
-                }
-            ).insert(ignore_permissions=True)
-            created.append(module_name)
-        elif owner != APP_NAME:
-            conflicts.append(f"{module_name} -> {owner}")
-        else:
-            existing.append(module_name)
-
-    if conflicts:
-        frappe.throw("Module Def ownership conflict: " + "; ".join(conflicts))
-
-    return {"created": created, "existing": existing, "conflicts": conflicts}
-
-
-def sync_module_settings() -> int:
-    if not frappe.db.exists("DocType", "HRP Module Setting"):
-        return 0
-
-    registry_path = Path(frappe.get_app_source_path(APP_NAME, "architecture", "module_registry.yaml"))
-    # Packaged deployments may not include repository-level architecture files. In that case,
-    # modules.txt remains the authoritative source and defaults are inferred.
-    registry: dict[str, dict] = {}
-    if registry_path.exists():
-        try:
-            import yaml
-            payload = yaml.safe_load(registry_path.read_text(encoding="utf-8")) or {}
-            registry = {row["module"]: row for row in payload.get("modules", [])}
-        except Exception:
-            frappe.log_error(frappe.get_traceback(), "HRP module registry read failed")
-
-    inserted = 0
-    for sequence, module_name in enumerate(declared_modules(), start=10):
-        if frappe.db.exists("HRP Module Setting", module_name):
+    for module in registry.modules:
+        if owners[module.module] == APP_NAME:
+            report["unchanged"].append(module.module)
             continue
-        meta = registry.get(module_name, {})
         frappe.get_doc(
             {
-                "doctype": "HRP Module Setting",
-                "module_name": module_name,
-                "module_key": meta.get("package") or frappe.scrub(module_name),
-                "domain_group": meta.get("domain_group") or "Other",
-                "label_cn": meta.get("label_cn") or module_name,
-                "enabled": 1,
-                "sequence": meta.get("sequence") or sequence,
-                "description": meta.get("description") or "",
+                "doctype": "Module Def",
+                "module_name": module.module,
+                "app_name": APP_NAME,
+                "custom": 0,
             }
         ).insert(ignore_permissions=True)
-        inserted += 1
-    return inserted
+        report["created"].append(module.module)
+
+    _audit_sync("module_def_sync", report)
+    return report
+
+
+def _module_setting_values(module: ModuleSpec) -> dict[str, Any]:
+    return {
+        "module_key": module.package,
+        "domain_group": module.domain_group,
+        "label_cn": module.label_cn,
+        "sequence": module.sequence,
+        "description": module.description,
+    }
+
+
+def sync_module_settings() -> dict[str, list[str]]:
+    """Upsert registry metadata while preserving each site's enabled choices."""
+    report: dict[str, list[str]] = {
+        "created": [],
+        "updated": [],
+        "unchanged": [],
+    }
+    if not frappe.db.exists("DocType", "HRP Module Setting"):
+        report["unchanged"].append("HRP Module Setting DocType is not installed")
+        return report
+
+    for module in load_module_registry().modules:
+        values = _module_setting_values(module)
+        if not frappe.db.exists("HRP Module Setting", module.module):
+            frappe.get_doc(
+                {
+                    "doctype": "HRP Module Setting",
+                    "module_name": module.module,
+                    "enabled": int(module.enabled_by_default),
+                    **values,
+                }
+            ).insert(ignore_permissions=True)
+            report["created"].append(module.module)
+            continue
+
+        doc = frappe.get_doc("HRP Module Setting", module.module)
+        changed = False
+        for fieldname in MODULE_SETTING_FIELDS:
+            expected = values[fieldname]
+            if doc.get(fieldname) == expected:
+                continue
+            doc.set(fieldname, expected)
+            changed = True
+        if changed:
+            doc.save(ignore_permissions=True)
+            report["updated"].append(module.module)
+        else:
+            report["unchanged"].append(module.module)
+
+    _audit_sync("module_setting_sync", report)
+    return report

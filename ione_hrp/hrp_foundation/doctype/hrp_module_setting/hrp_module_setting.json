@@ -44,14 +44,16 @@
       "fieldname": "label_cn",
       "fieldtype": "Data",
       "in_list_view": 1,
-      "label": "Chinese Label"
+      "label": "Chinese Label",
+      "read_only": 1
     },
     {
       "fieldname": "domain_group",
       "fieldtype": "Select",
       "in_standard_filter": 1,
       "label": "Domain Group",
-      "options": "Core\nFinance\nSupply\nAsset\nPeople\nProject\nGovernance\nPlatform\nPortal\nOther"
+      "options": "Core\nFinance\nSupply\nAsset\nPeople\nProject\nGovernance\nPlatform\nPortal\nOther",
+      "read_only": 1
     },
     {
       "fieldname": "column_break_main",
@@ -69,7 +71,8 @@
       "fieldname": "sequence",
       "fieldtype": "Int",
       "in_list_view": 1,
-      "label": "Sequence"
+      "label": "Sequence",
+      "read_only": 1
     },
     {
       "fieldname": "workspace_route",
@@ -79,7 +82,8 @@
     {
       "fieldname": "description",
       "fieldtype": "Small Text",
-      "label": "Description"
+      "label": "Description",
+      "read_only": 1
     }
   ],
   "links": [],
@@ -96,6 +100,14 @@
       "read": 1,
       "report": 1,
       "role": "System Manager",
+      "select": 1,
+      "write": 1
+    },
+    {
+      "create": 1,
+      "read": 1,
+      "report": 1,
+      "role": "HRP System Manager",
       "select": 1,
       "write": 1
     },
