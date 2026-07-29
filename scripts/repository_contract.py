@@ -14,6 +14,10 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 if str(REPOSITORY_ROOT) not in sys.path:
 	sys.path.insert(0, str(REPOSITORY_ROOT))
 
+from ione_hrp.common.environment_profiles import (
+	EnvironmentProfileError,
+	load_environment_registry,
+)
 from ione_hrp.services.module_registry import validate_module_source_tree
 
 if __package__:
@@ -470,6 +474,63 @@ def validate_protected_ledgers(root: Path) -> list[str]:
 	return violations
 
 
+def validate_environment_profiles(root: Path) -> list[str]:
+	profile_path = root / APP_NAME / "config" / "environment_profiles.json"
+	manager_path = root / "scripts" / "environment_manager.py"
+	integration_path = root / "scripts" / "ci_integration.sh"
+	api_catalog_path = root / "api" / "api_catalog.csv"
+	openapi_path = root / "api" / "openapi.yaml"
+	required_paths = (
+		profile_path,
+		manager_path,
+		integration_path,
+		api_catalog_path,
+		openapi_path,
+	)
+	missing = [str(path.relative_to(root)) for path in required_paths if not path.is_file()]
+	if missing:
+		return [f"missing environment delivery file: {path}" for path in missing]
+
+	violations: list[str] = []
+	try:
+		registry = load_environment_registry(profile_path)
+	except EnvironmentProfileError as exc:
+		return [f"invalid environment profiles: {exc}"]
+	if tuple(profile.name for profile in registry.profiles) != ("development", "test", "demo"):
+		violations.append("environment profiles must be development, test and demo")
+
+	manager_text = manager_path.read_text(encoding="utf-8")
+	for token in (
+		"bootstrap_latest_develop.sh",
+		"version_lock.py",
+		"list-apps",
+		"migrate",
+		"environment-audit.jsonl",
+		"DB_ROOT_PASSWORD",
+		"ADMIN_PASSWORD",
+		"--allow-target-override",
+	):
+		if token not in manager_text:
+			violations.append(f"environment manager is missing: {token}")
+
+	integration_text = integration_path.read_text(encoding="utf-8")
+	for token in (
+		"environment_manager.py",
+		"configure test",
+		"verify test",
+		'"changed": false',
+	):
+		if token not in integration_text:
+			violations.append(f"CI does not validate environment profiles: {token}")
+
+	environment_api = "/api/method/ione_hrp.api.v1.environment.get_environment_status"
+	if environment_api not in api_catalog_path.read_text(encoding="utf-8"):
+		violations.append("API catalog is missing the environment status endpoint")
+	if environment_api not in openapi_path.read_text(encoding="utf-8"):
+		violations.append("OpenAPI is missing the environment status endpoint")
+	return violations
+
+
 def collect_violations(root: Path) -> list[str]:
 	root = root.resolve()
 	violations: list[str] = []
@@ -503,6 +564,7 @@ def collect_violations(root: Path) -> list[str]:
 	violations.extend(validate_module_structure(root))
 	violations.extend(validate_module_boundaries(root))
 	violations.extend(validate_protected_ledgers(root))
+	violations.extend(validate_environment_profiles(root))
 	return violations
 
 

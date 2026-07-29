@@ -12,6 +12,7 @@ from scripts.repository_contract import (
 	find_legacy_prefix_references,
 	validate_branch_policy,
 	validate_ci_pipeline,
+	validate_environment_profiles,
 	validate_module_boundaries,
 	validate_push_guard,
 	validate_quality_tooling,
@@ -122,6 +123,9 @@ class RepositoryContractTest(unittest.TestCase):
 
 	def test_current_ci_pipeline_is_mandatory(self) -> None:
 		self.assertEqual(validate_ci_pipeline(ROOT), [])
+
+	def test_current_environment_profiles_are_mandatory(self) -> None:
+		self.assertEqual(validate_environment_profiles(ROOT), [])
 
 
 if __name__ == "__main__":
