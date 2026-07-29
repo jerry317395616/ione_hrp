@@ -1,6 +1,6 @@
 {
   "name": "美妍伊人医院HRP平台V4.0_Frappe_v17_单应用多模块_Codex开发包",
-  "generated_at": "2026-07-28",
+  "generated_at": "2026-07-29",
   "architecture": "one custom app (ione_hrp), 36 Frappe modules",
   "source_baseline": "frappe/erpnext/hrms develop, v17.0.0-dev markers",
   "counts": {
@@ -10,18 +10,26 @@
     "design_fields": 10036,
     "doctype_blueprints": 398,
     "starter_doctypes": 3,
-    "repository_contract_tests": 18,
-    "frappe_integration_tests": 2
+    "repository_contract_tests": 34,
+    "frappe_integration_tests": 9
   },
   "entrypoints": [
     "README.md",
     "AGENTS.md",
     "architecture/repository_governance.md",
+    "architecture/quality_tooling.md",
     "architecture/module_registry.yaml",
     "pyproject.toml",
+    "pyrightconfig.json",
+    "package.json",
+    "package-lock.json",
+    "eslint.config.mjs",
+    ".prettierrc.json",
     "ione_hrp",
     ".github/branch-protection.json",
     "scripts/repository_contract.py",
+    "scripts/quality.py",
+    "scripts/quality.sh",
     "scripts/bootstrap_latest_develop.sh",
     "scripts/create_module.py",
     "backlog/backlog.csv"
