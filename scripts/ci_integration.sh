@@ -101,6 +101,24 @@ create_profile_site() {
 create_profile_site development "$DEVELOPMENT_SITE_NAME"
 create_profile_site demo "$DEMO_SITE_NAME"
 
+FIXTURE_EXPORT_LOG="$BENCH_DIR/logs/fixture-export.log"
+FIXTURE_MANAGER="$BENCH_DIR/apps/ione_hrp/scripts/fixture_manager.py"
+"$BENCH_DIR/env/bin/python" "$FIXTURE_MANAGER" validate
+"$BENCH_DIR/env/bin/python" "$FIXTURE_MANAGER" plan
+"$BENCH_DIR/env/bin/python" "$FIXTURE_MANAGER" export \
+  --bench-dir "$BENCH_DIR" \
+  --site "$DEVELOPMENT_SITE_NAME" \
+  --correlation-id "CI-${GITHUB_RUN_ID:-local}-COD-007-fixture-export" \
+  --yes \
+  | tee "$FIXTURE_EXPORT_LOG"
+tail -n 1 "$FIXTURE_EXPORT_LOG" | grep -F '"changed": false'
+tail -n 1 "$FIXTURE_EXPORT_LOG" | grep -F '"idempotent": true'
+"$BENCH_DIR/env/bin/python" "$FIXTURE_MANAGER" validate
+if grep -Eiq 'password|token|secret' "$BENCH_DIR/logs/fixture-export-audit.jsonl"; then
+  echo "Fixture export audit log contains a forbidden secret marker" >&2
+  exit 1
+fi
+
 DEMO_FIRST_LOG="$BENCH_DIR/logs/demo-seed-first.log"
 DEMO_SECOND_LOG="$BENCH_DIR/logs/demo-seed-second.log"
 bench --site "$DEMO_SITE_NAME" execute ione_hrp.setup.demo.setup_synthetic_demo \

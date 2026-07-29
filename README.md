@@ -46,6 +46,21 @@ python scripts/environment_manager.py provision development
 邮件。测试和演示环境还关闭调度器；演示环境禁止测试接口。完整创建、验证、
 审计、演示初始化和回滚方法见 `architecture/environments.md`。
 
+## Fixtures 治理
+
+Fixture 只用于 `ione_hrp` 对标准 Frappe/ERPNext/HRMS 对象的受控配置扩展。
+当前白名单为模块归属的 Custom Field、Property Setter，以及四个 HRP 核心角色
+归属的 Custom DocPerm。导出前先运行：
+
+```bash
+python scripts/fixture_manager.py plan
+python scripts/fixture_manager.py validate
+```
+
+实际导出只允许受管理的 development Site，经显式 `--yes` 后连续导出两次并
+校验确定性；生产、测试和演示 Site 均拒绝。完整白名单、敏感数据限制、审计、
+升级和回滚规则见 `architecture/fixtures.md`。
+
 安装到已有非生产 Bench：
 
 ```bash

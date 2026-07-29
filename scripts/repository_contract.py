@@ -18,6 +18,11 @@ from ione_hrp.common.environment_profiles import (
 	EnvironmentProfileError,
 	load_environment_registry,
 )
+from ione_hrp.common.fixture_policy import (
+	FixturePolicyError,
+	inspect_fixture_repository,
+	load_fixture_policy,
+)
 from ione_hrp.services.module_registry import validate_module_source_tree
 
 if __package__:
@@ -531,6 +536,83 @@ def validate_environment_profiles(root: Path) -> list[str]:
 	return violations
 
 
+def validate_fixture_governance(root: Path) -> list[str]:
+	policy_path = root / APP_NAME / "config" / "fixture_policy.json"
+	modules_path = root / APP_NAME / "modules.txt"
+	fixture_directory = root / APP_NAME / "fixtures"
+	hooks_path = root / APP_NAME / "hooks.py"
+	manager_path = root / "scripts" / "fixture_manager.py"
+	integration_path = root / "scripts" / "ci_integration.sh"
+	documentation_path = root / "architecture" / "fixtures.md"
+	api_catalog_path = root / "api" / "api_catalog.csv"
+	openapi_path = root / "api" / "openapi.yaml"
+	required_paths = (
+		policy_path,
+		modules_path,
+		fixture_directory,
+		hooks_path,
+		manager_path,
+		integration_path,
+		documentation_path,
+		api_catalog_path,
+		openapi_path,
+	)
+	missing = [str(path.relative_to(root)) for path in required_paths if not path.exists()]
+	if missing:
+		return [f"missing fixture governance file: {path}" for path in missing]
+
+	violations: list[str] = []
+	try:
+		policy = load_fixture_policy(policy_path, modules_path=modules_path)
+		report = inspect_fixture_repository(policy, fixture_directory)
+	except FixturePolicyError as exc:
+		return [f"invalid fixture governance: {exc}"]
+	if tuple(rule.doctype for rule in policy.rules) != (
+		"Custom Field",
+		"Property Setter",
+		"Custom DocPerm",
+	):
+		violations.append("fixture allowlist must contain only the approved configuration DocTypes")
+	if report.files != 3:
+		violations.append("fixture repository must contain all three ordered files")
+
+	hooks_text = hooks_path.read_text(encoding="utf-8")
+	for token in (
+		"get_frappe_fixture_hooks",
+		"fixture_auto_order = True",
+		"fixtures = get_frappe_fixture_hooks()",
+	):
+		if token not in hooks_text:
+			violations.append(f"hooks.py is missing fixture governance token: {token}")
+
+	manager_text = manager_path.read_text(encoding="utf-8")
+	for token in (
+		"export-fixtures",
+		"assert_fixture_export_allowed",
+		"fixture-export-audit.jsonl",
+		"--yes",
+		"Repeated fixture export is not idempotent",
+	):
+		if token not in manager_text:
+			violations.append(f"fixture manager is missing: {token}")
+
+	integration_text = integration_path.read_text(encoding="utf-8")
+	for token in (
+		"fixture_manager.py",
+		"COD-007",
+		"fixture-export-audit.jsonl",
+	):
+		if token not in integration_text:
+			violations.append(f"CI does not validate fixture governance: {token}")
+
+	fixture_api = "/api/method/ione_hrp.api.v1.fixtures.get_fixture_governance_status"
+	if fixture_api not in api_catalog_path.read_text(encoding="utf-8"):
+		violations.append("API catalog is missing the fixture governance endpoint")
+	if fixture_api not in openapi_path.read_text(encoding="utf-8"):
+		violations.append("OpenAPI is missing the fixture governance endpoint")
+	return violations
+
+
 def collect_violations(root: Path) -> list[str]:
 	root = root.resolve()
 	violations: list[str] = []
@@ -565,6 +647,7 @@ def collect_violations(root: Path) -> list[str]:
 	violations.extend(validate_module_boundaries(root))
 	violations.extend(validate_protected_ledgers(root))
 	violations.extend(validate_environment_profiles(root))
+	violations.extend(validate_fixture_governance(root))
 	return violations
 
 
