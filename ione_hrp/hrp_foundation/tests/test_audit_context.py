@@ -7,6 +7,7 @@ import frappe
 from frappe.tests.test_api import FrappeAPITestCase
 
 from ione_hrp.common.audit_context import AuditContextError
+from ione_hrp.common.error_catalog import IoneApplicationError
 from ione_hrp.services.audit_context import (
 	AUDIT_CONTEXT_JOB_KWARG,
 	clear_audit_context,
@@ -14,6 +15,7 @@ from ione_hrp.services.audit_context import (
 	enqueue_with_audit,
 	ensure_audit_context,
 	finish_job_audit_context,
+	service_audit_scope,
 	start_job_audit_context,
 )
 
@@ -182,3 +184,17 @@ class TestAuditContextAPI(FrappeAPITestCase):
 		):
 			emit_audit_event("unsafe_event", user_email="patient@example.invalid")
 		logger.assert_not_called()
+
+	def test_direct_service_scopes_are_isolated_and_nested_context_is_immutable(self) -> None:
+		with service_audit_scope("COD-010-service-1") as first:
+			self.assertEqual(first, ensure_audit_context("COD-010-service-1"))
+			with service_audit_scope("COD-010-service-1") as nested:
+				self.assertEqual(nested.request_id, first.request_id)
+			with self.assertRaises(IoneApplicationError) as raised:
+				with service_audit_scope("COD-010-service-replacement"):
+					pass
+			self.assertEqual(raised.exception.code, "IONE-CORE-0003")
+
+		with service_audit_scope("COD-010-service-2") as second:
+			self.assertEqual(second.correlation_id, "COD-010-service-2")
+			self.assertNotEqual(second.request_id, first.request_id)

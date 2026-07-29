@@ -106,7 +106,8 @@ GET /api/method/ione_hrp.api.v1.errors.get_error_catalog
 返回 `X-Correlation-ID` 与 `X-Request-ID`；受控错误体也包含这两个安全字段。
 跨队列调用必须使用 `ione_hrp.services.audit_context.enqueue_with_audit`，自研
 结构化审计必须使用 `emit_audit_event`，不得记录用户、患者、请求正文、路径、
-站点或凭据。
+站点或凭据。直接服务入口使用 `service_audit_scope` 隔离相邻调用，并在 HTTP
+或后台任务中继承已有上下文。
 
 已认证用户可只读查询当前请求上下文：
 

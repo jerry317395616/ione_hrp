@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from typing import Any
 
 import frappe
@@ -17,6 +18,7 @@ from ione_hrp.common.audit_context import (
 )
 
 AUDIT_CONTEXT_LOCAL_KEY = "ione_hrp_audit_context"
+AUDIT_CONTEXT_SCOPE_DEPTH_KEY = "ione_hrp_audit_context_scope_depth"
 AUDIT_CONTEXT_JOB_KWARG = "_ione_audit_context"
 AUDIT_HEADER_CORRELATION_ID = "X-Correlation-ID"
 AUDIT_HEADER_REQUEST_ID = "X-Request-ID"
@@ -175,6 +177,47 @@ def clear_audit_context() -> None:
 		delattr(frappe.local, AUDIT_CONTEXT_LOCAL_KEY)
 
 
+def _service_scope_depth() -> int:
+	depth = getattr(frappe.local, AUDIT_CONTEXT_SCOPE_DEPTH_KEY, 0)
+	return depth if isinstance(depth, int) and depth > 0 else 0
+
+
+def _clear_service_scope_depth() -> None:
+	if hasattr(frappe.local, AUDIT_CONTEXT_SCOPE_DEPTH_KEY):
+		delattr(frappe.local, AUDIT_CONTEXT_SCOPE_DEPTH_KEY)
+
+
+@contextmanager
+def service_audit_scope(correlation_id: object | None = None) -> Iterator[AuditContext]:
+	"""Bound one direct service invocation without replacing HTTP, job, or nested context."""
+	current = _current_context()
+	depth = _service_scope_depth()
+	if current is not None and (current.channel in {"http", "job"} or depth > 0):
+		yield ensure_audit_context(correlation_id)
+		return
+
+	clear_audit_context()
+	setattr(frappe.local, AUDIT_CONTEXT_SCOPE_DEPTH_KEY, 1)
+	try:
+		try:
+			context = _store_context(
+				_build_context(
+					correlation_id=correlation_id,
+					channel="service",
+					origin="parameter" if correlation_id is not None else "generated",
+				)
+			)
+		except AuditContextError as exc:
+			_install_fallback_context("service")
+			from ione_hrp.services.errors import raise_ione_error
+
+			raise_ione_error("INVALID_REQUEST", cause=exc)
+		yield context
+	finally:
+		clear_audit_context()
+		_clear_service_scope_depth()
+
+
 def ensure_audit_context(correlation_id: object | None = None) -> AuditContext:
 	"""Return the execution context and reject attempts to replace it mid-execution."""
 	current = _current_context()
@@ -229,13 +272,13 @@ def ensure_audit_context(correlation_id: object | None = None) -> AuditContext:
 def get_audit_context_status() -> dict[str, object]:
 	from ione_hrp.services.errors import require_authenticated_user
 
-	require_authenticated_user()
-	context = ensure_audit_context()
-	emit_audit_event("audit_context_read", logger_name="ione_hrp.audit")
-	return {
-		**context.as_public_dict(),
-		"http_write_enabled": False,
-	}
+	with service_audit_scope() as context:
+		require_authenticated_user()
+		emit_audit_event("audit_context_read", logger_name="ione_hrp.audit")
+		return {
+			**context.as_public_dict(),
+			"http_write_enabled": False,
+		}
 
 
 def emit_audit_event(
@@ -286,6 +329,7 @@ __all__ = [
 	"finish_http_audit_context",
 	"finish_job_audit_context",
 	"get_audit_context_status",
+	"service_audit_scope",
 	"start_http_audit_context",
 	"start_job_audit_context",
 ]

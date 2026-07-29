@@ -12,7 +12,11 @@ from ione_hrp.common.error_catalog import (
 	load_error_catalog,
 	validate_error_translations,
 )
-from ione_hrp.services.audit_context import emit_audit_event, ensure_audit_context
+from ione_hrp.services.audit_context import (
+	emit_audit_event,
+	ensure_audit_context,
+	service_audit_scope,
+)
 
 ERROR_CATALOG_ROLES = frozenset({"System Manager", "HRP System Manager"})
 INTERNAL_ERROR_FALLBACK = ErrorDefinition(
@@ -120,18 +124,19 @@ def require_roles(roles: Iterable[str]) -> None:
 
 def get_error_catalog_status() -> dict[str, object]:
 	"""Return the stable public contract; error creation remains Git-only."""
-	require_roles(ERROR_CATALOG_ROLES)
-	try:
-		catalog = load_error_catalog()
-		validate_error_translations(catalog)
-	except ErrorCatalogError as exc:
-		raise_ione_error("CONFIGURATION_INVALID", cause=exc)
-	result = catalog.as_public_dict(translate=frappe._)
-	result["http_write_enabled"] = False
-	emit_audit_event(
-		"error_catalog_read",
-		logger_name="ione_hrp.errors",
-		catalog_sha256=catalog.sha256,
-		error_count=len(catalog.errors),
-	)
-	return result
+	with service_audit_scope():
+		require_roles(ERROR_CATALOG_ROLES)
+		try:
+			catalog = load_error_catalog()
+			validate_error_translations(catalog)
+		except ErrorCatalogError as exc:
+			raise_ione_error("CONFIGURATION_INVALID", cause=exc)
+		result = catalog.as_public_dict(translate=frappe._)
+		result["http_write_enabled"] = False
+		emit_audit_event(
+			"error_catalog_read",
+			logger_name="ione_hrp.errors",
+			catalog_sha256=catalog.sha256,
+			error_count=len(catalog.errors),
+		)
+		return result
