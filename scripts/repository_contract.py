@@ -358,7 +358,7 @@ def validate_ci_pipeline(root: Path) -> list[str]:
 		"version_lock.py",
 		"migrate --skip-search-index",
 		"run-tests --app ione_hrp",
-		'frappe.db.count("Error Log")',
+		"SELECT COUNT(*) FROM `tabError Log`",
 		"git -C",
 	):
 		if required_token not in integration_script:
