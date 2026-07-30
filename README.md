@@ -78,6 +78,23 @@ python scripts/performance_baseline.py \
 初始场景覆盖认证到 MariaDB 的模块注册表只读链路；容量场景必须随对应业务 COD 增量交付。
 完整阈值、执行、安全、制品和回滚方法见 `architecture/performance_baselines.md`。
 
+## 软件供应链安全与SBOM
+
+`ione_hrp/config/software_supply_chain.json` 固定 CycloneDX 1.7、扫描工具版本、
+Linux 二进制 SHA-256、失败阈值和限期例外。`Security` CI 作业在完整 Git 历史上运行
+Bandit、Gitleaks、pip-audit、npm audit 和 Grype，并生成包含 `ione_hrp`、三项锁定
+上游以及 Python/Node 依赖的确定性 SBOM。
+
+Frappe 站点只提供系统管理角色可读的 `PLT-019` 治理契约：
+
+```text
+GET /api/method/ione_hrp.api.v1.security.get_software_supply_chain_contract
+```
+
+站点、worker 和生产环境不能启动扫描，也不保存原始报告。CI 只上传最终 SBOM、脱敏
+摘要和 SHA-256 清单；完整门禁、例外、运行和回滚规则见
+`architecture/software_supply_chain.md`。
+
 ## Fixtures 治理
 
 Fixture 只用于 `ione_hrp` 对标准 Frappe/ERPNext/HRMS 对象的受控配置扩展。
@@ -272,8 +289,8 @@ npm ci
 python scripts/quality.py
 ```
 
-该命令依次执行仓库契约、包校验、Python 编译、Ruff lint/format、仓库单元
-测试、校验和、Pyright、ESLint 和 Prettier。工具缺失或任一步失败都会返回
+该命令依次执行仓库契约、包校验、Python 编译、Ruff lint/format、Bandit、
+仓库单元测试、校验和、Pyright、ESLint 和 Prettier。工具缺失或任一步失败都会返回
 非零状态，不允许静默跳过。只检查 Python 或 Node 工具可分别使用
 `--mode python`、`--mode node`。详细规则见
 `architecture/quality_tooling.md`。
@@ -282,10 +299,12 @@ python scripts/quality.py
 
 Pull Request、`main` 推送和人工运行都会触发 `.github/workflows/ci.yml`：
 
-- `Quality` 执行秘密扫描、统一质量门禁和 Node 依赖漏洞扫描；
+- `Quality` 执行仓库契约、格式、静态分析、类型、单元和前端质量门禁；
+- `Security` 固定并校验扫描工具，扫描完整 Git 历史和依赖，生成 CycloneDX 1.7
+  SBOM，并只上传脱敏安全证据；
 - `Integration` 用锁定的 Frappe、ERPNext、Frappe HR 提交创建临时 Bench，
   迁移新站点并运行全部 `ione_hrp` 集成测试；
-- `Required` 只在两个作业都成功时通过，并由分支保护要求
+- `Required` 只在 Quality、Security 和 Integration 都成功时通过，并由分支保护要求
   `Required` 检查上下文（GitHub 页面显示为 `CI / Required`）。
 
 CI 使用一次性测试密码且不连接 Press 或生产环境。完整设计、安全边界和本地

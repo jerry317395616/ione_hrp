@@ -37,6 +37,10 @@ from ione_hrp.common.performance_baseline import (
 	PerformanceBaselineContractError,
 	load_performance_baseline_registry,
 )
+from ione_hrp.common.software_supply_chain import (
+	SoftwareSupplyChainContractError,
+	load_software_supply_chain_policy,
+)
 from ione_hrp.common.test_data_factory import (
 	TestDataFactoryContractError,
 	load_test_data_scenario_registry,
@@ -52,8 +56,15 @@ else:
 APP_NAME = "ione_hrp"
 UPSTREAM_APPS = frozenset({"frappe", "erpnext", "hrms"})
 REQUIRED_CI_CONTEXT = "Required"
-REQUIRED_CI_JOBS = frozenset({"quality", "integration", "required"})
-REQUIRED_PYTHON_DEV_DEPENDENCIES = frozenset({"pyyaml==6.0.3", "ruff==0.15.9"})
+REQUIRED_CI_JOBS = frozenset({"quality", "security", "integration", "required"})
+REQUIRED_PYTHON_DEV_DEPENDENCIES = frozenset(
+	{
+		"bandit==1.9.4",
+		"pip-audit==2.10.1",
+		"pyyaml==6.0.3",
+		"ruff==0.15.9",
+	}
+)
 LEGACY_PREFIXES = ("myi" + "_hrp", "myi" + "-hrp")
 PROTECTED_LEDGER_PATTERNS = (
 	re.compile(r"""(?:new_doc|get_doc)\(\s*["']GL Entry["']"""),
@@ -298,7 +309,11 @@ def validate_ci_pipeline(root: Path) -> list[str]:
 
 	workflow_text = workflow_path.read_text(encoding="utf-8")
 	try:
-		workflow = yaml.load(workflow_text, Loader=yaml.BaseLoader)
+		# BaseLoader constructs scalar strings only and never instantiates Python objects.
+		workflow = yaml.load(  # nosec B506
+			workflow_text,
+			Loader=yaml.BaseLoader,
+		)
 	except yaml.YAMLError as exc:
 		return [f"invalid CI workflow YAML: {exc}"]
 	if not isinstance(workflow, dict):
@@ -339,6 +354,7 @@ def validate_ci_pipeline(root: Path) -> list[str]:
 
 	expected_names = {
 		"quality": "Quality",
+		"security": "Security",
 		"integration": "Integration",
 		"required": "Required",
 	}
@@ -360,10 +376,14 @@ def validate_ci_pipeline(root: Path) -> list[str]:
 		if not isinstance(mariadb, dict) or mariadb.get("image") != "mariadb:11.8":
 			violations.append("CI integration job must use MariaDB 11.8")
 
+	security = jobs["security"]
+	if isinstance(security, dict) and security.get("needs") != "quality":
+		violations.append("CI security job must depend on quality")
+
 	required = jobs["required"]
 	if isinstance(required, dict):
-		if set(required.get("needs", [])) != {"quality", "integration"}:
-			violations.append("CI required job must aggregate quality and integration")
+		if set(required.get("needs", [])) != {"quality", "security", "integration"}:
+			violations.append("CI required job must aggregate quality, security and integration")
 		if required.get("if") != "always()":
 			violations.append("CI required job must run with always()")
 
@@ -380,9 +400,6 @@ def validate_ci_pipeline(root: Path) -> list[str]:
 				actions.append(str(action))
 			if action and not str(action).startswith("./") and not action_pattern.fullmatch(str(action)):
 				violations.append(f"CI action must pin a full commit SHA: {job_name}: {action}")
-	if not any(action.startswith("gitleaks/gitleaks-action@") for action in actions):
-		violations.append("CI quality job must scan repository history with Gitleaks")
-
 	quality = jobs["quality"]
 	quality_commands = "\n".join(
 		str(step.get("run", "")) for step in quality.get("steps", []) if isinstance(step, dict)
@@ -396,13 +413,26 @@ def validate_ci_pipeline(root: Path) -> list[str]:
 		'" inspect \\',
 		"ione_hrp/load_tests/performance_baseline.js",
 		"python scripts/change_manager.py",
-		"npm audit --audit-level=high",
 	):
 		if required_command not in quality_commands:
 			violations.append(f"CI quality job is missing command: {required_command}")
+	security_commands = "\n".join(
+		str(step.get("run", "")) for step in security.get("steps", []) if isinstance(step, dict)
+	)
+	for required_command in (
+		"git fetch --force --prune --tags --unshallow",
+		"gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz",
+		"grype_${GRYPE_VERSION}_linux_amd64.tar.gz",
+		"cyclonedx-linux-x64",
+		"sha256sum --check",
+		"python scripts/security_supply_chain.py run",
+		'--source-commit "$GITHUB_SHA"',
+	):
+		if required_command not in security_commands:
+			violations.append(f"CI security job is missing command: {required_command}")
 	workflow_environment = workflow.get("env")
 	if not isinstance(workflow_environment, dict):
-		violations.append("CI workflow must pin the k6 environment")
+		violations.append("CI workflow must pin its external tools")
 	else:
 		if workflow_environment.get("K6_VERSION") != "2.1.0":
 			violations.append("CI must pin k6 version 2.1.0")
@@ -411,6 +441,19 @@ def validate_ci_pipeline(root: Path) -> list[str]:
 			!= "295d961ebfca306f295f1133068dcd403a8171c87f387928f5f30b0fbcff858a"
 		):
 			violations.append("CI must pin the official k6 Linux archive SHA-256")
+		expected_security_environment = {
+			"GITLEAKS_VERSION": "8.30.1",
+			"GITLEAKS_LINUX_X64_SHA256": ("551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb"),
+			"GRYPE_VERSION": "0.116.1",
+			"GRYPE_LINUX_AMD64_SHA256": ("0122df7b655981abe547ad3d2190d65551dac6a2bfc80b4dc2a989b5d0587458"),
+			"CYCLONEDX_CLI_VERSION": "0.33.1",
+			"CYCLONEDX_CLI_LINUX_X64_SHA256": (
+				"bfc8b2538da86fe239bc53658bbb63c1c8c510a293c1e6891aa5bea5d3c58746"
+			),
+		}
+		for key, expected in expected_security_environment.items():
+			if workflow_environment.get(key) != expected:
+				violations.append(f"CI must pin {key} to the governed security policy")
 
 	integration_commands = "\n".join(
 		str(step.get("run", "")) for step in integration.get("steps", []) if isinstance(step, dict)
@@ -1544,6 +1587,168 @@ def validate_performance_baseline_contract(root: Path) -> list[str]:
 	return violations
 
 
+def validate_software_supply_chain_contract(root: Path) -> list[str]:
+	config_path = root / APP_NAME / "config" / "software_supply_chain.json"
+	common_path = root / APP_NAME / "common" / "software_supply_chain.py"
+	service_path = root / APP_NAME / "services" / "software_supply_chain.py"
+	facade_path = root / APP_NAME / "hrp_foundation" / "services" / "security.py"
+	api_path = root / APP_NAME / "api" / "v1" / "security.py"
+	runner_path = root / "scripts" / "security_supply_chain.py"
+	gitleaks_ignore_path = root / ".gitleaksignore"
+	documentation_path = root / "architecture" / "software_supply_chain.md"
+	adr_path = root / "architecture" / "adr" / "ADR-0011-governed-build-time-sbom-and-security-gates.md"
+	task_path = root / "backlog" / "COD-016.md"
+	change_path = root / "changes" / "COD-016.json"
+	test_paths = (
+		root / "tests" / "test_software_supply_chain.py",
+		root / APP_NAME / "hrp_foundation" / "tests" / "test_software_supply_chain.py",
+	)
+	catalog_paths = (
+		root / "api" / "api_catalog.csv",
+		root / "api" / "api_catalog.yaml",
+		root / "api" / "openapi.yaml",
+	)
+	required_paths = (
+		config_path,
+		common_path,
+		service_path,
+		facade_path,
+		api_path,
+		runner_path,
+		gitleaks_ignore_path,
+		documentation_path,
+		adr_path,
+		task_path,
+		change_path,
+		*test_paths,
+		*catalog_paths,
+	)
+	missing = [str(path.relative_to(root)) for path in required_paths if not path.is_file()]
+	if missing:
+		return [f"missing software supply chain contract file: {path}" for path in missing]
+
+	violations: list[str] = []
+	try:
+		policy = load_software_supply_chain_policy(config_path)
+	except SoftwareSupplyChainContractError as exc:
+		return [f"invalid software supply chain policy: {exc}"]
+	if (
+		policy.execution.http_write_enabled
+		or policy.execution.site_execution_enabled
+		or policy.execution.production_execution_enabled
+	):
+		violations.append("software supply chain scans must remain external to every Frappe site")
+	if policy.sbom.contains_personal_data:
+		violations.append("software bill of materials must not contain personal data")
+	if policy.sbom.spec_version != "1.7":
+		violations.append("software bill of materials must use CycloneDX 1.7")
+	if set(policy.sbom.required_components) != {APP_NAME, "frappe", "erpnext", "hrms"}:
+		violations.append("SBOM must include ione_hrp and all three locked upstream applications")
+	for tool_name in ("gitleaks", "grype", "cyclonedx_cli"):
+		tool = policy.tool(tool_name)
+		if not tool.linux_asset or not tool.linux_sha256:
+			violations.append(f"{tool_name} must pin an immutable Linux asset and SHA-256")
+	if policy.gates.maximum_secret_findings != 0:
+		violations.append("secret scan gate must fail on every unapproved finding")
+	if policy.gates.maximum_denied_licenses != 0:
+		violations.append("denied license gate must fail on every unapproved finding")
+
+	common_text = common_path.read_text(encoding="utf-8")
+	for token in (
+		"class SoftwareSupplyChainPolicy",
+		"class SecurityExecutionPolicy",
+		"class SecurityGates",
+		"class SecurityException",
+		"compose_cyclonedx_sbom",
+		"validate_cyclonedx_sbom",
+		"evaluate_security_reports",
+		"load_composition_inputs",
+	):
+		if token not in common_text:
+			violations.append(f"software supply chain model is missing: {token}")
+
+	service_text = service_path.read_text(encoding="utf-8")
+	for token in (
+		"require_roles",
+		"load_software_supply_chain_policy",
+		"software_supply_chain_contract_read",
+		'"scan_available_from_site"] = False',
+		'"artifact_storage"] = "ci_or_release_artifact"',
+	):
+		if token not in service_text:
+			violations.append(f"software supply chain service is missing: {token}")
+	for forbidden in ("subprocess", "frappe.db.commit", "compose_cyclonedx_sbom"):
+		if forbidden in service_text:
+			violations.append(f"site security service contains forbidden execution behavior: {forbidden}")
+
+	api_text = api_path.read_text(encoding="utf-8")
+	if '@frappe.whitelist(allow_guest=True, methods=["GET"])' not in api_text:
+		violations.append("PLT-019 software supply chain contract must be GET-only")
+	for forbidden in ("run_security", "scan_repository", "compose_cyclonedx_sbom", "subprocess"):
+		if forbidden in api_text:
+			violations.append(
+				f"software supply chain execution must not be exposed through HTTP: {forbidden}"
+			)
+
+	runner_text = runner_path.read_text(encoding="utf-8")
+	for token in (
+		"normalize_artifact_directory",
+		"build_child_environment",
+		"verify_tool_versions",
+		'(npm_bin, "sbom", "--sbom-format", "cyclonedx")',
+		"pip_audit",
+		"bandit",
+		"gitleaks",
+		"grype",
+		"cyclonedx",
+		"evaluate_security_reports",
+		"SHA256SUMS",
+		"subprocess.run",
+	):
+		if token not in runner_text:
+			violations.append(f"software supply chain runner is missing: {token}")
+	for forbidden in (
+		"shell=True",
+		"os.environ.copy()",
+		"--api-key",
+		"--api-secret",
+		"--token",
+		"verify=False",
+		"ssl._create_unverified_context",
+	):
+		if forbidden in runner_text:
+			violations.append(f"software supply chain runner contains forbidden behavior: {forbidden}")
+
+	expected_fingerprint = (
+		"2403cc6f43ebaaf0a924adaaac42cd5f3b217027:"
+		"ione_hrp/hrp_foundation/tests/test_test_data_factory.py:generic-api-key:90"
+	)
+	gitleaks_entries = [
+		line.strip()
+		for line in gitleaks_ignore_path.read_text(encoding="utf-8").splitlines()
+		if line.strip() and not line.lstrip().startswith("#")
+	]
+	if gitleaks_entries != [expected_fingerprint]:
+		violations.append("Gitleaks ignore file must contain only the reviewed exact fingerprint")
+
+	security_api = "/api/method/ione_hrp.api.v1.security.get_software_supply_chain_contract"
+	for catalog_path in catalog_paths:
+		if security_api not in catalog_path.read_text(encoding="utf-8"):
+			violations.append(
+				f"{catalog_path.relative_to(root)} is missing the software supply chain endpoint"
+			)
+	openapi = yaml.safe_load((root / "api" / "openapi.yaml").read_text(encoding="utf-8"))
+	path_contract = openapi.get("paths", {}).get(security_api, {})
+	operation = path_contract.get("get", {})
+	if operation.get("x-transaction-boundary") != "Read-only":
+		violations.append("PLT-019 software supply chain contract API must be read-only")
+	if operation.get("x-required-role") != "System Manager or HRP System Manager":
+		violations.append("PLT-019 software supply chain contract API has the wrong role contract")
+	if set(path_contract) != {"get"}:
+		violations.append("PLT-019 software supply chain contract must not expose writes")
+	return violations
+
+
 def validate_environment_profiles(root: Path) -> list[str]:
 	profile_path = root / APP_NAME / "config" / "environment_profiles.json"
 	manager_path = root / "scripts" / "environment_manager.py"
@@ -1800,6 +2005,7 @@ def collect_violations(root: Path) -> list[str]:
 	violations.extend(validate_transactional_message_contract(root))
 	violations.extend(validate_test_data_factory_contract(root))
 	violations.extend(validate_performance_baseline_contract(root))
+	violations.extend(validate_software_supply_chain_contract(root))
 	return violations
 
 

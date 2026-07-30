@@ -70,19 +70,50 @@ class CIPipelineTest(unittest.TestCase):
 				validate_ci_pipeline(root),
 			)
 
+	def test_rejects_required_job_without_security(self) -> None:
+		with tempfile.TemporaryDirectory() as temp:
+			root = Path(temp)
+			copy_ci_files(root)
+			workflow_path = root / ".github/workflows/ci.yml"
+			workflow = workflow_path.read_text(encoding="utf-8").replace(
+				"      - security\n",
+				"",
+				1,
+			)
+			workflow_path.write_text(workflow, encoding="utf-8")
+			self.assertIn(
+				"CI required job must aggregate quality, security and integration",
+				validate_ci_pipeline(root),
+			)
+
 	def test_rejects_missing_secret_scan(self) -> None:
 		with tempfile.TemporaryDirectory() as temp:
 			root = Path(temp)
 			copy_ci_files(root)
 			workflow_path = root / ".github/workflows/ci.yml"
 			workflow = workflow_path.read_text(encoding="utf-8").replace(
-				"gitleaks/gitleaks-action@",
-				"security/example-action@",
+				"gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz",
+				"gitleaks-asset-removed.tar.gz",
+			)
+			workflow_path.write_text(workflow, encoding="utf-8")
+			self.assertIn(
+				"CI security job is missing command: gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz",
+				validate_ci_pipeline(root),
+			)
+
+	def test_rejects_drifted_security_binary_digest(self) -> None:
+		with tempfile.TemporaryDirectory() as temp:
+			root = Path(temp)
+			copy_ci_files(root)
+			workflow_path = root / ".github/workflows/ci.yml"
+			workflow = workflow_path.read_text(encoding="utf-8").replace(
+				"551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb",
+				"0" * 64,
 				1,
 			)
 			workflow_path.write_text(workflow, encoding="utf-8")
 			self.assertIn(
-				"CI quality job must scan repository history with Gitleaks",
+				"CI must pin GITLEAKS_LINUX_X64_SHA256 to the governed security policy",
 				validate_ci_pipeline(root),
 			)
 

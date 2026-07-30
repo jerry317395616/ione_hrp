@@ -96,7 +96,7 @@ Pull Request 使用 base commit，`main` 推送使用事件 before commit。Qual
 连接 Press，并保持 `contents: read`。
 
 PR 必须包含 COD 编号、ADR/变更记录、测试证据、迁移影响和回滚方法。只有
-Quality、Integration、Required 均成功后才能合并。
+Quality、Security、Integration、Required 均成功后才能合并。
 
 ## 数据迁移与回滚
 

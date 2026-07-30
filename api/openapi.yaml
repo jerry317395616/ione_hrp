@@ -334,6 +334,42 @@ paths:
       x-required-role: System Manager or HRP System Manager
       x-transaction-boundary: Read-only
       x-idempotency: Read-only deterministic
+  /api/method/ione_hrp.api.v1.security.get_software_supply_chain_contract:
+    get:
+      operationId: platform_019
+      summary: 查询软件供应链安全与SBOM治理契约
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Source-controlled read-only software supply chain policy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SoftwareSupplyChainContractResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '403':
+          description: System Manager or HRP System Manager role required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '500':
+          description: Software supply chain policy is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+      x-required-role: System Manager or HRP System Manager
+      x-transaction-boundary: Read-only
+      x-idempotency: Read-only deterministic
   /api/method/ione_hrp.api.v1.modules.set_module_enabled:
     post:
       operationId: platform_009
@@ -3633,6 +3669,176 @@ components:
       properties:
         message:
           $ref: '#/components/schemas/PerformanceBaselineContract'
+    SoftwareSupplyChainContractResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - message
+      properties:
+        message:
+          $ref: '#/components/schemas/SoftwareSupplyChainContract'
+    SoftwareSupplyChainContract:
+      type: object
+      additionalProperties: false
+      required:
+      - status
+      - schema_version
+      - app
+      - sha256
+      - sbom
+      - execution_policy
+      - tools
+      - gates
+      - exception_count
+      - exceptions
+      - idempotency
+      - scan_available_from_site
+      - artifact_storage
+      properties:
+        status:
+          type: string
+          const: ok
+        schema_version:
+          type: integer
+          const: 1
+        app:
+          type: string
+          const: ione_hrp
+        sha256:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        sbom:
+          type: object
+          additionalProperties: false
+          required:
+          - format
+          - spec_version
+          - artifact_name
+          - include_development_dependencies
+          - contains_personal_data
+          - required_components
+          properties:
+            format:
+              type: string
+              const: CycloneDX JSON
+            spec_version:
+              type: string
+              const: '1.7'
+            artifact_name:
+              type: string
+              const: ione_hrp.cdx.json
+            include_development_dependencies:
+              type: boolean
+              const: true
+            contains_personal_data:
+              type: boolean
+              const: false
+            required_components:
+              type: array
+              minItems: 4
+              uniqueItems: true
+              items:
+                type: string
+                enum:
+                - ione_hrp
+                - frappe
+                - erpnext
+                - hrms
+        execution_policy:
+          type: object
+          additionalProperties: false
+          required:
+          - http_write_enabled
+          - site_execution_enabled
+          - production_execution_enabled
+          - artifact_directory
+          - artifact_retention_days
+          - subprocess_environment_allowlist
+          - execution_location
+          properties:
+            http_write_enabled:
+              type: boolean
+              const: false
+            site_execution_enabled:
+              type: boolean
+              const: false
+            production_execution_enabled:
+              type: boolean
+              const: false
+            artifact_directory:
+              type: string
+              const: .artifacts/security
+            artifact_retention_days:
+              type: integer
+              minimum: 1
+            subprocess_environment_allowlist:
+              type: array
+              uniqueItems: true
+              items:
+                type: string
+            execution_location:
+              type: string
+              const: external_ci_or_release_process
+        tools:
+          type: array
+          minItems: 6
+          uniqueItems: true
+          items:
+            type: object
+            required:
+            - name
+            - version
+            properties:
+              name:
+                type: string
+              version:
+                type: string
+              linux_asset:
+                type: string
+              linux_sha256:
+                type: string
+                pattern: ^[0-9a-f]{64}$
+        gates:
+          type: object
+          additionalProperties: true
+        exception_count:
+          type: integer
+          minimum: 0
+        exceptions:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required:
+            - kind
+            - id
+            - package
+            - expires_on
+            - reason
+            - approved_by
+            properties:
+              kind:
+                type: string
+              id:
+                type: string
+              package:
+                type: string
+              expires_on:
+                type: string
+                format: date
+              reason:
+                type: string
+              approved_by:
+                type: string
+        idempotency:
+          type: string
+          const: read_only_replay_safe
+        scan_available_from_site:
+          type: boolean
+          const: false
+        artifact_storage:
+          type: string
+          const: ci_or_release_artifact
     IoneErrorResponse:
       type: object
       required:
