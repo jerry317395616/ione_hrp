@@ -2030,6 +2030,9 @@ def validate_organization_hierarchy_contract(root: Path) -> list[str]:
 		return [f"missing organization hierarchy contract file: {path}" for path in missing]
 
 	violations: list[str] = []
+	integration_test_text = integration_test_path.read_text(encoding="utf-8")
+	if "erpnext.setup.doctype.company.test_company" in integration_test_text:
+		violations.append("organization tests must not import side-effectful upstream test fixtures")
 	expected_roles = {"System Manager", "HRP System Manager", "HRP Data Steward"}
 	for name, (doctype_path, controller_path, blueprint_path) in doctype_paths.items():
 		doctype = json.loads(doctype_path.read_text(encoding="utf-8"))

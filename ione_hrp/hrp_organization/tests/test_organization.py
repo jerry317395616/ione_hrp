@@ -8,8 +8,6 @@ import frappe
 from frappe.tests import IntegrationTestCase
 from frappe.tests.test_api import FrappeAPITestCase
 
-from erpnext.setup.doctype.company.test_company import get_test_company
-
 from ione_hrp.common.domain_service import idempotency_record_name
 from ione_hrp.common.error_catalog import IoneApplicationError
 from ione_hrp.common.organization import (
@@ -41,6 +39,7 @@ REPLACE_HIERARCHY_METHOD = "ione_hrp.api.v1.organization.replace_organization_hi
 PUBLISH_VERSION_METHOD = "ione_hrp.api.v1.organization.publish_organization_version"
 GET_HIERARCHY_METHOD = "ione_hrp.api.v1.organization.get_organization_hierarchy"
 TEST_HOSPITAL = "COD018-HOSPITAL"
+TEST_COMPANY = "COD-018测试医疗法人"
 ORGANIZATION_SERVICE_NAMES = (
 	UpsertHospitalService.definition.name,
 	CreateOrganizationVersionService.definition.name,
@@ -50,7 +49,19 @@ ORGANIZATION_SERVICE_NAMES = (
 
 
 def company_name() -> str:
-	return cast(str, get_test_company().name)
+	if frappe.db.exists("Company", TEST_COMPANY):
+		return TEST_COMPANY
+	company = frappe.get_doc(
+		{
+			"doctype": "Company",
+			"company_name": TEST_COMPANY,
+			"abbr": "C018",
+			"country": "China",
+			"default_currency": "CNY",
+		}
+	)
+	company.insert(ignore_permissions=True)
+	return cast(str, company.name)
 
 
 def reset_organization_test_state() -> None:
