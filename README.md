@@ -49,9 +49,13 @@ AGENTS.md                      Codex 仓库级强制规则
 修改或取消。`CORE-013` 可按显式版本或医院与业务日期查询确定快照。
 
 COD-017 的默认医院已升级为正式 Link；旧文本在迁移时确定性转换为医院记录并保留原名称。
-本任务不映射 ERPNext `Department`/`Cost Center`，该能力留给 COD-019。完整模型、
-权限、接口、迁移和回滚规则见 `architecture/organization_hierarchy.md` 与
-`architecture/adr/ADR-0012-versioned-hospital-organization-hierarchy.md`。
+COD-019 通过只读 `HRP Organization Mapping` 把发布版本内的组织单元映射到同一法人的
+ERPNext 标准 `Department`/`Cost Center`。`CORE-014` 负责幂等修订并校验启停、唯一性和
+双树关系，`CORE-015` 按组织单元或业务日期确定性解析；标准主数据仍完全由 ERPNext
+控制器维护。完整模型、权限、接口、迁移和回滚规则见
+`architecture/organization_hierarchy.md`、`architecture/organization_mapping.md`、
+`architecture/adr/ADR-0012-versioned-hospital-organization-hierarchy.md` 与
+`architecture/adr/ADR-0013-version-scoped-standard-organization-mapping.md`。
 
 ## 非生产环境
 

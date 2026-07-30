@@ -422,6 +422,26 @@ ione_hrp,HRP Organization,HRP Organization Unit,22,remarks,备注,Small Text,,0,
 ione_hrp,HRP Organization,HRP Organization Unit,23,lft,左边界,Int,,0,0,0,1,0,,,,左边界,Core
 ione_hrp,HRP Organization,HRP Organization Unit,24,rgt,右边界,Int,,0,0,0,1,0,,,,右边界,Core
 ione_hrp,HRP Organization,HRP Organization Unit,25,old_parent,原上级,Data,,0,0,0,1,0,,,,原上级,Core
+ione_hrp,HRP Organization,HRP Organization Mapping,10,organization_version,组织版本,Link,HRP Organization Version,1,0,1,1,1,,,,组织版本,Core
+ione_hrp,HRP Organization,HRP Organization Mapping,11,organization_unit,组织单元,Link,HRP Organization Unit,1,1,1,1,1,,,,组织单元,Core
+ione_hrp,HRP Organization,HRP Organization Mapping,12,company,所属法人,Link,Company,1,0,1,1,0,,,,所属法人,Core
+ione_hrp,HRP Organization,HRP Organization Mapping,13,hospital,医院,Link,HRP Hospital,1,0,1,1,0,,,,医院,Core
+ione_hrp,HRP Organization,HRP Organization Mapping,14,unit_code,组织编码,Data,,1,0,1,1,1,,,,组织编码,Core
+ione_hrp,HRP Organization,HRP Organization Mapping,15,unit_type,组织类型,Select,"HOSPITAL
+CAMPUS
+CLINICAL_DEPARTMENT
+ADMINISTRATIVE_DEPARTMENT
+NURSING_UNIT
+WARD
+MEDICAL_GROUP
+COST_RESPONSIBILITY_CENTER
+POSITION
+OTHER",1,0,1,1,0,,,,组织类型,Core
+ione_hrp,HRP Organization,HRP Organization Mapping,16,department,标准部门,Link,Department,0,0,1,1,1,,,,标准部门,Core
+ione_hrp,HRP Organization,HRP Organization Mapping,17,cost_center,标准成本中心,Link,Cost Center,0,0,1,1,1,,,,标准成本中心,Core
+ione_hrp,HRP Organization,HRP Organization Mapping,18,enabled,启用,Check,,0,0,1,1,1,,1,,启用,Core
+ione_hrp,HRP Organization,HRP Organization Mapping,19,revision,修订号,Int,,1,0,0,1,0,,1,,修订号,Core
+ione_hrp,HRP Organization,HRP Organization Mapping,20,remarks,备注,Small Text,,0,0,0,1,0,,,,备注,Core
 ione_hrp,HRP Organization,HRP Clinical Department,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
 ione_hrp,HRP Organization,HRP Clinical Department,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
 ione_hrp,HRP Organization,HRP Clinical Department,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core

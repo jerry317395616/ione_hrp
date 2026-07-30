@@ -44,14 +44,14 @@ def main() -> None:
 
 	with (ROOT / "design" / "doctype_catalog.csv").open(encoding="utf-8-sig", newline="") as handle:
 		rows = list(csv.DictReader(handle))
-	if len(rows) != 398:
-		fail(f"expected 398 design DocTypes, got {len(rows)}")
+	if len(rows) != 399:
+		fail(f"expected 399 design DocTypes, got {len(rows)}")
 	if {row["app"] for row in rows} != {"ione_hrp"}:
 		fail("doctype catalog contains non-single-app values")
 
 	blueprint_files = list((ROOT / "doctype_blueprints").rglob("*.json"))
-	if len(blueprint_files) != 398:
-		fail(f"expected 398 blueprint files, got {len(blueprint_files)}")
+	if len(blueprint_files) != 399:
+		fail(f"expected 399 blueprint files, got {len(blueprint_files)}")
 
 	print(
 		json.dumps(

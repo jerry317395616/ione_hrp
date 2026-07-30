@@ -38,6 +38,10 @@ from ione_hrp.common.organization import (
 	ORGANIZATION_SCHEMA_VERSION,
 	UNIT_TYPES,
 )
+from ione_hrp.common.organization_mapping import (
+	ORGANIZATION_MAPPING_DOCTYPE,
+	ORGANIZATION_MAPPING_SCHEMA_VERSION,
+)
 from ione_hrp.common.performance_baseline import (
 	PerformanceBaselineContractError,
 	load_performance_baseline_registry,
@@ -2212,6 +2216,239 @@ def validate_organization_hierarchy_contract(root: Path) -> list[str]:
 	return violations
 
 
+def validate_organization_mapping_contract(root: Path) -> list[str]:
+	module_root = root / APP_NAME / "hrp_organization"
+	common_path = root / APP_NAME / "common" / "organization_mapping.py"
+	service_path = module_root / "services" / "organization_mapping.py"
+	api_path = root / APP_NAME / "api" / "v1" / "organization_mapping.py"
+	setup_path = root / APP_NAME / "setup" / "organization.py"
+	controller_path = module_root / "doctype" / "hrp_organization_mapping" / "hrp_organization_mapping.py"
+	doctype_path = controller_path.with_suffix(".json")
+	blueprint_path = root / "doctype_blueprints" / "hrp_organization" / "hrp_organization_mapping.json"
+	workspace_path = module_root / "workspace" / "hrp_organization" / "hrp_organization.json"
+	documentation_path = root / "architecture" / "organization_mapping.md"
+	adr_path = root / "architecture" / "adr" / "ADR-0013-version-scoped-standard-organization-mapping.md"
+	task_path = root / "backlog" / "COD-019.md"
+	change_path = root / "changes" / "COD-019.json"
+	pure_test_path = root / "tests" / "test_organization_mapping.py"
+	integration_test_path = module_root / "tests" / "test_organization_mapping.py"
+	catalog_paths = (
+		root / "api" / "api_catalog.csv",
+		root / "api" / "api_catalog.yaml",
+		root / "api" / "openapi.yaml",
+	)
+	required_paths = (
+		common_path,
+		service_path,
+		api_path,
+		setup_path,
+		controller_path,
+		doctype_path,
+		blueprint_path,
+		workspace_path,
+		documentation_path,
+		adr_path,
+		task_path,
+		change_path,
+		pure_test_path,
+		integration_test_path,
+		*catalog_paths,
+	)
+	missing = [str(path.relative_to(root)) for path in required_paths if not path.is_file()]
+	if missing:
+		return [f"missing organization mapping contract file: {path}" for path in missing]
+
+	violations: list[str] = []
+	doctype = json.loads(doctype_path.read_text(encoding="utf-8"))
+	blueprint = json.loads(blueprint_path.read_text(encoding="utf-8"))
+	if doctype.get("name") != ORGANIZATION_MAPPING_DOCTYPE:
+		violations.append("organization mapping runtime metadata has the wrong DocType name")
+	if doctype.get("module") != "HRP Organization":
+		violations.append("organization mapping must be owned by HRP Organization")
+	if blueprint.get("name") != ORGANIZATION_MAPPING_DOCTYPE:
+		violations.append("organization mapping blueprint has the wrong DocType name")
+	if blueprint.get("module") != "HRP Organization":
+		violations.append("organization mapping blueprint must be owned by HRP Organization")
+	if "?" in blueprint_path.read_text(encoding="utf-8"):
+		violations.append("organization mapping blueprint must not contain replacement question marks")
+
+	runtime_fields = {
+		field.get("fieldname")
+		for field in doctype.get("fields", [])
+		if field.get("fieldname") and field.get("fieldtype") not in {"Section Break", "Column Break"}
+	}
+	blueprint_fields = {
+		field.get("fieldname") for field in blueprint.get("fields", []) if field.get("fieldname")
+	}
+	expected_fields = {
+		"organization_version",
+		"organization_unit",
+		"company",
+		"hospital",
+		"unit_code",
+		"unit_type",
+		"department",
+		"cost_center",
+		"enabled",
+		"revision",
+		"remarks",
+	}
+	if runtime_fields != expected_fields or blueprint_fields != expected_fields:
+		violations.append("organization mapping runtime and blueprint fields must match the contract")
+	field_map = {field["fieldname"]: field for field in doctype.get("fields", []) if field.get("fieldname")}
+	for fieldname, target in (
+		("organization_version", "HRP Organization Version"),
+		("organization_unit", "HRP Organization Unit"),
+		("company", "Company"),
+		("hospital", "HRP Hospital"),
+		("department", "Department"),
+		("cost_center", "Cost Center"),
+	):
+		if field_map.get(fieldname, {}).get("options") != target:
+			violations.append(f"organization mapping {fieldname} must link to {target}")
+	if doctype.get("autoname") != "field:organization_unit":
+		violations.append("organization mapping must use the organization unit as stable name")
+
+	expected_roles = {
+		"System Manager",
+		"HRP System Manager",
+		"HRP Data Steward",
+		"HRP Integration User",
+	}
+	permissions = doctype.get("permissions", [])
+	if {permission.get("role") for permission in permissions} != expected_roles:
+		violations.append("organization mapping must use its four read roles")
+	for permission in permissions:
+		if permission.get("read") != 1:
+			violations.append("organization mapping roles must retain read access")
+		if any(
+			permission.get(action) for action in ("write", "create", "delete", "submit", "cancel", "amend")
+		):
+			violations.append("organization mapping writes must remain service-only")
+
+	common_text = common_path.read_text(encoding="utf-8")
+	for token in (
+		f'ORGANIZATION_MAPPING_DOCTYPE = "{ORGANIZATION_MAPPING_DOCTYPE}"',
+		f"ORGANIZATION_MAPPING_SCHEMA_VERSION = {ORGANIZATION_MAPPING_SCHEMA_VERSION}",
+		"class OrganizationMappingUpsert",
+		"class OrganizationMappingResolve",
+		"remarks_digest",
+	):
+		if token not in common_text:
+			violations.append(f"organization mapping public contract is missing: {token}")
+
+	controller_text = controller_path.read_text(encoding="utf-8")
+	for token in (
+		"organization_mapping_service_write",
+		"expected_revision",
+		"Published",
+		"as_public_dict",
+	):
+		if token not in controller_text:
+			violations.append(f"organization mapping controller is missing: {token}")
+	if "frappe.db.commit" in controller_text:
+		violations.append("organization mapping controller must not commit transactions")
+
+	service_text = service_path.read_text(encoding="utf-8")
+	for token in (
+		"class UpsertOrganizationMappingService",
+		"class ResolveOrganizationMappingService",
+		"DomainService",
+		"FOR UPDATE",
+		"expected_revision",
+		"STANDARD_TARGETS",
+		"_validate_target_uniqueness",
+		"_validate_tree_alignment",
+		"require_enabled",
+	):
+		if token not in service_text:
+			violations.append(f"organization mapping service is missing: {token}")
+	if "frappe.db.commit" in service_text:
+		violations.append("organization mapping services must not commit transactions")
+	if "schema_version=ORGANIZATION_MAPPING_SCHEMA_VERSION" in service_text:
+		violations.append("organization mapping audit must not reuse reserved schema_version")
+
+	api_text = api_path.read_text(encoding="utf-8")
+	if api_text.count('@frappe.whitelist(methods=["POST"])') != 1:
+		violations.append("COD-019 mapping API must expose exactly one POST method")
+	if api_text.count('@frappe.whitelist(methods=["GET"])') != 1:
+		violations.append("COD-019 mapping API must expose exactly one GET method")
+	if "allow_guest=True" in api_text:
+		violations.append("organization mapping APIs must never allow guests")
+
+	setup_text = setup_path.read_text(encoding="utf-8")
+	for token in (
+		"uniq_hrp_org_mapping_version_unit",
+		"uniq_hrp_org_mapping_version_department",
+		"uniq_hrp_org_mapping_version_cost_center",
+	):
+		if token not in setup_text:
+			violations.append(f"organization mapping migration is missing: {token}")
+
+	workspace = json.loads(workspace_path.read_text(encoding="utf-8"))
+	actual_links = {link.get("link_to") for link in workspace.get("links", []) if link.get("link_to")}
+	if ORGANIZATION_MAPPING_DOCTYPE not in actual_links:
+		violations.append("organization workspace must expose standard mappings")
+
+	with (root / "design" / "doctype_catalog.csv").open(
+		encoding="utf-8-sig",
+		newline="",
+	) as stream:
+		doctype_rows = [
+			row for row in csv.DictReader(stream) if row.get("doctype") == ORGANIZATION_MAPPING_DOCTYPE
+		]
+	if len(doctype_rows) != 1:
+		violations.append("organization mapping must have exactly one DocType catalog row")
+	with (root / "design" / "field_catalog.csv").open(
+		encoding="utf-8-sig",
+		newline="",
+	) as stream:
+		field_rows = [
+			row for row in csv.DictReader(stream) if row.get("doctype") == ORGANIZATION_MAPPING_DOCTYPE
+		]
+	if {row.get("fieldname") for row in field_rows} != expected_fields:
+		violations.append("organization mapping field catalog must match runtime metadata")
+
+	endpoints = {
+		"/api/method/ione_hrp.api.v1.organization_mapping.upsert_organization_mapping": "post",
+		"/api/method/ione_hrp.api.v1.organization_mapping.resolve_organization_mapping": "get",
+	}
+	for catalog_path in catalog_paths:
+		catalog_text = catalog_path.read_text(encoding="utf-8")
+		for endpoint in endpoints:
+			if endpoint not in catalog_text:
+				violations.append(
+					f"{catalog_path.relative_to(root)} is missing organization mapping endpoint {endpoint}"
+				)
+	openapi = yaml.safe_load((root / "api" / "openapi.yaml").read_text(encoding="utf-8"))
+	write_role = "System Manager or HRP System Manager or HRP Data Steward"
+	read_role = f"{write_role} or HRP Integration User"
+	for endpoint, method in endpoints.items():
+		path_contract = openapi.get("paths", {}).get(endpoint, {})
+		operation = path_contract.get(method, {})
+		if set(path_contract) != {method}:
+			violations.append(f"{endpoint} must expose only {method.upper()}")
+		expected_role = write_role if method == "post" else read_role
+		if operation.get("x-required-role") != expected_role:
+			violations.append(f"{endpoint} has the wrong organization mapping role contract")
+		if method == "post":
+			if operation.get("x-transaction-boundary") != "Single DB transaction":
+				violations.append(f"{endpoint} must use one database transaction")
+			if operation.get("x-idempotency") != "Required for write":
+				violations.append(f"{endpoint} must require idempotency")
+			if not any(
+				header.get("name") == "Idempotency-Key" and header.get("required") is True
+				for header in operation.get("parameters", [])
+			):
+				violations.append(f"{endpoint} must declare a required Idempotency-Key header")
+		else:
+			if operation.get("x-transaction-boundary") != "Read-only":
+				violations.append(f"{endpoint} must remain read-only")
+			if operation.get("x-idempotency") != "Read-only deterministic":
+				violations.append(f"{endpoint} must remain deterministic")
+	return violations
+
+
 def validate_environment_profiles(root: Path) -> list[str]:
 	profile_path = root / APP_NAME / "config" / "environment_profiles.json"
 	manager_path = root / "scripts" / "environment_manager.py"
@@ -2471,6 +2708,7 @@ def collect_violations(root: Path) -> list[str]:
 	violations.extend(validate_software_supply_chain_contract(root))
 	violations.extend(validate_system_settings_contract(root))
 	violations.extend(validate_organization_hierarchy_contract(root))
+	violations.extend(validate_organization_mapping_contract(root))
 	return violations
 
 
