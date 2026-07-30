@@ -2365,6 +2365,8 @@ def validate_organization_mapping_contract(root: Path) -> list[str]:
 			violations.append(f"organization mapping service is missing: {token}")
 	if "frappe.db.commit" in service_text:
 		violations.append("organization mapping services must not commit transactions")
+	if "schema_version=ORGANIZATION_MAPPING_SCHEMA_VERSION" in service_text:
+		violations.append("organization mapping audit must not reuse reserved schema_version")
 
 	api_text = api_path.read_text(encoding="utf-8")
 	if api_text.count('@frappe.whitelist(methods=["POST"])') != 1:

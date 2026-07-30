@@ -7,7 +7,6 @@ from frappe.utils import today
 
 from ione_hrp.common.domain_service import DomainServiceDefinition, DomainServiceExecution
 from ione_hrp.common.organization_mapping import (
-	ORGANIZATION_MAPPING_SCHEMA_VERSION,
 	OrganizationMappingResolve,
 	OrganizationMappingUpsert,
 )
@@ -441,7 +440,6 @@ class ResolveOrganizationMappingService(DomainService[OrganizationMappingResolve
 		emit_audit_event(
 			"organization_mapping_resolved",
 			logger_name="ione_hrp.organization_mapping",
-			schema_version=ORGANIZATION_MAPPING_SCHEMA_VERSION,
 			revision=int(doc.revision),
 			target_count=target_count,
 		)
