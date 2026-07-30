@@ -25,6 +25,7 @@
     "ione_hrp/api/v1/master_data.py",
     "ione_hrp/common/master_data.py",
     "ione_hrp/hooks.py",
+    "ione_hrp/hrp_foundation/tests/test_change_governance.py",
     "ione_hrp/hrp_foundation/workspace/hrp/hrp.json",
     "ione_hrp/hrp_master_data/**",
     "ione_hrp/setup/**",
