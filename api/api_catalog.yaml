@@ -180,6 +180,34 @@
   transaction_boundary: Read-only
   audit: Redacted version revision and node-count log
   version: v1
+- api_code: CORE-014
+  app: ione_hrp
+  domain_group: Core
+  method: POST
+  path: /api/method/ione_hrp.api.v1.organization_mapping.upsert_organization_mapping
+  description: 创建或修订组织标准映射
+  request_schema: organization_version,organization_unit,department,cost_center,enabled,expected_revision,remarks
+  response_schema: schema_version,name,organization_version,organization_unit,company,hospital,unit_code,unit_type,department,cost_center,enabled,revision,remarks,changed,changed_fields,correlation_id,request_id,idempotency_replayed
+  required_role: System Manager or HRP System Manager or HRP Data Steward
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Redacted revision target-count and changed-field log
+  version: v1
+- api_code: CORE-015
+  app: ione_hrp
+  domain_group: Core
+  method: GET
+  path: /api/method/ione_hrp.api.v1.organization_mapping.resolve_organization_mapping
+  description: 按组织单元或业务日期解析标准映射
+  request_schema: organization_unit or hospital,unit_code,effective_on
+  response_schema: schema_version,name,organization_version,organization_unit,company,hospital,unit_code,unit_type,department,cost_center,enabled,revision,remarks,correlation_id,request_id,idempotency_replayed
+  required_role: System Manager or HRP System Manager or HRP Data Steward or HRP Integration User
+  idempotency: Read-only deterministic
+  async: 'No'
+  transaction_boundary: Read-only
+  audit: Redacted revision and target-count log
+  version: v1
 - api_code: FIN-001
   app: ione_hrp
   domain_group: Finance

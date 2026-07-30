@@ -4032,6 +4032,126 @@ paths:
       x-required-role: System Manager or HRP System Manager or HRP Data Steward
       x-transaction-boundary: Read-only
       x-idempotency: Read-only deterministic
+  /api/method/ione_hrp.api.v1.organization_mapping.upsert_organization_mapping:
+    post:
+      operationId: core_014
+      summary: 创建或修订组织标准映射
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+          pattern: ^[A-Za-z0-9][A-Za-z0-9._:/-]{0,139}$
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 140
+          pattern: ^[A-Za-z0-9][A-Za-z0-9._:/-]{7,139}$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganizationMappingUpsertRequest'
+      responses:
+        '200':
+          description: 创建或修订组织标准映射
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationMappingFrappeResponse'
+        '400':
+          description: Invalid request or missing idempotency key
+          content: *id001
+        '401':
+          description: Authentication required
+          content: *id001
+        '403':
+          description: Organization administrator role required
+          content: *id001
+        '404':
+          description: Referenced organization resource not found
+          content: *id001
+        '409':
+          description: Revision, uniqueness, or hierarchy conflict
+          content: *id001
+        '500':
+          description: Persisted organization mapping is invalid
+          content: *id001
+      x-required-role: System Manager or HRP System Manager or HRP Data Steward
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+  /api/method/ione_hrp.api.v1.organization_mapping.resolve_organization_mapping:
+    get:
+      operationId: core_015
+      summary: 按组织单元或业务日期解析标准映射
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: organization_unit
+        in: query
+        required: false
+        schema:
+          type: string
+          maxLength: 140
+      - name: hospital
+        in: query
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z][A-Z0-9_-]{0,63}$
+      - name: unit_code
+        in: query
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z][A-Z0-9_-]{0,63}$
+      - name: effective_on
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      responses:
+        '200':
+          description: Resolved organization standard mapping
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationMappingFrappeResponse'
+        '400':
+          description: Invalid request
+          content: *id001
+        '401':
+          description: Authentication required
+          content: *id001
+        '403':
+          description: Organization mapping read role required
+          content: *id001
+        '404':
+          description: Referenced organization mapping not found
+          content: *id001
+        '409':
+          description: Mapping or standard target is disabled
+          content: *id001
+        '500':
+          description: Persisted organization mapping is invalid
+          content: *id001
+      x-required-role: System Manager or HRP System Manager or HRP Data Steward or HRP Integration User
+      x-transaction-boundary: Read-only
+      x-idempotency: Read-only deterministic
 components:
   headers:
     CorrelationId:
@@ -5206,6 +5326,37 @@ components:
         expected_revision:
           type: integer
           minimum: 1
+    OrganizationMappingUpsertRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - organization_version
+      - organization_unit
+      - expected_revision
+      properties:
+        organization_version:
+          type: string
+          maxLength: 140
+        organization_unit:
+          type: string
+          maxLength: 140
+        department:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        cost_center:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        enabled:
+          type: boolean
+          default: true
+        expected_revision:
+          type: integer
+          minimum: 0
+        remarks: *id004
     HospitalMutationResult:
       type: object
       additionalProperties: false
@@ -5467,6 +5618,77 @@ components:
           maxItems: 2000
           items:
             $ref: '#/components/schemas/OrganizationNode'
+    OrganizationMappingResult:
+      type: object
+      additionalProperties: false
+      required:
+      - schema_version
+      - name
+      - organization_version
+      - organization_unit
+      - company
+      - hospital
+      - unit_code
+      - unit_type
+      - department
+      - cost_center
+      - enabled
+      - revision
+      - remarks
+      - correlation_id
+      - request_id
+      - idempotency_replayed
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        name:
+          type: string
+          maxLength: 140
+        organization_version:
+          type: string
+          maxLength: 140
+        organization_unit:
+          type: string
+          maxLength: 140
+        company:
+          type: string
+          maxLength: 140
+        hospital: *id003
+        unit_code: *id003
+        unit_type: *id022
+        department:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        cost_center:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        enabled:
+          type: boolean
+        revision:
+          type: integer
+          minimum: 1
+        remarks: *id004
+        changed:
+          type: boolean
+        changed_fields:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+            enum:
+            - created
+            - department
+            - cost_center
+            - enabled
+            - remarks
+        correlation_id: *id005
+        request_id: *id006
+        idempotency_replayed: *id007
     HospitalMutationFrappeResponse:
       type: object
       additionalProperties: false
@@ -5499,3 +5721,11 @@ components:
       properties:
         message:
           $ref: '#/components/schemas/OrganizationHierarchy'
+    OrganizationMappingFrappeResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - message
+      properties:
+        message:
+          $ref: '#/components/schemas/OrganizationMappingResult'

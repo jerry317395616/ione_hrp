@@ -83,12 +83,27 @@ def ensure_organization_hierarchy() -> dict[str, object]:
 			["organization_version", "code"],
 			"uniq_hrp_org_unit_version_code",
 		),
+		(
+			"HRP Organization Mapping",
+			["organization_version", "organization_unit"],
+			"uniq_hrp_org_mapping_version_unit",
+		),
+		(
+			"HRP Organization Mapping",
+			["organization_version", "department"],
+			"uniq_hrp_org_mapping_version_department",
+		),
+		(
+			"HRP Organization Mapping",
+			["organization_version", "cost_center"],
+			"uniq_hrp_org_mapping_version_cost_center",
+		),
 	):
 		if frappe.db.table_exists(doctype):
 			frappe.db.add_unique(doctype, fields, constraint_name)
 	migration = _migrate_default_hospital()
 	return {
-		"schema_version": 1,
+		"schema_version": 2,
 		"default_hospital_changed": migration["changed"],
 		"default_hospital": migration["hospital"],
 	}

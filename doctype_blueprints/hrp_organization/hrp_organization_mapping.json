@@ -1,0 +1,182 @@
+{
+  "doctype": "DocType",
+  "name": "HRP Organization Mapping",
+  "module": "HRP Organization",
+  "custom": 0,
+  "engine": "InnoDB",
+  "autoname": "field:organization_unit",
+  "title_field": "unit_code",
+  "is_submittable": 0,
+  "istable": 0,
+  "issingle": 0,
+  "track_changes": 1,
+  "allow_rename": 0,
+  "editable_grid": 0,
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "index_web_pages_for_search": 0,
+  "description": "组织版本内的标准部门与成本中心映射；只允许通过组织映射服务维护。",
+  "fields": [
+    {
+      "fieldname": "organization_version",
+      "fieldtype": "Link",
+      "label": "组织版本",
+      "options": "HRP Organization Version",
+      "read_only": 1,
+      "reqd": 1,
+      "search_index": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "organization_unit",
+      "fieldtype": "Link",
+      "label": "组织单元",
+      "options": "HRP Organization Unit",
+      "read_only": 1,
+      "reqd": 1,
+      "search_index": 1,
+      "in_list_view": 1,
+      "unique": 1
+    },
+    {
+      "fieldname": "company",
+      "fieldtype": "Link",
+      "label": "所属法人",
+      "options": "Company",
+      "read_only": 1,
+      "reqd": 1,
+      "search_index": 1
+    },
+    {
+      "fieldname": "hospital",
+      "fieldtype": "Link",
+      "label": "医院",
+      "options": "HRP Hospital",
+      "read_only": 1,
+      "reqd": 1,
+      "search_index": 1
+    },
+    {
+      "fieldname": "unit_code",
+      "fieldtype": "Data",
+      "label": "组织编码",
+      "read_only": 1,
+      "reqd": 1,
+      "search_index": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "unit_type",
+      "fieldtype": "Select",
+      "label": "组织类型",
+      "options": "HOSPITAL\nCAMPUS\nCLINICAL_DEPARTMENT\nADMINISTRATIVE_DEPARTMENT\nNURSING_UNIT\nWARD\nMEDICAL_GROUP\nCOST_RESPONSIBILITY_CENTER\nPOSITION\nOTHER",
+      "read_only": 1,
+      "reqd": 1,
+      "search_index": 1
+    },
+    {
+      "fieldname": "department",
+      "fieldtype": "Link",
+      "label": "标准部门",
+      "options": "Department",
+      "read_only": 1,
+      "search_index": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "cost_center",
+      "fieldtype": "Link",
+      "label": "标准成本中心",
+      "options": "Cost Center",
+      "read_only": 1,
+      "search_index": 1,
+      "in_list_view": 1
+    },
+    {
+      "default": "1",
+      "fieldname": "enabled",
+      "fieldtype": "Check",
+      "label": "启用",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "default": "1",
+      "fieldname": "revision",
+      "fieldtype": "Int",
+      "label": "修订号",
+      "read_only": 1,
+      "reqd": 1
+    },
+    {
+      "fieldname": "remarks",
+      "fieldtype": "Small Text",
+      "label": "备注",
+      "read_only": 1
+    }
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": 1,
+      "write": 0,
+      "create": 0,
+      "delete": 0,
+      "submit": 0,
+      "cancel": 0,
+      "amend": 0
+    },
+    {
+      "role": "HRP System Manager",
+      "read": 1,
+      "write": 0,
+      "create": 0,
+      "delete": 0,
+      "submit": 0,
+      "cancel": 0,
+      "amend": 0
+    },
+    {
+      "role": "HRP Data Steward",
+      "read": 1,
+      "write": 0,
+      "create": 0,
+      "delete": 0,
+      "submit": 0,
+      "cancel": 0,
+      "amend": 0
+    },
+    {
+      "role": "HRP Integration User",
+      "read": 1,
+      "write": 0,
+      "create": 0,
+      "delete": 0,
+      "submit": 0,
+      "cancel": 0,
+      "amend": 0
+    }
+  ],
+  "links": [],
+  "actions": [],
+  "x_hrp": {
+    "app": "ione_hrp",
+    "retention_years": 10,
+    "data_classification": "内部",
+    "key_indexes": [
+      "organization_version",
+      "organization_unit",
+      "company",
+      "hospital",
+      "department",
+      "cost_center"
+    ],
+    "standard_references": [
+      "Company",
+      "Department",
+      "Cost Center"
+    ],
+    "domain_group": "Core",
+    "module_package": "hrp_organization"
+  }
+}
