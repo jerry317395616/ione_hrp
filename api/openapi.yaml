@@ -3741,7 +3741,7 @@ paths:
   /api/method/ione_hrp.api.v1.organization.upsert_hospital:
     post:
       operationId: core_009
-      summary: ???????????
+      summary: 创建或更新医院主数据
       tags:
       - ione_hrp
       security:
@@ -3771,7 +3771,7 @@ paths:
               $ref: '#/components/schemas/HospitalUpsertRequest'
       responses:
         '200':
-          description: ???????????
+          description: 创建或更新医院主数据
           content:
             application/json:
               schema:
@@ -3803,7 +3803,7 @@ paths:
   /api/method/ione_hrp.api.v1.organization.create_organization_version:
     post:
       operationId: core_010
-      summary: ??????????
+      summary: 创建医院组织版本
       tags:
       - ione_hrp
       security:
@@ -3833,7 +3833,7 @@ paths:
               $ref: '#/components/schemas/OrganizationVersionCreateRequest'
       responses:
         '200':
-          description: ??????????
+          description: 创建医院组织版本
           content:
             application/json:
               schema:
@@ -3862,7 +3862,7 @@ paths:
   /api/method/ione_hrp.api.v1.organization.replace_organization_hierarchy:
     post:
       operationId: core_011
-      summary: ??????????????
+      summary: 整体替换组织层级草稿
       tags:
       - ione_hrp
       security:
@@ -3892,7 +3892,7 @@ paths:
               $ref: '#/components/schemas/OrganizationHierarchyReplaceRequest'
       responses:
         '200':
-          description: ??????????????
+          description: 整体替换组织层级草稿
           content:
             application/json:
               schema:
@@ -3921,7 +3921,7 @@ paths:
   /api/method/ione_hrp.api.v1.organization.publish_organization_version:
     post:
       operationId: core_012
-      summary: ???????????
+      summary: 发布医院组织版本
       tags:
       - ione_hrp
       security:
@@ -3951,7 +3951,7 @@ paths:
               $ref: '#/components/schemas/OrganizationVersionPublishRequest'
       responses:
         '200':
-          description: ???????????
+          description: 发布医院组织版本
           content:
             application/json:
               schema:
@@ -3980,7 +3980,7 @@ paths:
   /api/method/ione_hrp.api.v1.organization.get_organization_hierarchy:
     get:
       operationId: core_013
-      summary: ???????????????
+      summary: 按版本或生效日期查询组织层级
       tags:
       - ione_hrp
       security:

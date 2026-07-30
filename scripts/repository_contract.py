@@ -2177,6 +2177,8 @@ def validate_organization_hierarchy_contract(root: Path) -> list[str]:
 	}
 	for catalog_path in catalog_paths:
 		catalog_text = catalog_path.read_text(encoding="utf-8")
+		if "??" in catalog_text:
+			violations.append(f"{catalog_path.relative_to(root)} contains replacement question marks")
 		for endpoint in endpoints:
 			if endpoint not in catalog_text:
 				violations.append(
