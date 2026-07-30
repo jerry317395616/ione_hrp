@@ -4,7 +4,7 @@
   "module": "HRP Master Data",
   "custom": 0,
   "engine": "InnoDB",
-  "autoname": "format:CORE-.YYYY.-.#####",
+  "autoname": "format:MDR-.YYYY.-.#####",
   "title_field": "subject",
   "is_submittable": 1,
   "istable": 0,
@@ -15,195 +15,34 @@
   "sort_field": "modified",
   "sort_order": "DESC",
   "index_web_pages_for_search": 0,
-  "description": "主数据领域的HRP主数据申请对象；用于支撑业务闭环、权限、审计与对账。",
+  "description": "绑定组织范围、目标基线和字段提案的受控主数据变更申请。",
   "fields": [
-    {
-      "fieldname": "company",
-      "label": "法人",
-      "fieldtype": "Link",
-      "options": "Company",
-      "reqd": 1,
-      "search_index": 1,
-      "in_list_view": 1,
-      "description": "法人"
-    },
-    {
-      "fieldname": "hospital",
-      "label": "医院",
-      "fieldtype": "Link",
-      "options": "HRP Hospital",
-      "reqd": 1,
-      "search_index": 1,
-      "description": "医院"
-    },
-    {
-      "fieldname": "campus",
-      "label": "院区",
-      "fieldtype": "Link",
-      "options": "HRP Campus",
-      "search_index": 1,
-      "description": "院区"
-    },
-    {
-      "fieldname": "organization_unit",
-      "label": "组织单元",
-      "fieldtype": "Link",
-      "options": "HRP Organization Unit",
-      "reqd": 1,
-      "search_index": 1,
-      "in_list_view": 1,
-      "description": "组织单元"
-    },
-    {
-      "fieldname": "cost_center",
-      "label": "成本中心",
-      "fieldtype": "Link",
-      "options": "Cost Center",
-      "search_index": 1,
-      "description": "成本中心"
-    },
-    {
-      "fieldname": "fiscal_year",
-      "label": "财政年度",
-      "fieldtype": "Link",
-      "options": "Fiscal Year",
-      "search_index": 1,
-      "description": "财政年度"
-    },
-    {
-      "fieldname": "currency",
-      "label": "币种",
-      "fieldtype": "Link",
-      "options": "Currency",
-      "default": "CNY",
-      "description": "币种"
-    },
-    {
-      "fieldname": "status",
-      "label": "业务状态",
-      "fieldtype": "Select",
-      "options": "Draft\nUnder Review\nApproved\nRejected\nIn Progress\nCompleted\nCancelled\nClosed",
-      "default": "Draft",
-      "search_index": 1,
-      "in_list_view": 1,
-      "description": "业务状态"
-    },
-    {
-      "fieldname": "workflow_state",
-      "label": "工作流状态",
-      "fieldtype": "Link",
-      "options": "Workflow State",
-      "search_index": 1,
-      "read_only": 1,
-      "description": "工作流状态"
-    },
-    {
-      "fieldname": "posting_date",
-      "label": "业务日期",
-      "fieldtype": "Date",
-      "reqd": 1,
-      "search_index": 1,
-      "in_list_view": 1,
-      "description": "业务日期"
-    },
-    {
-      "fieldname": "applicant",
-      "label": "申请人",
-      "fieldtype": "Link",
-      "options": "User",
-      "reqd": 1,
-      "search_index": 1,
-      "description": "申请人"
-    },
-    {
-      "fieldname": "employee",
-      "label": "员工",
-      "fieldtype": "Link",
-      "options": "Employee",
-      "search_index": 1,
-      "description": "员工"
-    },
-    {
-      "fieldname": "subject",
-      "label": "主题",
-      "fieldtype": "Data",
-      "reqd": 1,
-      "in_list_view": 1,
-      "description": "主题"
-    },
-    {
-      "fieldname": "total_amount",
-      "label": "总金额",
-      "fieldtype": "Currency",
-      "options": "currency",
-      "in_list_view": 1,
-      "precision": "2",
-      "description": "总金额"
-    },
-    {
-      "fieldname": "external_id",
-      "label": "外部ID",
-      "fieldtype": "Data",
-      "search_index": 1,
-      "description": "外部ID"
-    },
-    {
-      "fieldname": "source_doctype",
-      "label": "来源类型",
-      "fieldtype": "Link",
-      "options": "DocType",
-      "description": "来源类型"
-    },
-    {
-      "fieldname": "source_name",
-      "label": "来源单据",
-      "fieldtype": "Dynamic Link",
-      "options": "source_doctype",
-      "search_index": 1,
-      "description": "来源单据"
-    },
-    {
-      "fieldname": "submitted_at",
-      "label": "提交时间",
-      "fieldtype": "Datetime",
-      "read_only": 1,
-      "description": "提交时间"
-    },
-    {
-      "fieldname": "approved_at",
-      "label": "批准时间",
-      "fieldtype": "Datetime",
-      "read_only": 1,
-      "description": "批准时间"
-    },
-    {
-      "fieldname": "remarks",
-      "label": "备注",
-      "fieldtype": "Small Text",
-      "description": "备注"
-    }
+    {"fieldname": "master_data_domain", "label": "主数据域", "fieldtype": "Link", "options": "HRP Master Data Domain", "reqd": 1, "read_only": 1, "search_index": 1, "in_list_view": 1},
+    {"fieldname": "target_doctype", "label": "标准主数据类型", "fieldtype": "Link", "options": "DocType", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "operation", "label": "变更类型", "fieldtype": "Select", "options": "Create\nUpdate\nDisable", "reqd": 1, "read_only": 1, "search_index": 1, "in_list_view": 1},
+    {"fieldname": "target_name", "label": "目标主数据", "fieldtype": "Dynamic Link", "options": "target_doctype", "read_only": 1, "search_index": 1},
+    {"fieldname": "subject", "label": "申请主题", "fieldtype": "Data", "reqd": 1, "read_only": 1, "in_list_view": 1},
+    {"fieldname": "company", "label": "法人", "fieldtype": "Link", "options": "Company", "reqd": 1, "read_only": 1, "search_index": 1, "in_list_view": 1},
+    {"fieldname": "hospital", "label": "医院", "fieldtype": "Link", "options": "HRP Hospital", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "organization_unit", "label": "申请组织", "fieldtype": "Link", "options": "HRP Organization Unit", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "effective_on", "label": "期望生效日期", "fieldtype": "Date", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "changes", "label": "字段变更", "fieldtype": "Table", "options": "HRP Master Data Change Item", "reqd": 1, "read_only": 1},
+    {"fieldname": "proposal_digest", "label": "方案摘要", "fieldtype": "Data", "reqd": 1, "read_only": 1},
+    {"fieldname": "baseline_modified_at", "label": "目标基线时间", "fieldtype": "Datetime", "read_only": 1},
+    {"fieldname": "request_status", "label": "申请状态", "fieldtype": "Select", "options": "Draft\nPending Review\nApproved\nRejected", "default": "Draft", "reqd": 1, "read_only": 1, "search_index": 1, "in_list_view": 1},
+    {"fieldname": "requested_by", "label": "申请人", "fieldtype": "Link", "options": "User", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "requested_at", "label": "申请时间", "fieldtype": "Datetime", "reqd": 1, "read_only": 1},
+    {"fieldname": "submitted_at", "label": "提交时间", "fieldtype": "Datetime", "read_only": 1},
+    {"fieldname": "reviewed_by", "label": "审核人", "fieldtype": "Link", "options": "User", "read_only": 1},
+    {"fieldname": "reviewed_at", "label": "审核时间", "fieldtype": "Datetime", "read_only": 1},
+    {"fieldname": "decision_reason", "label": "审核意见", "fieldtype": "Small Text", "read_only": 1},
+    {"fieldname": "revision", "label": "修订号", "fieldtype": "Int", "reqd": 1, "read_only": 1}
   ],
   "permissions": [
-    {
-      "role": "HRP System Manager",
-      "read": 1,
-      "write": 1,
-      "create": 1,
-      "delete": 0,
-      "submit": 1,
-      "cancel": 1,
-      "amend": 0
-    },
-    {
-      "role": "HRP Data Steward",
-      "read": 1,
-      "write": 1,
-      "create": 1,
-      "delete": 0,
-      "submit": 1,
-      "cancel": 1,
-      "amend": 0
-    }
+    {"role": "System Manager", "read": 1, "write": 0, "create": 0, "delete": 0, "submit": 0, "cancel": 0, "amend": 0},
+    {"role": "HRP System Manager", "read": 1, "write": 0, "create": 0, "delete": 0, "submit": 0, "cancel": 0, "amend": 0},
+    {"role": "HRP Data Steward", "read": 1, "write": 0, "create": 0, "delete": 0, "submit": 0, "cancel": 0, "amend": 0},
+    {"role": "HRP User", "read": 1, "write": 0, "create": 0, "delete": 0, "submit": 0, "cancel": 0, "amend": 0}
   ],
   "links": [],
   "actions": [],
@@ -211,13 +50,8 @@
     "app": "ione_hrp",
     "retention_years": 10,
     "data_classification": "内部",
-    "key_indexes": [
-      "company",
-      "organization_unit",
-      "status",
-      "posting_date"
-    ],
-    "standard_references": [],
+    "key_indexes": ["master_data_domain", "target_name", "request_status", "company", "hospital"],
+    "standard_references": ["Company", "DocType"],
     "domain_group": "Core",
     "module_package": "hrp_master_data"
   }

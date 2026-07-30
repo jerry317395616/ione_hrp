@@ -625,64 +625,53 @@ ione_hrp,HRP Organization,HRP Organization Version,18,hierarchy_digest,层级摘
 ione_hrp,HRP Organization,HRP Organization Version,19,revision,修订号,Int,,1,0,0,1,0,,1,,修订号,Core
 ione_hrp,HRP Organization,HRP Organization Version,20,published_at,发布时间,Datetime,,0,0,0,1,0,,,,发布时间,Core
 ione_hrp,HRP Organization,HRP Organization Version,21,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
-ione_hrp,HRP Master Data,HRP Master Data Domain,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
-ione_hrp,HRP Master Data,HRP Master Data Domain,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
-ione_hrp,HRP Master Data,HRP Master Data Domain,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core
-ione_hrp,HRP Master Data,HRP Master Data Domain,13,organization_unit,组织单元,Link,HRP Organization Unit,1,0,1,0,1,,,,组织单元,Core
-ione_hrp,HRP Master Data,HRP Master Data Domain,14,cost_center,成本中心,Link,Cost Center,0,0,1,0,0,,,,成本中心,Core
-ione_hrp,HRP Master Data,HRP Master Data Domain,15,fiscal_year,财政年度,Link,Fiscal Year,0,0,1,0,0,,,,财政年度,Core
-ione_hrp,HRP Master Data,HRP Master Data Domain,16,currency,币种,Link,Currency,0,0,0,0,0,,CNY,,币种,Core
-ione_hrp,HRP Master Data,HRP Master Data Domain,17,status,业务状态,Select,"Draft
-Under Review
+ione_hrp,HRP Master Data,HRP Master Data Domain,10,code,域编码,Data,,1,1,1,0,1,,,,域编码,Core
+ione_hrp,HRP Master Data,HRP Master Data Domain,11,display_name,域名称,Data,,1,0,1,0,1,,,,域名称,Core
+ione_hrp,HRP Master Data,HRP Master Data Domain,12,target_doctype,标准主数据类型,Link,DocType,1,1,1,0,1,,,,标准主数据类型,Core
+ione_hrp,HRP Master Data,HRP Master Data Domain,13,enabled,启用,Check,,0,0,1,0,1,,1,,启用,Core
+ione_hrp,HRP Master Data,HRP Master Data Domain,14,allow_create,允许新增,Check,,0,0,0,1,0,,,,允许新增,Core
+ione_hrp,HRP Master Data,HRP Master Data Domain,15,allow_update,允许修改,Check,,0,0,0,1,0,,,,允许修改,Core
+ione_hrp,HRP Master Data,HRP Master Data Domain,16,allow_disable,允许停用,Check,,0,0,0,1,0,,,,允许停用,Core
+ione_hrp,HRP Master Data,HRP Master Data Domain,17,allowed_fields,允许变更字段,Small Text,,0,0,0,1,0,,,,允许变更字段,Core
+ione_hrp,HRP Master Data,HRP Master Data Domain,18,policy_version,策略版本,Int,,1,0,0,1,0,,,,策略版本,Core
+ione_hrp,HRP Master Data,HRP Master Data Domain,19,policy_digest,策略摘要,Data,,1,0,0,1,0,,,,策略摘要,Core
+ione_hrp,HRP Master Data,HRP Master Data Domain,20,revision,修订号,Int,,1,0,0,1,0,,,,修订号,Core
+ione_hrp,HRP Master Data,HRP Master Data Domain,21,remarks,说明,Small Text,,0,0,0,0,0,,,,说明,Core
+ione_hrp,HRP Master Data,HRP Master Data Request,10,master_data_domain,主数据域,Link,HRP Master Data Domain,1,0,1,1,1,,,,主数据域,Core
+ione_hrp,HRP Master Data,HRP Master Data Request,11,target_doctype,标准主数据类型,Link,DocType,1,0,1,1,0,,,,标准主数据类型,Core
+ione_hrp,HRP Master Data,HRP Master Data Request,12,operation,变更类型,Select,"Create
+Update
+Disable",1,0,1,1,1,,,,变更类型,Core
+ione_hrp,HRP Master Data,HRP Master Data Request,13,target_name,目标主数据,Dynamic Link,target_doctype,0,0,1,1,0,,,,目标主数据,Core
+ione_hrp,HRP Master Data,HRP Master Data Request,14,subject,申请主题,Data,,1,0,0,1,1,,,,申请主题,Core
+ione_hrp,HRP Master Data,HRP Master Data Request,15,company,法人,Link,Company,1,0,1,1,1,,,,法人,Core
+ione_hrp,HRP Master Data,HRP Master Data Request,16,hospital,医院,Link,HRP Hospital,1,0,1,1,0,,,,医院,Core
+ione_hrp,HRP Master Data,HRP Master Data Request,17,organization_unit,申请组织,Link,HRP Organization Unit,1,0,1,1,0,,,,申请组织,Core
+ione_hrp,HRP Master Data,HRP Master Data Request,18,effective_on,期望生效日期,Date,,1,0,1,1,0,,,,期望生效日期,Core
+ione_hrp,HRP Master Data,HRP Master Data Request,19,changes,字段变更,Table,HRP Master Data Change Item,1,0,0,1,0,,,,字段变更,Core
+ione_hrp,HRP Master Data,HRP Master Data Request,20,proposal_digest,方案摘要,Data,,1,0,0,1,0,,,,方案摘要,Core
+ione_hrp,HRP Master Data,HRP Master Data Request,21,baseline_modified_at,目标基线时间,Datetime,,0,0,0,1,0,,,,目标基线时间,Core
+ione_hrp,HRP Master Data,HRP Master Data Request,22,request_status,申请状态,Select,"Draft
+Pending Review
 Approved
-Rejected
-In Progress
-Completed
-Cancelled
-Closed",0,0,1,0,1,,Draft,,业务状态,Core
-ione_hrp,HRP Master Data,HRP Master Data Domain,18,workflow_state,工作流状态,Link,Workflow State,0,0,1,1,0,,,,工作流状态,Core
-ione_hrp,HRP Master Data,HRP Master Data Domain,19,code,编码,Data,,1,1,1,0,1,,,,编码,Core
-ione_hrp,HRP Master Data,HRP Master Data Domain,20,display_name,名称,Data,,1,0,0,0,1,,,,名称,Core
-ione_hrp,HRP Master Data,HRP Master Data Domain,21,enabled,启用,Check,,0,0,1,0,0,,1,,启用,Core
-ione_hrp,HRP Master Data,HRP Master Data Domain,22,valid_from,有效期开始,Date,,0,0,0,0,0,,,,有效期开始,Core
-ione_hrp,HRP Master Data,HRP Master Data Domain,23,valid_to,有效期结束,Date,,0,0,0,0,0,,,,有效期结束,Core
-ione_hrp,HRP Master Data,HRP Master Data Domain,24,owner_department,责任部门,Link,Department,0,0,0,0,0,,,,责任部门,Core
-ione_hrp,HRP Master Data,HRP Master Data Domain,25,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
-ione_hrp,HRP Master Data,HRP Master Data Request,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
-ione_hrp,HRP Master Data,HRP Master Data Request,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
-ione_hrp,HRP Master Data,HRP Master Data Request,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core
-ione_hrp,HRP Master Data,HRP Master Data Request,13,organization_unit,组织单元,Link,HRP Organization Unit,1,0,1,0,1,,,,组织单元,Core
-ione_hrp,HRP Master Data,HRP Master Data Request,14,cost_center,成本中心,Link,Cost Center,0,0,1,0,0,,,,成本中心,Core
-ione_hrp,HRP Master Data,HRP Master Data Request,15,fiscal_year,财政年度,Link,Fiscal Year,0,0,1,0,0,,,,财政年度,Core
-ione_hrp,HRP Master Data,HRP Master Data Request,16,currency,币种,Link,Currency,0,0,0,0,0,,CNY,,币种,Core
-ione_hrp,HRP Master Data,HRP Master Data Request,17,status,业务状态,Select,"Draft
-Under Review
-Approved
-Rejected
-In Progress
-Completed
-Cancelled
-Closed",0,0,1,0,1,,Draft,,业务状态,Core
-ione_hrp,HRP Master Data,HRP Master Data Request,18,workflow_state,工作流状态,Link,Workflow State,0,0,1,1,0,,,,工作流状态,Core
-ione_hrp,HRP Master Data,HRP Master Data Request,19,posting_date,业务日期,Date,,1,0,1,0,1,,,,业务日期,Core
-ione_hrp,HRP Master Data,HRP Master Data Request,20,applicant,申请人,Link,User,1,0,1,0,0,,,,申请人,Core
-ione_hrp,HRP Master Data,HRP Master Data Request,21,employee,员工,Link,Employee,0,0,1,0,0,,,,员工,Core
-ione_hrp,HRP Master Data,HRP Master Data Request,22,subject,主题,Data,,1,0,0,0,1,,,,主题,Core
-ione_hrp,HRP Master Data,HRP Master Data Request,23,total_amount,总金额,Currency,currency,0,0,0,0,1,2,,,总金额,Core
-ione_hrp,HRP Master Data,HRP Master Data Request,24,external_id,外部ID,Data,,0,0,1,0,0,,,,外部ID,Core
-ione_hrp,HRP Master Data,HRP Master Data Request,25,source_doctype,来源类型,Link,DocType,0,0,0,0,0,,,,来源类型,Core
-ione_hrp,HRP Master Data,HRP Master Data Request,26,source_name,来源单据,Dynamic Link,source_doctype,0,0,1,0,0,,,,来源单据,Core
-ione_hrp,HRP Master Data,HRP Master Data Request,27,submitted_at,提交时间,Datetime,,0,0,0,1,0,,,,提交时间,Core
-ione_hrp,HRP Master Data,HRP Master Data Request,28,approved_at,批准时间,Datetime,,0,0,0,1,0,,,,批准时间,Core
-ione_hrp,HRP Master Data,HRP Master Data Request,29,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
-ione_hrp,HRP Master Data,HRP Master Data Change Item,10,sequence_no,序号,Int,,0,0,0,0,1,,1,,序号,Core
-ione_hrp,HRP Master Data,HRP Master Data Change Item,11,reference_doctype,引用类型,Link,DocType,0,0,0,0,0,,,,引用类型,Core
-ione_hrp,HRP Master Data,HRP Master Data Change Item,12,reference_name,引用单据,Dynamic Link,reference_doctype,0,0,1,0,0,,,,引用单据,Core
-ione_hrp,HRP Master Data,HRP Master Data Change Item,13,description,说明,Small Text,,0,0,0,0,0,,,,说明,Core
-ione_hrp,HRP Master Data,HRP Master Data Change Item,14,quantity,数量,Float,,0,0,0,0,0,6,,,数量,Core
-ione_hrp,HRP Master Data,HRP Master Data Change Item,15,rate,单价,Currency,currency,0,0,0,0,0,6,,,单价,Core
-ione_hrp,HRP Master Data,HRP Master Data Change Item,16,amount,金额,Currency,currency,0,0,0,1,1,2,,,金额,Core
-ione_hrp,HRP Master Data,HRP Master Data Change Item,17,dimension_json,核算维度,Code,JSON,0,0,0,0,0,,,,核算维度,Core
+Rejected",1,0,1,1,1,,Draft,,申请状态,Core
+ione_hrp,HRP Master Data,HRP Master Data Request,23,requested_by,申请人,Link,User,1,0,1,1,0,,,,申请人,Core
+ione_hrp,HRP Master Data,HRP Master Data Request,24,requested_at,申请时间,Datetime,,1,0,0,1,0,,,,申请时间,Core
+ione_hrp,HRP Master Data,HRP Master Data Request,25,submitted_at,提交时间,Datetime,,0,0,0,1,0,,,,提交时间,Core
+ione_hrp,HRP Master Data,HRP Master Data Request,26,reviewed_by,审核人,Link,User,0,0,0,1,0,,,,审核人,Core
+ione_hrp,HRP Master Data,HRP Master Data Request,27,reviewed_at,审核时间,Datetime,,0,0,0,1,0,,,,审核时间,Core
+ione_hrp,HRP Master Data,HRP Master Data Request,28,decision_reason,审核意见,Small Text,,0,0,0,1,0,,,,审核意见,Core
+ione_hrp,HRP Master Data,HRP Master Data Request,29,revision,修订号,Int,,1,0,0,1,0,,,,修订号,Core
+ione_hrp,HRP Master Data,HRP Master Data Change Item,10,sequence_no,序号,Int,,1,0,0,1,1,,1,,序号,Core
+ione_hrp,HRP Master Data,HRP Master Data Change Item,11,field_name,字段名,Data,,1,0,0,1,1,,,,字段名,Core
+ione_hrp,HRP Master Data,HRP Master Data Change Item,12,field_label,字段名称,Data,,1,0,0,1,1,,,,字段名称,Core
+ione_hrp,HRP Master Data,HRP Master Data Change Item,13,value_type,值类型,Select,"Text
+Boolean
+Link
+Choice",1,0,0,1,0,,,,值类型,Core
+ione_hrp,HRP Master Data,HRP Master Data Change Item,14,current_value,当前值,Small Text,,0,0,0,1,0,,,,当前值,Core
+ione_hrp,HRP Master Data,HRP Master Data Change Item,15,proposed_value,建议值,Small Text,,0,0,0,1,1,,,,建议值,Core
+ione_hrp,HRP Master Data,HRP Master Data Change Item,16,reason,变更原因,Small Text,,0,0,0,1,0,,,,变更原因,Core
 ione_hrp,HRP Master Data,HRP External Code Mapping,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
 ione_hrp,HRP Master Data,HRP External Code Mapping,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
 ione_hrp,HRP Master Data,HRP External Code Mapping,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core

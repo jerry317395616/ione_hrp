@@ -54,8 +54,9 @@ ERPNext 标准 `Department`/`Cost Center`。`CORE-014` 负责幂等修订并校�
 双树关系，`CORE-015` 按组织单元或业务日期确定性解析；标准主数据仍完全由 ERPNext
 控制器维护。完整模型、权限、接口、迁移和回滚规则见
 `architecture/organization_hierarchy.md`、`architecture/organization_mapping.md`、
-`architecture/adr/ADR-0012-versioned-hospital-organization-hierarchy.md` 与
-`architecture/adr/ADR-0013-version-scoped-standard-organization-mapping.md`。
+`architecture/adr/ADR-0012-versioned-hospital-organization-hierarchy.md`、
+`architecture/adr/ADR-0013-version-scoped-standard-organization-mapping.md` 与
+`architecture/adr/ADR-0014-governed-master-data-change-proposals.md`。
 
 ## 非生产环境
 

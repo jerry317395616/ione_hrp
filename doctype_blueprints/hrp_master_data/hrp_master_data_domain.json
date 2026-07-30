@@ -10,166 +10,32 @@
   "istable": 0,
   "issingle": 0,
   "track_changes": 1,
-  "allow_rename": 1,
+  "allow_rename": 0,
   "editable_grid": 0,
-  "sort_field": "modified",
-  "sort_order": "DESC",
+  "sort_field": "code",
+  "sort_order": "ASC",
   "index_web_pages_for_search": 0,
-  "description": "主数据领域的HRP主数据域对象；用于支撑业务闭环、权限、审计与对账。",
+  "description": "标准主数据类型的受控领域定义；只允许通过主数据服务维护。",
   "fields": [
-    {
-      "fieldname": "company",
-      "label": "法人",
-      "fieldtype": "Link",
-      "options": "Company",
-      "reqd": 1,
-      "search_index": 1,
-      "in_list_view": 1,
-      "description": "法人"
-    },
-    {
-      "fieldname": "hospital",
-      "label": "医院",
-      "fieldtype": "Link",
-      "options": "HRP Hospital",
-      "reqd": 1,
-      "search_index": 1,
-      "description": "医院"
-    },
-    {
-      "fieldname": "campus",
-      "label": "院区",
-      "fieldtype": "Link",
-      "options": "HRP Campus",
-      "search_index": 1,
-      "description": "院区"
-    },
-    {
-      "fieldname": "organization_unit",
-      "label": "组织单元",
-      "fieldtype": "Link",
-      "options": "HRP Organization Unit",
-      "reqd": 1,
-      "search_index": 1,
-      "in_list_view": 1,
-      "description": "组织单元"
-    },
-    {
-      "fieldname": "cost_center",
-      "label": "成本中心",
-      "fieldtype": "Link",
-      "options": "Cost Center",
-      "search_index": 1,
-      "description": "成本中心"
-    },
-    {
-      "fieldname": "fiscal_year",
-      "label": "财政年度",
-      "fieldtype": "Link",
-      "options": "Fiscal Year",
-      "search_index": 1,
-      "description": "财政年度"
-    },
-    {
-      "fieldname": "currency",
-      "label": "币种",
-      "fieldtype": "Link",
-      "options": "Currency",
-      "default": "CNY",
-      "description": "币种"
-    },
-    {
-      "fieldname": "status",
-      "label": "业务状态",
-      "fieldtype": "Select",
-      "options": "Draft\nUnder Review\nApproved\nRejected\nIn Progress\nCompleted\nCancelled\nClosed",
-      "default": "Draft",
-      "search_index": 1,
-      "in_list_view": 1,
-      "description": "业务状态"
-    },
-    {
-      "fieldname": "workflow_state",
-      "label": "工作流状态",
-      "fieldtype": "Link",
-      "options": "Workflow State",
-      "search_index": 1,
-      "read_only": 1,
-      "description": "工作流状态"
-    },
-    {
-      "fieldname": "code",
-      "label": "编码",
-      "fieldtype": "Data",
-      "reqd": 1,
-      "unique": 1,
-      "search_index": 1,
-      "in_list_view": 1,
-      "description": "编码"
-    },
-    {
-      "fieldname": "display_name",
-      "label": "名称",
-      "fieldtype": "Data",
-      "reqd": 1,
-      "in_list_view": 1,
-      "description": "名称"
-    },
-    {
-      "fieldname": "enabled",
-      "label": "启用",
-      "fieldtype": "Check",
-      "default": "1",
-      "search_index": 1,
-      "description": "启用"
-    },
-    {
-      "fieldname": "valid_from",
-      "label": "有效期开始",
-      "fieldtype": "Date",
-      "description": "有效期开始"
-    },
-    {
-      "fieldname": "valid_to",
-      "label": "有效期结束",
-      "fieldtype": "Date",
-      "description": "有效期结束"
-    },
-    {
-      "fieldname": "owner_department",
-      "label": "责任部门",
-      "fieldtype": "Link",
-      "options": "Department",
-      "description": "责任部门"
-    },
-    {
-      "fieldname": "remarks",
-      "label": "备注",
-      "fieldtype": "Small Text",
-      "description": "备注"
-    }
+    {"fieldname": "code", "label": "域编码", "fieldtype": "Data", "reqd": 1, "unique": 1, "search_index": 1, "in_list_view": 1},
+    {"fieldname": "display_name", "label": "域名称", "fieldtype": "Data", "reqd": 1, "search_index": 1, "in_list_view": 1},
+    {"fieldname": "target_doctype", "label": "标准主数据类型", "fieldtype": "Link", "options": "DocType", "reqd": 1, "unique": 1, "search_index": 1, "in_list_view": 1},
+    {"fieldname": "enabled", "label": "启用", "fieldtype": "Check", "default": "1", "search_index": 1, "in_list_view": 1},
+    {"fieldname": "allow_create", "label": "允许新增", "fieldtype": "Check", "read_only": 1},
+    {"fieldname": "allow_update", "label": "允许修改", "fieldtype": "Check", "read_only": 1},
+    {"fieldname": "allow_disable", "label": "允许停用", "fieldtype": "Check", "read_only": 1},
+    {"fieldname": "allowed_fields", "label": "允许变更字段", "fieldtype": "Small Text", "read_only": 1},
+    {"fieldname": "policy_version", "label": "策略版本", "fieldtype": "Int", "reqd": 1, "read_only": 1},
+    {"fieldname": "policy_digest", "label": "策略摘要", "fieldtype": "Data", "reqd": 1, "read_only": 1},
+    {"fieldname": "revision", "label": "修订号", "fieldtype": "Int", "reqd": 1, "read_only": 1},
+    {"fieldname": "remarks", "label": "说明", "fieldtype": "Small Text"}
   ],
   "permissions": [
-    {
-      "role": "HRP System Manager",
-      "read": 1,
-      "write": 1,
-      "create": 1,
-      "delete": 0,
-      "submit": 0,
-      "cancel": 0,
-      "amend": 0
-    },
-    {
-      "role": "HRP Data Steward",
-      "read": 1,
-      "write": 1,
-      "create": 1,
-      "delete": 0,
-      "submit": 0,
-      "cancel": 0,
-      "amend": 0
-    }
+    {"role": "System Manager", "read": 1, "write": 0, "create": 0, "delete": 0, "submit": 0, "cancel": 0, "amend": 0},
+    {"role": "HRP System Manager", "read": 1, "write": 0, "create": 0, "delete": 0, "submit": 0, "cancel": 0, "amend": 0},
+    {"role": "HRP Data Steward", "read": 1, "write": 0, "create": 0, "delete": 0, "submit": 0, "cancel": 0, "amend": 0},
+    {"role": "HRP User", "read": 1, "write": 0, "create": 0, "delete": 0, "submit": 0, "cancel": 0, "amend": 0},
+    {"role": "HRP Integration User", "read": 1, "write": 0, "create": 0, "delete": 0, "submit": 0, "cancel": 0, "amend": 0}
   ],
   "links": [],
   "actions": [],
@@ -177,11 +43,8 @@
     "app": "ione_hrp",
     "retention_years": 10,
     "data_classification": "内部",
-    "key_indexes": [
-      "company",
-      "organization_unit"
-    ],
-    "standard_references": [],
+    "key_indexes": ["code", "target_doctype", "enabled"],
+    "standard_references": ["DocType"],
     "domain_group": "Core",
     "module_package": "hrp_master_data"
   }

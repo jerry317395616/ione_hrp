@@ -4152,6 +4152,227 @@ paths:
       x-required-role: System Manager or HRP System Manager or HRP Data Steward or HRP Integration User
       x-transaction-boundary: Read-only
       x-idempotency: Read-only deterministic
+  /api/method/ione_hrp.api.v1.master_data.upsert_master_data_domain:
+    post:
+      operationId: core_016
+      summary: 创建或修订主数据域
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MasterDataDomainUpsertRequest'
+      responses:
+        '200':
+          description: 主数据域已创建、修订或幂等重放
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '400':
+          description: Invalid request or missing idempotency key
+          content: *id001
+        '401':
+          description: Authentication required
+          content: *id001
+        '403':
+          description: Master data administrator role required
+          content: *id001
+        '404':
+          description: Referenced DocType not found
+          content: *id001
+        '409':
+          description: Revision or target uniqueness conflict
+          content: *id001
+        '500':
+          description: Persisted master data configuration is invalid
+          content: *id001
+      x-required-role: System Manager or HRP System Manager or HRP Data Steward
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+  /api/method/ione_hrp.api.v1.master_data.save_master_data_request:
+    post:
+      operationId: core_017
+      summary: 创建或修订主数据变更申请草稿
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MasterDataRequestUpsertRequest'
+      responses:
+        '200':
+          description: 变更申请草稿已保存或幂等重放
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '400':
+          description: Invalid request or missing idempotency key
+          content: *id001
+        '401':
+          description: Authentication required
+          content: *id001
+        '403':
+          description: Master data requester role required
+          content: *id001
+        '404':
+          description: Referenced domain organization or target not found
+          content: *id001
+        '409':
+          description: Revision scope or target baseline conflict
+          content: *id001
+        '500':
+          description: Persisted request configuration is invalid
+          content: *id001
+      x-required-role: System Manager or HRP System Manager or HRP Data Steward or HRP User
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+  /api/method/ione_hrp.api.v1.master_data.submit_master_data_request:
+    post:
+      operationId: core_018
+      summary: 提交主数据变更申请
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MasterDataRequestTransitionRequest'
+      responses:
+        '200':
+          description: 变更申请已提交或幂等重放
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '400':
+          description: Invalid request or missing idempotency key
+          content: *id001
+        '401':
+          description: Authentication required
+          content: *id001
+        '403':
+          description: Master data requester role required
+          content: *id001
+        '404':
+          description: Request or target not found
+          content: *id001
+        '409':
+          description: Revision lifecycle duplicate-pending or target drift conflict
+          content: *id001
+        '500':
+          description: Persisted request configuration is invalid
+          content: *id001
+      x-required-role: System Manager or HRP System Manager or HRP Data Steward or HRP User
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+  /api/method/ione_hrp.api.v1.master_data.review_master_data_request:
+    post:
+      operationId: core_019
+      summary: 复核主数据变更申请
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MasterDataRequestReviewRequest'
+      responses:
+        '200':
+          description: 变更申请已复核或幂等重放
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '400':
+          description: Invalid request or missing idempotency key
+          content: *id001
+        '401':
+          description: Authentication required
+          content: *id001
+        '403':
+          description: Master data reviewer role required
+          content: *id001
+        '404':
+          description: Request or target not found
+          content: *id001
+        '409':
+          description: Revision lifecycle maker-checker or target drift conflict
+          content: *id001
+        '500':
+          description: Persisted request configuration is invalid
+          content: *id001
+      x-required-role: System Manager or HRP System Manager or HRP Data Steward
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+  /api/method/ione_hrp.api.v1.master_data.get_master_data_request:
+    get:
+      operationId: core_020
+      summary: 查询主数据变更申请
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      - name: request_name
+        in: query
+        required: true
+        schema:
+          type: string
+          maxLength: 140
+      responses:
+        '200':
+          description: 主数据变更申请及字段提案
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '400':
+          description: Invalid request
+          content: *id001
+        '401':
+          description: Authentication required
+          content: *id001
+        '403':
+          description: Request owner or master data role required
+          content: *id001
+        '404':
+          description: Request not found
+          content: *id001
+        '500':
+          description: Persisted request configuration is invalid
+          content: *id001
+      x-required-role: System Manager or HRP System Manager or HRP Data Steward or HRP User
+      x-transaction-boundary: Read-only
+      x-idempotency: Read-only deterministic
 components:
   headers:
     CorrelationId:
@@ -4170,6 +4391,25 @@ components:
       in: header
       name: Authorization
       description: token api_key:api_secret or OAuth2 bearer
+  parameters:
+    CorrelationId:
+      name: X-Correlation-ID
+      in: header
+      required: false
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 140
+        pattern: ^[A-Za-z0-9][A-Za-z0-9._:/-]{0,139}$
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 8
+        maxLength: 140
+        pattern: ^[A-Za-z0-9][A-Za-z0-9._:/-]{7,139}$
   schemas:
     FrappeResponse:
       type: object
@@ -5198,6 +5438,162 @@ components:
         details: {}
         correlation_id:
           type: string
+    MasterDataDomainUpsertRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - code
+      - display_name
+      - target_doctype
+      - expected_revision
+      properties:
+        code:
+          type: string
+          pattern: ^[A-Z][A-Z0-9_-]{0,63}$
+          maxLength: 64
+        display_name:
+          type: string
+          minLength: 1
+          maxLength: 140
+        target_doctype:
+          type: string
+          enum:
+          - Department
+          - Cost Center
+          - Item
+          - Supplier
+          - Warehouse
+        enabled:
+          type:
+          - boolean
+          - integer
+          - string
+          default: true
+        expected_revision:
+          type: integer
+          minimum: 0
+        remarks:
+          type:
+          - string
+          - 'null'
+          maxLength: 500
+    MasterDataChangeRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - field_name
+      - proposed_value
+      properties:
+        field_name:
+          type: string
+          pattern: ^[a-z][a-z0-9_]{0,63}$
+        proposed_value:
+          oneOf:
+          - type: string
+            maxLength: 500
+          - type: boolean
+          - type: integer
+          - type: number
+        reason:
+          type:
+          - string
+          - 'null'
+          maxLength: 500
+    MasterDataRequestUpsertRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - master_data_domain
+      - company
+      - hospital
+      - organization_unit
+      - operation
+      - subject
+      - effective_on
+      - changes
+      properties:
+        master_data_domain:
+          type: string
+          pattern: ^[A-Z][A-Z0-9_-]{0,63}$
+        company:
+          type: string
+          maxLength: 140
+        hospital:
+          type: string
+          pattern: ^[A-Z][A-Z0-9_-]{0,63}$
+        organization_unit:
+          type: string
+          maxLength: 140
+        operation:
+          type: string
+          enum:
+          - Create
+          - Update
+          - Disable
+        target_name:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        subject:
+          type: string
+          minLength: 1
+          maxLength: 140
+        effective_on:
+          type: string
+          format: date
+        changes:
+          type: array
+          minItems: 1
+          maxItems: 64
+          items:
+            $ref: '#/components/schemas/MasterDataChangeRequest'
+        request_name:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        expected_revision:
+          type: integer
+          minimum: 0
+          default: 0
+    MasterDataRequestTransitionRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - request_name
+      - expected_revision
+      properties:
+        request_name:
+          type: string
+          maxLength: 140
+        expected_revision:
+          type: integer
+          minimum: 1
+    MasterDataRequestReviewRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - request_name
+      - expected_revision
+      - decision
+      properties:
+        request_name:
+          type: string
+          maxLength: 140
+        expected_revision:
+          type: integer
+          minimum: 1
+        decision:
+          type: string
+          enum:
+          - Approve
+          - Reject
+        reason:
+          type:
+          - string
+          - 'null'
+          maxLength: 500
     HospitalUpsertRequest:
       type: object
       additionalProperties: false

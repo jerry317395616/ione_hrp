@@ -24,6 +24,7 @@ from scripts.repository_contract import (
 	validate_error_contract,
 	validate_fixture_governance,
 	validate_immutable_ledger_contract,
+	validate_master_data_governance_contract,
 	validate_module_boundaries,
 	validate_organization_hierarchy_contract,
 	validate_organization_mapping_contract,
@@ -179,6 +180,9 @@ class RepositoryContractTest(unittest.TestCase):
 
 	def test_current_organization_mapping_contract_is_mandatory(self) -> None:
 		self.assertEqual(validate_organization_mapping_contract(ROOT), [])
+
+	def test_current_master_data_governance_contract_is_mandatory(self) -> None:
+		self.assertEqual(validate_master_data_governance_contract(ROOT), [])
 
 	def test_rejects_direct_transaction_commit(self) -> None:
 		with tempfile.TemporaryDirectory() as temp:

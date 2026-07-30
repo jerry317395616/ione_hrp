@@ -1,0 +1,258 @@
+{
+	"actions": [],
+	"allow_rename": 0,
+	"autoname": "format:MDR-.YYYY.-.#####",
+	"creation": "2026-07-30 00:00:00.000000",
+	"doctype": "DocType",
+	"engine": "InnoDB",
+	"field_order": [
+		"request_section",
+		"master_data_domain",
+		"target_doctype",
+		"operation",
+		"target_name",
+		"subject",
+		"organization_section",
+		"company",
+		"hospital",
+		"organization_unit",
+		"effective_on",
+		"proposal_section",
+		"changes",
+		"proposal_digest",
+		"baseline_modified_at",
+		"lifecycle_section",
+		"request_status",
+		"requested_by",
+		"requested_at",
+		"submitted_at",
+		"reviewed_by",
+		"reviewed_at",
+		"decision_reason",
+		"revision"
+	],
+	"fields": [
+		{
+			"fieldname": "request_section",
+			"fieldtype": "Section Break",
+			"label": "变更申请"
+		},
+		{
+			"fieldname": "master_data_domain",
+			"fieldtype": "Link",
+			"in_list_view": 1,
+			"label": "主数据域",
+			"options": "HRP Master Data Domain",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "target_doctype",
+			"fieldtype": "Link",
+			"label": "标准主数据类型",
+			"options": "DocType",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "operation",
+			"fieldtype": "Select",
+			"in_list_view": 1,
+			"label": "变更类型",
+			"options": "Create\nUpdate\nDisable",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "target_name",
+			"fieldtype": "Dynamic Link",
+			"label": "目标主数据",
+			"options": "target_doctype",
+			"read_only": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "subject",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"label": "申请主题",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "organization_section",
+			"fieldtype": "Section Break",
+			"label": "组织范围"
+		},
+		{
+			"fieldname": "company",
+			"fieldtype": "Link",
+			"in_list_view": 1,
+			"label": "法人",
+			"options": "Company",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "hospital",
+			"fieldtype": "Link",
+			"label": "医院",
+			"options": "HRP Hospital",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "organization_unit",
+			"fieldtype": "Link",
+			"label": "申请组织",
+			"options": "HRP Organization Unit",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "effective_on",
+			"fieldtype": "Date",
+			"label": "期望生效日期",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "proposal_section",
+			"fieldtype": "Section Break",
+			"label": "建议变更"
+		},
+		{
+			"fieldname": "changes",
+			"fieldtype": "Table",
+			"label": "字段变更",
+			"options": "HRP Master Data Change Item",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "proposal_digest",
+			"fieldtype": "Data",
+			"label": "方案摘要",
+			"no_copy": 1,
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "baseline_modified_at",
+			"fieldtype": "Datetime",
+			"label": "目标基线时间",
+			"no_copy": 1,
+			"read_only": 1
+		},
+		{
+			"fieldname": "lifecycle_section",
+			"fieldtype": "Section Break",
+			"label": "审批状态"
+		},
+		{
+			"allow_on_submit": 1,
+			"default": "Draft",
+			"fieldname": "request_status",
+			"fieldtype": "Select",
+			"in_list_view": 1,
+			"label": "申请状态",
+			"options": "Draft\nPending Review\nApproved\nRejected",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "requested_by",
+			"fieldtype": "Link",
+			"label": "申请人",
+			"options": "User",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "requested_at",
+			"fieldtype": "Datetime",
+			"label": "申请时间",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "submitted_at",
+			"fieldtype": "Datetime",
+			"label": "提交时间",
+			"read_only": 1
+		},
+		{
+			"allow_on_submit": 1,
+			"fieldname": "reviewed_by",
+			"fieldtype": "Link",
+			"label": "审核人",
+			"options": "User",
+			"read_only": 1
+		},
+		{
+			"allow_on_submit": 1,
+			"fieldname": "reviewed_at",
+			"fieldtype": "Datetime",
+			"label": "审核时间",
+			"read_only": 1
+		},
+		{
+			"allow_on_submit": 1,
+			"fieldname": "decision_reason",
+			"fieldtype": "Small Text",
+			"label": "审核意见",
+			"read_only": 1
+		},
+		{
+			"allow_on_submit": 1,
+			"fieldname": "revision",
+			"fieldtype": "Int",
+			"label": "修订号",
+			"no_copy": 1,
+			"read_only": 1,
+			"reqd": 1
+		}
+	],
+	"index_web_pages_for_search": 0,
+	"is_submittable": 1,
+	"links": [],
+	"modified": "2026-07-30 00:00:00.000000",
+	"modified_by": "Administrator",
+	"module": "HRP Master Data",
+	"name": "HRP Master Data Request",
+	"naming_rule": "Expression",
+	"owner": "Administrator",
+	"permissions": [
+		{
+			"read": 1,
+			"role": "System Manager"
+		},
+		{
+			"read": 1,
+			"role": "HRP System Manager"
+		},
+		{
+			"read": 1,
+			"role": "HRP Data Steward"
+		},
+		{
+			"read": 1,
+			"role": "HRP User"
+		}
+	],
+	"search_fields": "subject,master_data_domain,target_name,company,hospital",
+	"sort_field": "modified",
+	"sort_order": "DESC",
+	"states": [],
+	"title_field": "subject",
+	"track_changes": 1
+}
