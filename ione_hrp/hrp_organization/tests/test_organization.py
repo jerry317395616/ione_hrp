@@ -23,6 +23,9 @@ from ione_hrp.common.organization import (
 	build_organization_version_publish,
 )
 from ione_hrp.hrp_organization.services.organization import (
+	CreateOrganizationVersionService,
+	PublishOrganizationVersionService,
+	ReplaceOrganizationHierarchyService,
 	UpsertHospitalService,
 	create_organization_version,
 	get_organization_hierarchy,
@@ -38,10 +41,38 @@ REPLACE_HIERARCHY_METHOD = "ione_hrp.api.v1.organization.replace_organization_hi
 PUBLISH_VERSION_METHOD = "ione_hrp.api.v1.organization.publish_organization_version"
 GET_HIERARCHY_METHOD = "ione_hrp.api.v1.organization.get_organization_hierarchy"
 TEST_HOSPITAL = "COD018-HOSPITAL"
+ORGANIZATION_SERVICE_NAMES = (
+	UpsertHospitalService.definition.name,
+	CreateOrganizationVersionService.definition.name,
+	ReplaceOrganizationHierarchyService.definition.name,
+	PublishOrganizationVersionService.definition.name,
+)
 
 
 def company_name() -> str:
 	return cast(str, get_test_company().name)
+
+
+def reset_organization_test_state() -> None:
+	version_names = frappe.get_all(
+		"HRP Organization Version",
+		filters={"hospital": TEST_HOSPITAL},
+		pluck="name",
+	)
+	if version_names:
+		frappe.db.delete(
+			"HRP Organization Unit",
+			{"organization_version": ("in", version_names)},
+		)
+		frappe.db.delete(
+			"HRP Organization Version",
+			{"name": ("in", version_names)},
+		)
+	frappe.db.delete("HRP Hospital", {"name": TEST_HOSPITAL})
+	frappe.db.delete(
+		"HRP Service Idempotency",
+		{"service_name": ("in", ORGANIZATION_SERVICE_NAMES)},
+	)
 
 
 def hospital_command(
@@ -200,6 +231,10 @@ def create_hospital_and_version(
 
 
 class TestOrganizationHierarchy(IntegrationTestCase):
+	def setUp(self) -> None:
+		super().setUp()
+		reset_organization_test_state()
+
 	def test_metadata_is_chinese_versioned_tree_and_service_governed(self) -> None:
 		hospital_meta = frappe.get_meta("HRP Hospital")
 		version_meta = frappe.get_meta("HRP Organization Version")
@@ -525,6 +560,7 @@ class TestOrganizationHierarchy(IntegrationTestCase):
 class TestOrganizationHierarchyAPI(FrappeAPITestCase):
 	def setUp(self) -> None:
 		super().setUp()
+		reset_organization_test_state()
 		self.TEST_CLIENT.set_cookie(key="sid", value=self.sid)
 
 	def test_http_full_lifecycle_and_effective_query(self) -> None:
