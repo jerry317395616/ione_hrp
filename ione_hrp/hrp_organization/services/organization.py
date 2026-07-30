@@ -67,11 +67,11 @@ class UpsertHospitalService(DomainService[HospitalUpsert]):
 	def validate(self, command: HospitalUpsert) -> None:
 		if not frappe.db.exists("Company", command.company):
 			raise_ione_error("RESOURCE_NOT_FOUND")
+
+	def perform(self, command: HospitalUpsert) -> dict[str, object]:
 		exists = bool(frappe.db.exists("HRP Hospital", command.code))
 		if exists != (command.expected_revision > 0):
 			raise_ione_error("CONFLICT")
-
-	def perform(self, command: HospitalUpsert) -> dict[str, object]:
 		if command.expected_revision == 0:
 			doc = cast(
 				HRPHospital,

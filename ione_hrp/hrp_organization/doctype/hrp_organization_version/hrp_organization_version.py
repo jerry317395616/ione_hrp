@@ -116,6 +116,9 @@ class HRPOrganizationVersion(Document):
 	def before_cancel(self) -> None:
 		raise_ione_error("OPERATION_NOT_ALLOWED")
 
+	def validate_update_after_submit(self) -> None:
+		raise_ione_error("OPERATION_NOT_ALLOWED")
+
 	def on_update_after_submit(self) -> None:
 		raise_ione_error("OPERATION_NOT_ALLOWED")
 
