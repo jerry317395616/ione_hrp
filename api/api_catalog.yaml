@@ -1104,6 +1104,20 @@
   transaction_boundary: Read-only
   audit: Redacted site log
   version: v1
+- api_code: PLT-019
+  app: ione_hrp
+  domain_group: Platform
+  method: GET
+  path: /api/method/ione_hrp.api.v1.security.get_software_supply_chain_contract
+  description: 查询软件供应链安全与SBOM治理契约
+  request_schema: 无
+  response_schema: schema_version,app,sha256,sbom,execution_policy,tools,gates,exception_count,exceptions,scan_available_from_site,artifact_storage
+  required_role: System Manager or HRP System Manager
+  idempotency: Read-only deterministic
+  async: 'No'
+  transaction_boundary: Read-only
+  audit: Redacted site log
+  version: v1
 - api_code: POR-001
   app: ione_hrp
   domain_group: Portal

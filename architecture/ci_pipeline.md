@@ -24,13 +24,25 @@ COD-005 在 GitHub Actions 中建立 `ione_hrp` 的合并门禁。流水线只�
 
 `Quality` 使用 Python 3.14 和 Node.js 24：
 
-1. 检出完整 Git 历史并执行 Gitleaks；
-2. 从精确版本声明安装 Python 开发依赖，并以 `npm ci` 恢复 Node 锁文件；
-3. 运行 `scripts/quality.py` 的仓库契约、包校验、编译、Ruff、34 项以上
+1. 从精确版本声明安装 Python 开发依赖，并以 `npm ci` 恢复 Node 锁文件；
+2. 运行 `scripts/quality.py` 的仓库契约、包校验、编译、Ruff、Bandit、
    仓库测试、校验和、Pyright、ESLint 和 Prettier；
-4. 下载锁定的官方 k6 `2.1.0` Linux 发布包，校验 SHA-256 并对性能脚本执行
+3. 下载锁定的官方 k6 `2.1.0` Linux 发布包，校验 SHA-256 并对性能脚本执行
    `k6 inspect`，不连接站点、不发送压测请求；
-5. 运行 `npm audit --audit-level=high`。
+
+### Security
+
+`Security` 在 `Quality` 成功后运行，并与 `Integration` 并行。它检出完整 Git 历史，
+安装固定 Bandit、pip-audit 和 npm，下载固定 Gitleaks、Grype、CycloneDX CLI，
+并在 SHA-256 校验成功后执行：
+
+1. npm CycloneDX 依赖图和 pip-audit Python 依赖解析；
+2. 组合 `ione_hrp` 与三个锁定上游，生成并验证 CycloneDX 1.7；
+3. Bandit、Gitleaks、pip-audit、npm audit、Grype 和许可证门禁；
+4. 上传 SBOM、脱敏摘要和 SHA-256 清单，保留 30 天。
+
+原始发现不上传，作业不读取仓库 Secret，也不连接 Frappe Site 或生产系统。详细
+契约见 `architecture/software_supply_chain.md`。
 
 ### Integration
 
@@ -49,8 +61,9 @@ COD-005 在 GitHub Actions 中建立 `ione_hrp` 的合并门禁。流水线只�
 
 ### Required
 
-`Required` 使用 `always()` 汇总前两个作业。只有 `Quality` 和 `Integration`
-都为 `success` 才返回成功，因此前置作业失败、跳过或取消都不能绕过门禁。
+`Required` 使用 `always()` 汇总前三个作业。只有 `Quality`、`Security` 和
+`Integration` 都为 `success` 才返回成功，因此前置作业失败、跳过或取消都不能
+绕过门禁。
 GitHub API 中的稳定检查上下文名为 `Required`，页面显示为
 `CI / Required`；它是 `main` 分支唯一要求的 CI 状态检查。
 
@@ -70,7 +83,7 @@ GitHub API 中的稳定检查上下文名为 `Required`，页面显示为
 python -m pip install -e ".[dev]"
 npm ci
 python scripts/quality.py
-npm audit --audit-level=high
+python scripts/security_supply_chain.py plan
 ```
 
 具备 MariaDB、Redis、uv、Python 3.14 和 Node.js 24 的一次性 Linux 环境可执行：

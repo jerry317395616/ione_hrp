@@ -10,6 +10,8 @@
 | 工具 | 版本 | 配置 |
 | --- | --- | --- |
 | Ruff | `0.15.9` | `pyproject.toml` |
+| Bandit | `1.9.4` | `pyproject.toml` |
+| pip-audit | `2.10.1` | `pyproject.toml` |
 | Pyright | `1.1.411` | `pyrightconfig.json` |
 | ESLint | `10.8.0` | `eslint.config.mjs` |
 | Prettier | `3.9.6` | `.prettierrc.json` |
@@ -49,10 +51,11 @@ Linux/Bench 也可执行：
 
 1. 单应用仓库契约与打包校验；
 2. Python 编译、Ruff lint、Ruff format；
-3. 仓库单元测试与 `SHA256SUMS.txt` 校验；
-4. Pyright 类型检查；
-5. ESLint 的 JavaScript、TypeScript、Vue 检查；
-6. Prettier 的前端源码、Frappe JSON 和工具配置检查。
+3. Bandit 中等严重度与置信度静态安全扫描；
+4. 仓库单元测试与 `SHA256SUMS.txt` 校验；
+5. Pyright 类型检查；
+6. ESLint 的 JavaScript、TypeScript、Vue 检查；
+7. Prettier 的前端源码、Frappe JSON 和工具配置检查。
 
 任何配置文件缺失、npm 不可用、命令返回非零或锁文件漂移都会立即失败。
 `NPM_BIN` 可用于显式指定 npm 路径，但无效路径同样失败。

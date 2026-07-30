@@ -79,6 +79,22 @@ def build_quality_steps(
 			(python_executable, "-m", "ruff", "format", "--check", *PYTHON_TARGETS),
 		),
 		QualityStep(
+			"bandit",
+			(
+				python_executable,
+				"-m",
+				"bandit",
+				"-r",
+				"ione_hrp",
+				"scripts",
+				"--severity-level",
+				"medium",
+				"--confidence-level",
+				"medium",
+				"--quiet",
+			),
+		),
+		QualityStep(
 			"unit-tests",
 			(
 				python_executable,

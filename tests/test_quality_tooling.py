@@ -52,6 +52,7 @@ class QualityToolingTest(unittest.TestCase):
 			"python-compile",
 			"ruff-lint",
 			"ruff-format",
+			"bandit",
 			"unit-tests",
 			"checksums",
 			"pyright",
@@ -104,7 +105,7 @@ class QualityToolingTest(unittest.TestCase):
 				python_executable="python",
 				npm_executable="npm",
 			)
-		self.assertEqual(len(completed), 10)
+		self.assertEqual(len(completed), 11)
 		self.assertEqual(
 			{path: _digest(ROOT / path) for path in QUALITY_FILES},
 			before,
