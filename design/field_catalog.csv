@@ -1,9 +1,13 @@
 app,module,doctype,field_order,fieldname,label_cn,fieldtype,options,reqd,unique,indexed,read_only,in_list_view,precision,default,depends_on,description,domain_group
-ione_hrp,HRP Foundation,HRP System Settings,10,enabled,启用,Check,,0,0,0,0,1,,1,,启用,Core
-ione_hrp,HRP Foundation,HRP System Settings,11,default_company,默认法人,Link,Company,0,0,0,0,0,,,,默认法人,Core
-ione_hrp,HRP Foundation,HRP System Settings,12,default_hospital,默认医院,Link,HRP Hospital,0,0,0,0,0,,,,默认医院,Core
-ione_hrp,HRP Foundation,HRP System Settings,13,configuration_json,扩展配置,Code,JSON,0,0,0,0,0,,,,扩展配置,Core
-ione_hrp,HRP Foundation,HRP System Settings,14,remarks,说明,Small Text,,0,0,0,0,0,,,,说明,Core
+ione_hrp,HRP Foundation,HRP System Settings,10,enabled,启用,Check,,0,0,0,0,0,,1,,启用,Core
+ione_hrp,HRP Foundation,HRP System Settings,11,release_channel,发布通道,Data,,0,0,0,1,0,,locked-develop,,由锁定上游基线决定，不允许在站点内修改,Core
+ione_hrp,HRP Foundation,HRP System Settings,12,configuration_version,配置版本,Int,,0,0,0,1,0,,1,,用于防止并发覆盖的单调版本,Core
+ione_hrp,HRP Foundation,HRP System Settings,13,default_company,默认法人,Link,Company,0,0,0,0,0,,,,默认法人,Core
+ione_hrp,HRP Foundation,HRP System Settings,14,default_hospital,默认医院标识,Data,,0,0,0,0,0,,,,医院主数据启用前使用的受控标识,Core
+ione_hrp,HRP Foundation,HRP System Settings,15,strict_data_scope,严格数据域,Check,,0,0,0,1,0,,1,,固定启用，禁止在站点内弱化,Core
+ione_hrp,HRP Foundation,HRP System Settings,16,require_human_confirmation_for_ai,AI 操作需要人工确认,Check,,0,0,0,1,0,,1,,固定启用，禁止在站点内弱化,Core
+ione_hrp,HRP Foundation,HRP System Settings,17,integration_timeout_seconds,集成超时（秒）,Int,,0,0,0,0,0,,30,,允许5至300秒,Core
+ione_hrp,HRP Foundation,HRP System Settings,18,remarks,说明,Small Text,,0,0,0,0,0,,,,说明,Core
 ione_hrp,HRP Foundation,HRP Feature Flag,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
 ione_hrp,HRP Foundation,HRP Feature Flag,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
 ione_hrp,HRP Foundation,HRP Feature Flag,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core

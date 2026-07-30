@@ -7,72 +7,94 @@
 		"general_section",
 		"enabled",
 		"release_channel",
+		"configuration_version",
 		"default_company",
 		"default_hospital",
 		"security_section",
 		"strict_data_scope",
 		"require_human_confirmation_for_ai",
 		"integration_section",
-		"integration_timeout_seconds"
+		"integration_timeout_seconds",
+		"remarks_section",
+		"remarks"
 	],
 	"fields": [
 		{
 			"fieldname": "general_section",
 			"fieldtype": "Section Break",
-			"label": "General"
+			"label": "基础设置"
 		},
 		{
 			"default": "1",
 			"fieldname": "enabled",
 			"fieldtype": "Check",
-			"label": "Enabled"
+			"label": "启用"
 		},
 		{
-			"default": "develop",
+			"default": "locked-develop",
 			"fieldname": "release_channel",
-			"fieldtype": "Select",
-			"label": "Release Channel",
-			"options": "develop\nlocked-develop\nstable"
+			"fieldtype": "Data",
+			"label": "发布通道",
+			"read_only": 1
+		},
+		{
+			"default": "1",
+			"fieldname": "configuration_version",
+			"fieldtype": "Int",
+			"label": "配置版本",
+			"read_only": 1
 		},
 		{
 			"fieldname": "default_company",
 			"fieldtype": "Link",
-			"label": "Default Company",
+			"label": "默认法人",
 			"options": "Company"
 		},
 		{
 			"fieldname": "default_hospital",
 			"fieldtype": "Data",
-			"label": "Default Hospital"
+			"label": "默认医院标识"
 		},
 		{
 			"fieldname": "security_section",
 			"fieldtype": "Section Break",
-			"label": "Security"
+			"label": "安全策略"
 		},
 		{
 			"default": "1",
 			"fieldname": "strict_data_scope",
 			"fieldtype": "Check",
-			"label": "Strict Data Scope"
+			"label": "严格数据域",
+			"read_only": 1
 		},
 		{
 			"default": "1",
 			"fieldname": "require_human_confirmation_for_ai",
 			"fieldtype": "Check",
-			"label": "Require Human Confirmation for AI Actions"
+			"label": "AI 操作需要人工确认",
+			"read_only": 1
 		},
 		{
 			"fieldname": "integration_section",
 			"fieldtype": "Section Break",
-			"label": "Integration"
+			"label": "集成设置"
 		},
 		{
 			"default": "30",
 			"fieldname": "integration_timeout_seconds",
 			"fieldtype": "Int",
-			"label": "Integration Timeout (Seconds)",
+			"label": "集成超时（秒）",
 			"non_negative": 1
+		},
+		{
+			"fieldname": "remarks_section",
+			"fieldtype": "Section Break",
+			"label": "补充说明"
+		},
+		{
+			"fieldname": "remarks",
+			"fieldtype": "Small Text",
+			"label": "说明"
 		}
 	],
 	"issingle": 1,
@@ -85,10 +107,19 @@
 	"permissions": [
 		{
 			"create": 1,
-			"delete": 1,
 			"read": 1,
+			"report": 1,
 			"write": 1,
-			"role": "System Manager"
+			"role": "System Manager",
+			"select": 1
+		},
+		{
+			"create": 1,
+			"read": 1,
+			"report": 1,
+			"write": 1,
+			"role": "HRP System Manager",
+			"select": 1
 		}
 	],
 	"sort_field": "modified",

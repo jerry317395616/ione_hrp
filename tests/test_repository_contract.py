@@ -28,6 +28,7 @@ from scripts.repository_contract import (
 	validate_performance_baseline_contract,
 	validate_push_guard,
 	validate_quality_tooling,
+	validate_system_settings_contract,
 	validate_test_data_factory_contract,
 	validate_transactional_message_contract,
 )
@@ -167,6 +168,9 @@ class RepositoryContractTest(unittest.TestCase):
 
 	def test_current_performance_baseline_contract_is_mandatory(self) -> None:
 		self.assertEqual(validate_performance_baseline_contract(ROOT), [])
+
+	def test_current_system_settings_contract_is_mandatory(self) -> None:
+		self.assertEqual(validate_system_settings_contract(ROOT), [])
 
 	def test_rejects_direct_transaction_commit(self) -> None:
 		with tempfile.TemporaryDirectory() as temp:

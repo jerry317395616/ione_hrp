@@ -25,7 +25,7 @@ class TestChangeGovernanceAPI(FrappeAPITestCase):
 		payload = response.get_json()["message"]
 		self.assertEqual(payload["status"], "ok")
 		self.assertEqual(payload["correlation_id"], "COD-008-http-success")
-		self.assertEqual(payload["change_record_count"], 16)
+		self.assertEqual(payload["change_record_count"], 17)
 		self.assertEqual(payload["decision_count"], 11)
 		self.assertFalse(payload["http_write_enabled"])
 		self.assertEqual(payload["write_channel"], "Git pull request only")

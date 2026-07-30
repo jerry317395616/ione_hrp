@@ -370,6 +370,170 @@ paths:
       x-required-role: System Manager or HRP System Manager
       x-transaction-boundary: Read-only
       x-idempotency: Read-only deterministic
+  /api/method/ione_hrp.api.v1.settings.get_system_settings:
+    get:
+      operationId: platform_020
+      summary: 查询HRP系统设置
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: Current explicit HRP system settings without arbitrary configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemSettingsFrappeResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '403':
+          description: System Manager or HRP System Manager role required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '500':
+          description: Persisted system settings are invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+      x-required-role: System Manager or HRP System Manager
+      x-transaction-boundary: Read-only
+      x-idempotency: Read-only deterministic
+  /api/method/ione_hrp.api.v1.settings.update_system_settings:
+    post:
+      operationId: platform_021
+      summary: 更新HRP系统设置
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+          pattern: ^[A-Za-z0-9][A-Za-z0-9._:/-]{0,139}$
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 140
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - enabled
+              - integration_timeout_seconds
+              - expected_version
+              properties:
+                enabled:
+                  oneOf:
+                  - type: boolean
+                  - type: integer
+                    enum:
+                    - 0
+                    - 1
+                  - type: string
+                    enum:
+                    - '0'
+                    - '1'
+                default_company:
+                  type:
+                  - string
+                  - 'null'
+                  maxLength: 140
+                default_hospital:
+                  type:
+                  - string
+                  - 'null'
+                  maxLength: 140
+                integration_timeout_seconds:
+                  oneOf:
+                  - type: integer
+                    minimum: 5
+                    maximum: 300
+                  - type: string
+                    pattern: ^[0-9]+$
+                remarks:
+                  type:
+                  - string
+                  - 'null'
+                  maxLength: 500
+                expected_version:
+                  oneOf:
+                  - type: integer
+                    minimum: 1
+                  - type: string
+                    pattern: ^[0-9]+$
+                correlation_id:
+                  type:
+                  - string
+                  - 'null'
+                  minLength: 1
+                  maxLength: 140
+                  pattern: ^[A-Za-z0-9][A-Za-z0-9._:/-]{0,139}$
+      responses:
+        '200':
+          description: Updated or idempotently replayed system settings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemSettingsUpdateFrappeResponse'
+        '400':
+          description: Invalid request or missing idempotency key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '403':
+          description: System Manager or HRP System Manager role required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '404':
+          description: Default company was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '409':
+          description: Configuration version or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '500':
+          description: Persisted system settings are invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+      x-required-role: System Manager or HRP System Manager
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
   /api/method/ione_hrp.api.v1.modules.set_module_enabled:
     post:
       operationId: platform_009
@@ -3634,6 +3798,158 @@ components:
               pattern: ^req-[A-Za-z0-9]{20}$
             idempotency_replayed:
               type: boolean
+    SystemSettingsFrappeResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - message
+      properties:
+        message:
+          $ref: '#/components/schemas/SystemSettingsState'
+    SystemSettingsUpdateFrappeResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - message
+      properties:
+        message:
+          $ref: '#/components/schemas/SystemSettingsUpdateResult'
+    SystemSettingsState:
+      type: object
+      additionalProperties: false
+      required:
+      - schema_version
+      - doctype
+      - enabled
+      - release_channel
+      - default_company
+      - default_hospital
+      - strict_data_scope
+      - require_human_confirmation_for_ai
+      - integration_timeout_seconds
+      - remarks
+      - configuration_version
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        doctype:
+          type: string
+          const: HRP System Settings
+        enabled:
+          type: boolean
+        release_channel:
+          type: string
+          const: locked-develop
+        default_company:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        default_hospital:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        strict_data_scope:
+          type: boolean
+          const: true
+        require_human_confirmation_for_ai:
+          type: boolean
+          const: true
+        integration_timeout_seconds:
+          type: integer
+          minimum: 5
+          maximum: 300
+        remarks:
+          type:
+          - string
+          - 'null'
+          maxLength: 500
+        configuration_version:
+          type: integer
+          minimum: 1
+    SystemSettingsUpdateResult:
+      type: object
+      additionalProperties: false
+      required:
+      - schema_version
+      - doctype
+      - enabled
+      - release_channel
+      - default_company
+      - default_hospital
+      - strict_data_scope
+      - require_human_confirmation_for_ai
+      - integration_timeout_seconds
+      - remarks
+      - configuration_version
+      - changed
+      - changed_fields
+      - correlation_id
+      - request_id
+      - idempotency_replayed
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        doctype:
+          type: string
+          const: HRP System Settings
+        enabled:
+          type: boolean
+        release_channel:
+          type: string
+          const: locked-develop
+        default_company:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        default_hospital:
+          type:
+          - string
+          - 'null'
+          maxLength: 140
+        strict_data_scope:
+          type: boolean
+          const: true
+        require_human_confirmation_for_ai:
+          type: boolean
+          const: true
+        integration_timeout_seconds:
+          type: integer
+          minimum: 5
+          maximum: 300
+        remarks:
+          type:
+          - string
+          - 'null'
+          maxLength: 500
+        configuration_version:
+          type: integer
+          minimum: 1
+        changed:
+          type: boolean
+        changed_fields:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+            enum:
+            - enabled
+            - default_company
+            - default_hospital
+            - integration_timeout_seconds
+            - remarks
+        correlation_id:
+          type: string
+          pattern: ^[A-Za-z0-9][A-Za-z0-9._:/-]{0,139}$
+        request_id:
+          type: string
+          pattern: ^req-[A-Za-z0-9]{20}$
+        idempotency_replayed:
+          type: boolean
     AuditContextResponse:
       type: object
       required:
