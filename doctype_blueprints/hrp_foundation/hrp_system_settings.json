@@ -49,9 +49,10 @@
     },
     {
       "fieldname": "default_hospital",
-      "label": "默认医院标识",
-      "fieldtype": "Data",
-      "description": "医院主数据启用前使用的受控标识"
+      "label": "默认医院",
+      "fieldtype": "Link",
+      "description": "默认医院；必须属于默认法人",
+      "options": "HRP Hospital"
     },
     {
       "fieldname": "strict_data_scope",

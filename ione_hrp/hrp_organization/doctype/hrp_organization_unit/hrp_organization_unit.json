@@ -1,0 +1,224 @@
+{
+	"actions": [],
+	"allow_rename": 0,
+	"autoname": "hash",
+	"creation": "2026-07-30 00:00:00.000000",
+	"description": "组织版本内的树节点；只允许通过组织层级服务整体维护。",
+	"doctype": "DocType",
+	"engine": "InnoDB",
+	"field_order": [
+		"scope_section",
+		"organization_version",
+		"company",
+		"hospital",
+		"identity_section",
+		"code",
+		"display_name",
+		"unit_type",
+		"parent_organization_unit",
+		"is_group",
+		"enabled",
+		"sequence",
+		"validity_section",
+		"valid_from",
+		"valid_to",
+		"remarks",
+		"tree_section",
+		"lft",
+		"rgt",
+		"old_parent"
+	],
+	"fields": [
+		{
+			"fieldname": "scope_section",
+			"fieldtype": "Section Break",
+			"label": "版本范围"
+		},
+		{
+			"fieldname": "organization_version",
+			"fieldtype": "Link",
+			"label": "组织版本",
+			"options": "HRP Organization Version",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "company",
+			"fieldtype": "Link",
+			"label": "所属法人",
+			"options": "Company",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "hospital",
+			"fieldtype": "Link",
+			"label": "医院",
+			"options": "HRP Hospital",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "identity_section",
+			"fieldtype": "Section Break",
+			"label": "组织单元"
+		},
+		{
+			"fieldname": "code",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"label": "组织编码",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "display_name",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"label": "组织名称",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "unit_type",
+			"fieldtype": "Select",
+			"in_list_view": 1,
+			"label": "组织类型",
+			"options": "HOSPITAL\nCAMPUS\nCLINICAL_DEPARTMENT\nADMINISTRATIVE_DEPARTMENT\nNURSING_UNIT\nWARD\nMEDICAL_GROUP\nCOST_RESPONSIBILITY_CENTER\nPOSITION\nOTHER",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "parent_organization_unit",
+			"fieldtype": "Link",
+			"label": "上级组织",
+			"options": "HRP Organization Unit",
+			"read_only": 1,
+			"search_index": 1
+		},
+		{
+			"default": "0",
+			"fieldname": "is_group",
+			"fieldtype": "Check",
+			"label": "允许下级",
+			"read_only": 1
+		},
+		{
+			"default": "1",
+			"fieldname": "enabled",
+			"fieldtype": "Check",
+			"in_list_view": 1,
+			"label": "启用",
+			"read_only": 1,
+			"search_index": 1
+		},
+		{
+			"default": "1",
+			"fieldname": "sequence",
+			"fieldtype": "Int",
+			"label": "同级顺序",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "validity_section",
+			"fieldtype": "Section Break",
+			"label": "有效期"
+		},
+		{
+			"fieldname": "valid_from",
+			"fieldtype": "Date",
+			"label": "有效期开始",
+			"read_only": 1
+		},
+		{
+			"fieldname": "valid_to",
+			"fieldtype": "Date",
+			"label": "有效期结束",
+			"read_only": 1
+		},
+		{
+			"fieldname": "remarks",
+			"fieldtype": "Small Text",
+			"label": "备注",
+			"read_only": 1
+		},
+		{
+			"fieldname": "tree_section",
+			"fieldtype": "Section Break",
+			"hidden": 1,
+			"label": "树索引"
+		},
+		{
+			"fieldname": "lft",
+			"fieldtype": "Int",
+			"hidden": 1,
+			"label": "左边界",
+			"read_only": 1
+		},
+		{
+			"fieldname": "rgt",
+			"fieldtype": "Int",
+			"hidden": 1,
+			"label": "右边界",
+			"read_only": 1
+		},
+		{
+			"fieldname": "old_parent",
+			"fieldtype": "Data",
+			"hidden": 1,
+			"label": "原上级",
+			"read_only": 1
+		}
+	],
+	"index_web_pages_for_search": 0,
+	"is_tree": 1,
+	"links": [],
+	"modified": "2026-07-30 00:00:00.000000",
+	"modified_by": "Administrator",
+	"module": "HRP Organization",
+	"name": "HRP Organization Unit",
+	"nsm_parent_field": "parent_organization_unit",
+	"owner": "Administrator",
+	"permissions": [
+		{
+			"email": 1,
+			"export": 1,
+			"print": 1,
+			"read": 1,
+			"report": 1,
+			"role": "System Manager",
+			"share": 1
+		},
+		{
+			"email": 1,
+			"export": 1,
+			"print": 1,
+			"read": 1,
+			"report": 1,
+			"role": "HRP System Manager",
+			"share": 1
+		},
+		{
+			"email": 1,
+			"export": 1,
+			"print": 1,
+			"read": 1,
+			"report": 1,
+			"role": "HRP Data Steward",
+			"share": 1
+		}
+	],
+	"search_fields": "code,display_name,unit_type",
+	"sort_field": "lft",
+	"sort_order": "ASC",
+	"states": [],
+	"title_field": "display_name",
+	"track_changes": 1
+}

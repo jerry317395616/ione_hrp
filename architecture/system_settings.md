@@ -7,8 +7,8 @@ DocType。它只保存全站通用且结构明确的安全、集成和默认组�
 也不提供任意 JSON、动态代码或上游应用覆盖入口。
 
 该能力不修改 Frappe、ERPNext 或 Frappe HR。默认法人复用 ERPNext `Company`；
-默认医院在 COD-018 医院主数据交付前保存为最多 140 字符的受控标识，不能脱离默认法人
-单独配置。COD-018 可以通过独立迁移把它升级为 `HRP Hospital` Link。
+COD-018 已将默认医院升级为 `HRP Hospital` Link，医院必须属于同一默认法人。升级迁移会把
+旧版受控标识确定性转换为医院主数据，并保留原显示名称。
 
 ## 配置模型
 
@@ -18,7 +18,7 @@ DocType。它只保存全站通用且结构明确的安全、集成和默认组�
 | `release_channel` | 否 | 固定 `locked-develop` |
 | `configuration_version` | 否 | 从 1 开始的单调正整数 |
 | `default_company` | 是 | 可空 `Company` Link |
-| `default_hospital` | 是 | 可空受控标识；存在时必须同时配置法人 |
+| `default_hospital` | 是 | 可空 `HRP Hospital` Link；存在时必须属于默认法人 |
 | `strict_data_scope` | 否 | 固定启用 |
 | `require_human_confirmation_for_ai` | 否 | 固定启用 |
 | `integration_timeout_seconds` | 是 | 5 至 300 秒，默认 30 |

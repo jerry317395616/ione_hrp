@@ -181,15 +181,34 @@ for site_name in sys.argv[2:]:
 			database_name,
 			database_name,
 			"--execute",
-			"SELECT COUNT(*) FROM `tabError Log`;",
+			"""
+			SELECT COUNT(*) FROM `tabError Log`;
+			SELECT name, COALESCE(method, ''), creation
+			FROM `tabError Log`
+			ORDER BY creation, name;
+			""",
 		],
 		env={**os.environ, "MYSQL_PWD": database_password},
 		capture_output=True,
 		text=True,
 		check=True,
 	)
-	error_log_count = int(result.stdout.strip())
-	print(json.dumps({"site": site_name, "error_log_count": error_log_count}))
+	lines = [line for line in result.stdout.splitlines() if line]
+	error_log_count = int(lines[0])
+	summaries = []
+	for line in lines[1:]:
+		name, method, creation = line.split("\t", maxsplit=2)
+		summaries.append({"name": name, "method": method, "creation": creation})
+	print(
+		json.dumps(
+			{
+				"site": site_name,
+				"error_log_count": error_log_count,
+				"error_log_summaries": summaries,
+			},
+			sort_keys=True,
+		)
+	)
 	if error_log_count:
 		raise SystemExit(f"Fresh CI site {site_name} contains Error Log records")
 PY

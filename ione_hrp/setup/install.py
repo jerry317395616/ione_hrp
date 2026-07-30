@@ -4,6 +4,7 @@ import frappe
 
 from ione_hrp.common.constants import CORE_ROLES
 from ione_hrp.setup.modules import sync_module_defs, sync_module_settings
+from ione_hrp.setup.organization import ensure_organization_hierarchy
 from ione_hrp.setup.settings import ensure_system_settings
 from ione_hrp.setup.versions import validate_runtime_versions
 
@@ -27,6 +28,7 @@ def after_install() -> None:
 	sync_module_defs()
 	_ensure_roles()
 	sync_module_settings()
+	ensure_organization_hierarchy()
 	ensure_system_settings()
 
 
@@ -35,6 +37,7 @@ def after_migrate() -> None:
 	sync_module_defs()
 	_ensure_roles()
 	sync_module_settings()
+	ensure_organization_hierarchy()
 	ensure_system_settings()
 
 

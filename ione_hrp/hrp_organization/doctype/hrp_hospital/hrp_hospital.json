@@ -1,0 +1,149 @@
+{
+	"actions": [],
+	"allow_rename": 0,
+	"autoname": "field:code",
+	"creation": "2026-07-30 00:00:00.000000",
+	"description": "医院主数据，作为组织版本和组织层级的稳定边界。",
+	"doctype": "DocType",
+	"engine": "InnoDB",
+	"field_order": [
+		"identity_section",
+		"code",
+		"display_name",
+		"company",
+		"enabled",
+		"validity_section",
+		"valid_from",
+		"valid_to",
+		"revision",
+		"next_version_number",
+		"remarks"
+	],
+	"fields": [
+		{
+			"fieldname": "identity_section",
+			"fieldtype": "Section Break",
+			"label": "医院信息"
+		},
+		{
+			"fieldname": "code",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"label": "医院编码",
+			"reqd": 1,
+			"search_index": 1,
+			"unique": 1
+		},
+		{
+			"fieldname": "display_name",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"label": "医院名称",
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "company",
+			"fieldtype": "Link",
+			"in_list_view": 1,
+			"label": "所属法人",
+			"options": "Company",
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"default": "1",
+			"fieldname": "enabled",
+			"fieldtype": "Check",
+			"in_list_view": 1,
+			"label": "启用",
+			"search_index": 1
+		},
+		{
+			"fieldname": "validity_section",
+			"fieldtype": "Section Break",
+			"label": "有效期与版本"
+		},
+		{
+			"fieldname": "valid_from",
+			"fieldtype": "Date",
+			"label": "有效期开始"
+		},
+		{
+			"fieldname": "valid_to",
+			"fieldtype": "Date",
+			"label": "有效期结束"
+		},
+		{
+			"default": "1",
+			"fieldname": "revision",
+			"fieldtype": "Int",
+			"label": "修订号",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"default": "1",
+			"fieldname": "next_version_number",
+			"fieldtype": "Int",
+			"hidden": 1,
+			"label": "下一个组织版本号",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "remarks",
+			"fieldtype": "Small Text",
+			"label": "备注"
+		}
+	],
+	"index_web_pages_for_search": 0,
+	"links": [],
+	"modified": "2026-07-30 00:00:00.000000",
+	"modified_by": "Administrator",
+	"module": "HRP Organization",
+	"name": "HRP Hospital",
+	"naming_rule": "By fieldname",
+	"owner": "Administrator",
+	"permissions": [
+		{
+			"create": 1,
+			"email": 1,
+			"export": 1,
+			"print": 1,
+			"read": 1,
+			"report": 1,
+			"role": "System Manager",
+			"share": 1,
+			"write": 1
+		},
+		{
+			"create": 1,
+			"email": 1,
+			"export": 1,
+			"print": 1,
+			"read": 1,
+			"report": 1,
+			"role": "HRP System Manager",
+			"share": 1,
+			"write": 1
+		},
+		{
+			"create": 1,
+			"email": 1,
+			"export": 1,
+			"print": 1,
+			"read": 1,
+			"report": 1,
+			"role": "HRP Data Steward",
+			"share": 1,
+			"write": 1
+		}
+	],
+	"search_fields": "code,display_name,company",
+	"sort_field": "display_name",
+	"sort_order": "ASC",
+	"states": [],
+	"title_field": "display_name",
+	"track_changes": 1
+}

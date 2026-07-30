@@ -1,7 +1,7 @@
 {
 	"app": "ione_hrp",
 	"charts": [],
-	"content": "[{\"id\":\"hrp-header\",\"type\":\"header\",\"data\":{\"text\":\"医院 HRP\",\"col\":12}},{\"id\":\"settings-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"系统设置\",\"col\":4}},{\"id\":\"modules-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"模块设置\",\"col\":4}},{\"id\":\"feature-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"特性开关\",\"col\":4}}]",
+	"content": "[{\"id\":\"hrp-header\",\"type\":\"header\",\"data\":{\"text\":\"医院 HRP\",\"col\":12}},{\"id\":\"settings-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"系统设置\",\"col\":3}},{\"id\":\"organization-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"组织管理\",\"col\":3}},{\"id\":\"modules-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"模块设置\",\"col\":3}},{\"id\":\"feature-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"特性开关\",\"col\":3}}]",
 	"creation": "2026-07-28 00:00:00.000000",
 	"custom_blocks": [],
 	"docstatus": 0,
@@ -29,6 +29,17 @@
 			"link_count": 0,
 			"link_to": "HRP System Settings",
 			"link_type": "DocType",
+			"onboard": 1,
+			"type": "Link"
+		},
+		{
+			"dependencies": "",
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "组织管理",
+			"link_count": 0,
+			"link_to": "HRP Organization",
+			"link_type": "Workspace",
 			"onboard": 1,
 			"type": "Link"
 		},
@@ -71,6 +82,9 @@
 		},
 		{
 			"role": "HRP System Manager"
+		},
+		{
+			"role": "HRP Data Steward"
 		}
 	],
 	"sequence_id": 3.0,
@@ -79,6 +93,11 @@
 			"label": "系统设置",
 			"link_to": "HRP System Settings",
 			"type": "DocType"
+		},
+		{
+			"label": "组织管理",
+			"link_to": "HRP Organization",
+			"type": "Workspace"
 		},
 		{
 			"label": "模块设置",

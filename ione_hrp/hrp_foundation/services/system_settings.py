@@ -60,6 +60,16 @@ class UpdateSystemSettingsService(DomainService[SystemSettingsUpdate]):
 	def validate(self, command: SystemSettingsUpdate) -> None:
 		if command.default_company and not frappe.db.exists("Company", command.default_company):
 			raise_ione_error("RESOURCE_NOT_FOUND")
+		if command.default_hospital:
+			hospital_company = frappe.db.get_value(
+				"HRP Hospital",
+				command.default_hospital,
+				"company",
+			)
+			if not hospital_company:
+				raise_ione_error("RESOURCE_NOT_FOUND")
+			if hospital_company != command.default_company:
+				raise_ione_error("CONFLICT")
 
 	def perform(self, command: SystemSettingsUpdate) -> dict[str, object]:
 		locked_version, _ = HRPSystemSettings.lock_configuration(command.expected_version)

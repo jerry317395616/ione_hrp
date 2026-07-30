@@ -3738,6 +3738,300 @@ paths:
               type: object
               description: service_form,payload,attachments
               additionalProperties: true
+  /api/method/ione_hrp.api.v1.organization.upsert_hospital:
+    post:
+      operationId: core_009
+      summary: 创建或更新医院主数据
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+          pattern: ^[A-Za-z0-9][A-Za-z0-9._:/-]{0,139}$
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 140
+          pattern: ^[A-Za-z0-9][A-Za-z0-9._:/-]{7,139}$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HospitalUpsertRequest'
+      responses:
+        '200':
+          description: 创建或更新医院主数据
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HospitalMutationFrappeResponse'
+        '400':
+          description: Invalid request or missing idempotency key
+          content: &id001
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '401':
+          description: Authentication required
+          content: *id001
+        '403':
+          description: Organization administrator role required
+          content: *id001
+        '404':
+          description: Referenced organization resource not found
+          content: *id001
+        '409':
+          description: Revision or lifecycle conflict
+          content: *id001
+        '500':
+          description: Persisted organization configuration is invalid
+          content: *id001
+      x-required-role: System Manager or HRP System Manager or HRP Data Steward
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+  /api/method/ione_hrp.api.v1.organization.create_organization_version:
+    post:
+      operationId: core_010
+      summary: 创建医院组织版本
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+          pattern: ^[A-Za-z0-9][A-Za-z0-9._:/-]{0,139}$
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 140
+          pattern: ^[A-Za-z0-9][A-Za-z0-9._:/-]{7,139}$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganizationVersionCreateRequest'
+      responses:
+        '200':
+          description: 创建医院组织版本
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationVersionCommandFrappeResponse'
+        '400':
+          description: Invalid request or missing idempotency key
+          content: *id001
+        '401':
+          description: Authentication required
+          content: *id001
+        '403':
+          description: Organization administrator role required
+          content: *id001
+        '404':
+          description: Referenced organization resource not found
+          content: *id001
+        '409':
+          description: Revision or lifecycle conflict
+          content: *id001
+        '500':
+          description: Persisted organization configuration is invalid
+          content: *id001
+      x-required-role: System Manager or HRP System Manager or HRP Data Steward
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+  /api/method/ione_hrp.api.v1.organization.replace_organization_hierarchy:
+    post:
+      operationId: core_011
+      summary: 整体替换组织层级草稿
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+          pattern: ^[A-Za-z0-9][A-Za-z0-9._:/-]{0,139}$
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 140
+          pattern: ^[A-Za-z0-9][A-Za-z0-9._:/-]{7,139}$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganizationHierarchyReplaceRequest'
+      responses:
+        '200':
+          description: 整体替换组织层级草稿
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationHierarchyReplaceFrappeResponse'
+        '400':
+          description: Invalid request or missing idempotency key
+          content: *id001
+        '401':
+          description: Authentication required
+          content: *id001
+        '403':
+          description: Organization administrator role required
+          content: *id001
+        '404':
+          description: Referenced organization resource not found
+          content: *id001
+        '409':
+          description: Revision or lifecycle conflict
+          content: *id001
+        '500':
+          description: Persisted organization configuration is invalid
+          content: *id001
+      x-required-role: System Manager or HRP System Manager or HRP Data Steward
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+  /api/method/ione_hrp.api.v1.organization.publish_organization_version:
+    post:
+      operationId: core_012
+      summary: 发布医院组织版本
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+          pattern: ^[A-Za-z0-9][A-Za-z0-9._:/-]{0,139}$
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 140
+          pattern: ^[A-Za-z0-9][A-Za-z0-9._:/-]{7,139}$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganizationVersionPublishRequest'
+      responses:
+        '200':
+          description: 发布医院组织版本
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationVersionCommandFrappeResponse'
+        '400':
+          description: Invalid request or missing idempotency key
+          content: *id001
+        '401':
+          description: Authentication required
+          content: *id001
+        '403':
+          description: Organization administrator role required
+          content: *id001
+        '404':
+          description: Referenced organization resource not found
+          content: *id001
+        '409':
+          description: Revision or lifecycle conflict
+          content: *id001
+        '500':
+          description: Persisted organization configuration is invalid
+          content: *id001
+      x-required-role: System Manager or HRP System Manager or HRP Data Steward
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+  /api/method/ione_hrp.api.v1.organization.get_organization_hierarchy:
+    get:
+      operationId: core_013
+      summary: 按版本或生效日期查询组织层级
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - name: organization_version
+        in: query
+        required: false
+        schema:
+          type: string
+          maxLength: 140
+      - name: hospital
+        in: query
+        required: false
+        schema:
+          type: string
+          pattern: ^[A-Z][A-Z0-9_-]{0,63}$
+      - name: effective_on
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      responses:
+        '200':
+          description: Resolved organization hierarchy snapshot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationHierarchyFrappeResponse'
+        '400':
+          description: Invalid request or missing idempotency key
+          content: *id001
+        '401':
+          description: Authentication required
+          content: *id001
+        '403':
+          description: Organization administrator role required
+          content: *id001
+        '404':
+          description: Referenced organization resource not found
+          content: *id001
+        '409':
+          description: Revision or lifecycle conflict
+          content: *id001
+        '500':
+          description: Persisted organization configuration is invalid
+          content: *id001
+      x-required-role: System Manager or HRP System Manager or HRP Data Steward
+      x-transaction-boundary: Read-only
+      x-idempotency: Read-only deterministic
 components:
   headers:
     CorrelationId:
@@ -4784,3 +5078,424 @@ components:
         details: {}
         correlation_id:
           type: string
+    HospitalUpsertRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - code
+      - company
+      - display_name
+      - expected_revision
+      properties:
+        code: &id003
+          type: string
+          pattern: ^[A-Z][A-Z0-9_-]{0,63}$
+          maxLength: 64
+        company:
+          type: string
+          maxLength: 140
+        display_name:
+          type: string
+          maxLength: 140
+        enabled:
+          type:
+          - boolean
+          - integer
+          - string
+        valid_from: &id002
+          type:
+          - string
+          - 'null'
+          format: date
+        valid_to: *id002
+        remarks: &id004
+          type:
+          - string
+          - 'null'
+          maxLength: 500
+        expected_revision:
+          type: integer
+          minimum: 0
+    OrganizationVersionCreateRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - hospital
+      - effective_from
+      - version_label
+      properties:
+        hospital: *id003
+        effective_from:
+          type: string
+          format: date
+        version_label:
+          type: string
+          maxLength: 140
+        remarks: *id004
+    OrganizationNodeRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - code
+      - display_name
+      - unit_type
+      - is_group
+      properties:
+        code: *id003
+        display_name: &id021
+          type: string
+          maxLength: 140
+        unit_type: &id022
+          type: string
+          enum:
+          - HOSPITAL
+          - CAMPUS
+          - CLINICAL_DEPARTMENT
+          - ADMINISTRATIVE_DEPARTMENT
+          - NURSING_UNIT
+          - WARD
+          - MEDICAL_GROUP
+          - COST_RESPONSIBILITY_CENTER
+          - POSITION
+          - OTHER
+        parent_code: &id023
+          type:
+          - string
+          - 'null'
+          pattern: ^[A-Z][A-Z0-9_-]{0,63}$
+        is_group: &id024
+          type: boolean
+        enabled: &id025
+          type: boolean
+        sequence: &id026
+          type: integer
+          minimum: 1
+        valid_from: *id002
+        valid_to: *id002
+        remarks: *id004
+    OrganizationHierarchyReplaceRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - organization_version
+      - expected_revision
+      - nodes
+      properties:
+        organization_version:
+          type: string
+          maxLength: 140
+        expected_revision:
+          type: integer
+          minimum: 1
+        nodes:
+          type: array
+          minItems: 1
+          maxItems: 2000
+          items:
+            $ref: '#/components/schemas/OrganizationNodeRequest'
+    OrganizationVersionPublishRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - organization_version
+      - expected_revision
+      properties:
+        organization_version:
+          type: string
+          maxLength: 140
+        expected_revision:
+          type: integer
+          minimum: 1
+    HospitalMutationResult:
+      type: object
+      additionalProperties: false
+      required:
+      - schema_version
+      - name
+      - code
+      - company
+      - display_name
+      - enabled
+      - valid_from
+      - valid_to
+      - remarks
+      - revision
+      - changed
+      - changed_fields
+      - correlation_id
+      - request_id
+      - idempotency_replayed
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        name: *id003
+        code: *id003
+        company:
+          type: string
+          maxLength: 140
+        display_name:
+          type: string
+          maxLength: 140
+        enabled:
+          type: boolean
+        valid_from: *id002
+        valid_to: *id002
+        remarks: *id004
+        revision:
+          type: integer
+          minimum: 1
+        changed:
+          type: boolean
+        changed_fields:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+            enum:
+            - created
+            - company
+            - display_name
+            - enabled
+            - valid_from
+            - valid_to
+            - remarks
+        correlation_id: &id005
+          type: string
+          pattern: ^[A-Za-z0-9][A-Za-z0-9._:/-]{0,139}$
+        request_id: &id006
+          type: string
+          pattern: ^req-[A-Za-z0-9]{20}$
+        idempotency_replayed: &id007
+          type: boolean
+    OrganizationVersionCommandResult:
+      type: object
+      additionalProperties: false
+      required:
+      - schema_version
+      - name
+      - hospital
+      - company
+      - version_number
+      - version_code
+      - version_label
+      - effective_from
+      - status
+      - docstatus
+      - node_count
+      - hierarchy_digest
+      - revision
+      - published_at
+      - remarks
+      - correlation_id
+      - request_id
+      - idempotency_replayed
+      properties:
+        schema_version: &id008
+          type: integer
+          const: 1
+        name: &id009
+          type: string
+          maxLength: 140
+        hospital: *id003
+        company: &id010
+          type: string
+          maxLength: 140
+        version_number: &id011
+          type: integer
+          minimum: 1
+        version_code: &id012
+          type: string
+          pattern: ^V[0-9]{4,}$
+        version_label: &id013
+          type: string
+          maxLength: 140
+        effective_from: &id014
+          type: string
+          format: date
+        status: &id015
+          type: string
+          enum:
+          - Draft
+          - Published
+        docstatus: &id016
+          type: integer
+          enum:
+          - 0
+          - 1
+        node_count: &id017
+          type: integer
+          minimum: 0
+          maximum: 2000
+        hierarchy_digest: &id018
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        revision: &id019
+          type: integer
+          minimum: 1
+        published_at: &id020
+          type:
+          - string
+          - 'null'
+          format: date-time
+        remarks: *id004
+        correlation_id: *id005
+        request_id: *id006
+        idempotency_replayed: *id007
+    OrganizationHierarchyReplaceResult:
+      type: object
+      additionalProperties: false
+      required:
+      - schema_version
+      - name
+      - hospital
+      - company
+      - version_number
+      - version_code
+      - version_label
+      - effective_from
+      - status
+      - docstatus
+      - node_count
+      - hierarchy_digest
+      - revision
+      - published_at
+      - remarks
+      - changed
+      - correlation_id
+      - request_id
+      - idempotency_replayed
+      properties:
+        schema_version: *id008
+        name: *id009
+        hospital: *id003
+        company: *id010
+        version_number: *id011
+        version_code: *id012
+        version_label: *id013
+        effective_from: *id014
+        status: *id015
+        docstatus: *id016
+        node_count: *id017
+        hierarchy_digest: *id018
+        revision: *id019
+        published_at: *id020
+        remarks: *id004
+        changed:
+          type: boolean
+        correlation_id: *id005
+        request_id: *id006
+        idempotency_replayed: *id007
+    OrganizationNode:
+      type: object
+      additionalProperties: false
+      required:
+      - code
+      - display_name
+      - unit_type
+      - parent_code
+      - is_group
+      - enabled
+      - sequence
+      - valid_from
+      - valid_to
+      - remarks
+      - depth
+      properties:
+        code: *id003
+        display_name: *id021
+        unit_type: *id022
+        parent_code: *id023
+        is_group: *id024
+        enabled: *id025
+        sequence: *id026
+        valid_from: *id002
+        valid_to: *id002
+        remarks: *id004
+        depth:
+          type: integer
+          minimum: 0
+    OrganizationHierarchy:
+      type: object
+      additionalProperties: false
+      required:
+      - schema_version
+      - version
+      - nodes
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        version:
+          type: object
+          additionalProperties: false
+          required:
+          - schema_version
+          - name
+          - hospital
+          - company
+          - version_number
+          - version_code
+          - version_label
+          - effective_from
+          - status
+          - docstatus
+          - node_count
+          - hierarchy_digest
+          - revision
+          - published_at
+          - remarks
+          properties:
+            schema_version: *id008
+            name: *id009
+            hospital: *id003
+            company: *id010
+            version_number: *id011
+            version_code: *id012
+            version_label: *id013
+            effective_from: *id014
+            status: *id015
+            docstatus: *id016
+            node_count: *id017
+            hierarchy_digest: *id018
+            revision: *id019
+            published_at: *id020
+            remarks: *id004
+        nodes:
+          type: array
+          minItems: 1
+          maxItems: 2000
+          items:
+            $ref: '#/components/schemas/OrganizationNode'
+    HospitalMutationFrappeResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - message
+      properties:
+        message:
+          $ref: '#/components/schemas/HospitalMutationResult'
+    OrganizationVersionCommandFrappeResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - message
+      properties:
+        message:
+          $ref: '#/components/schemas/OrganizationVersionCommandResult'
+    OrganizationHierarchyReplaceFrappeResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - message
+      properties:
+        message:
+          $ref: '#/components/schemas/OrganizationHierarchyReplaceResult'
+    OrganizationHierarchyFrappeResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - message
+      properties:
+        message:
+          $ref: '#/components/schemas/OrganizationHierarchy'
