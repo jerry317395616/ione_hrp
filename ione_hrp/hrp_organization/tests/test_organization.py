@@ -40,6 +40,7 @@ PUBLISH_VERSION_METHOD = "ione_hrp.api.v1.organization.publish_organization_vers
 GET_HIERARCHY_METHOD = "ione_hrp.api.v1.organization.get_organization_hierarchy"
 TEST_HOSPITAL = "COD018-HOSPITAL"
 TEST_COMPANY = "COD-018测试医疗法人"
+TEST_WAREHOUSE_TYPE = "Transit"
 ORGANIZATION_SERVICE_NAMES = (
 	UpsertHospitalService.definition.name,
 	CreateOrganizationVersionService.definition.name,
@@ -51,6 +52,14 @@ ORGANIZATION_SERVICE_NAMES = (
 def company_name() -> str:
 	if frappe.db.exists("Company", TEST_COMPANY):
 		return TEST_COMPANY
+	if not frappe.db.exists("Warehouse Type", TEST_WAREHOUSE_TYPE):
+		frappe.get_doc(
+			{
+				"doctype": "Warehouse Type",
+				"name": TEST_WAREHOUSE_TYPE,
+				"description": "COD-018测试中转仓类型",
+			}
+		).insert(ignore_permissions=True)
 	company = frappe.get_doc(
 		{
 			"doctype": "Company",
