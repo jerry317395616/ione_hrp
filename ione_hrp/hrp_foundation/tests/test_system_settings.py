@@ -71,7 +71,8 @@ class TestSystemSettings(IntegrationTestCase):
 		self.assertNotIn("configuration_json", fields)
 		self.assertEqual(fields["enabled"].label, "启用")
 		self.assertEqual(fields["default_company"].options, "Company")
-		self.assertEqual(fields["default_hospital"].fieldtype, "Data")
+		self.assertEqual(fields["default_hospital"].fieldtype, "Link")
+		self.assertEqual(fields["default_hospital"].options, "HRP Hospital")
 		for fieldname in (
 			"release_channel",
 			"configuration_version",

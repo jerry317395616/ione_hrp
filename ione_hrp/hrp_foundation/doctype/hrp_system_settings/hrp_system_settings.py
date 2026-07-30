@@ -26,7 +26,7 @@ class HRPSystemSettings(Document):
 
 		configuration_version: DF.Int
 		default_company: DF.Link | None
-		default_hospital: DF.Data | None
+		default_hospital: DF.Link | None
 		enabled: DF.Check
 		integration_timeout_seconds: DF.Int
 		release_channel: DF.Data
@@ -72,6 +72,16 @@ class HRPSystemSettings(Document):
 
 		if update.default_company and not frappe.db.exists("Company", update.default_company):
 			raise_ione_error("RESOURCE_NOT_FOUND")
+		if update.default_hospital:
+			hospital_company = frappe.db.get_value(
+				"HRP Hospital",
+				update.default_hospital,
+				"company",
+			)
+			if not hospital_company:
+				raise_ione_error("RESOURCE_NOT_FOUND")
+			if hospital_company != update.default_company:
+				raise_ione_error("CONFLICT")
 		self.enabled = int(update.enabled)
 		self.default_company = update.default_company
 		self.default_hospital = update.default_hospital

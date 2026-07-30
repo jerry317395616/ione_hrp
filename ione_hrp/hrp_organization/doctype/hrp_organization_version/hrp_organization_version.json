@@ -1,0 +1,177 @@
+{
+	"actions": [],
+	"allow_rename": 0,
+	"autoname": "Prompt",
+	"creation": "2026-07-30 00:00:00.000000",
+	"description": "医院组织层级的有效日期版本；发布后不可修改或取消。",
+	"doctype": "DocType",
+	"engine": "InnoDB",
+	"field_order": [
+		"scope_section",
+		"hospital",
+		"company",
+		"version_number",
+		"version_code",
+		"version_label",
+		"effective_from",
+		"status",
+		"hierarchy_section",
+		"node_count",
+		"hierarchy_digest",
+		"revision",
+		"published_at",
+		"remarks"
+	],
+	"fields": [
+		{
+			"fieldname": "scope_section",
+			"fieldtype": "Section Break",
+			"label": "版本范围"
+		},
+		{
+			"fieldname": "hospital",
+			"fieldtype": "Link",
+			"in_list_view": 1,
+			"label": "医院",
+			"options": "HRP Hospital",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "company",
+			"fieldtype": "Link",
+			"label": "所属法人",
+			"options": "Company",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "version_number",
+			"fieldtype": "Int",
+			"label": "版本序号",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "version_code",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"label": "版本编码",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "version_label",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"label": "版本名称",
+			"reqd": 1
+		},
+		{
+			"fieldname": "effective_from",
+			"fieldtype": "Date",
+			"in_list_view": 1,
+			"label": "生效日期",
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"default": "Draft",
+			"fieldname": "status",
+			"fieldtype": "Select",
+			"in_list_view": 1,
+			"label": "版本状态",
+			"options": "Draft\nPublished",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "hierarchy_section",
+			"fieldtype": "Section Break",
+			"label": "层级快照"
+		},
+		{
+			"default": "0",
+			"fieldname": "node_count",
+			"fieldtype": "Int",
+			"label": "组织单元数",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "hierarchy_digest",
+			"fieldtype": "Data",
+			"label": "层级摘要",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"default": "1",
+			"fieldname": "revision",
+			"fieldtype": "Int",
+			"label": "修订号",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "published_at",
+			"fieldtype": "Datetime",
+			"label": "发布时间",
+			"read_only": 1
+		},
+		{
+			"fieldname": "remarks",
+			"fieldtype": "Small Text",
+			"label": "备注"
+		}
+	],
+	"index_web_pages_for_search": 0,
+	"is_submittable": 1,
+	"links": [],
+	"modified": "2026-07-30 00:00:00.000000",
+	"modified_by": "Administrator",
+	"module": "HRP Organization",
+	"name": "HRP Organization Version",
+	"naming_rule": "Set by user",
+	"owner": "Administrator",
+	"permissions": [
+		{
+			"email": 1,
+			"export": 1,
+			"print": 1,
+			"read": 1,
+			"report": 1,
+			"role": "System Manager",
+			"share": 1
+		},
+		{
+			"email": 1,
+			"export": 1,
+			"print": 1,
+			"read": 1,
+			"report": 1,
+			"role": "HRP System Manager",
+			"share": 1
+		},
+		{
+			"email": 1,
+			"export": 1,
+			"print": 1,
+			"read": 1,
+			"report": 1,
+			"role": "HRP Data Steward",
+			"share": 1
+		}
+	],
+	"search_fields": "hospital,version_code,version_label",
+	"sort_field": "effective_from",
+	"sort_order": "DESC",
+	"states": [],
+	"title_field": "version_label",
+	"track_changes": 1
+}

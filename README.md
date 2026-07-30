@@ -33,13 +33,25 @@ AGENTS.md                      Codex 仓库级强制规则
 ## HRP 系统设置
 
 `HRP System Settings` 是 `HRP Foundation` 拥有的全站 Single DocType。它以显式
-字段管理启用状态、默认法人/医院标识、集成超时和说明；发布通道、严格数据域及 AI
+字段管理启用状态、默认法人/医院、集成超时和说明；发布通道、严格数据域及 AI
 人工确认固定为不可弱化的代码策略。系统管理角色可通过 `PLT-020` 读取，通过要求
 `Idempotency-Key` 与 `expected_version` 的 `PLT-021` 更新。
 
 写入使用 `tabSingles` 行锁、单调配置版本、加密幂等结果和仅字段名/版本的脱敏审计，
 没有任意 JSON 或动态代码入口。完整模型、权限、接口、迁移和回滚规则见
 `architecture/system_settings.md`。
+
+## 组织层级与版本
+
+`HRP Organization` 以 `HRP Hospital`、`HRP Organization Version` 和
+`HRP Organization Unit` 保存医院组织。每个版本包含一棵完整 Nested Set 树，通过
+`CORE-009` 至 `CORE-012` 的幂等领域服务创建、整体替换和发布；发布后版本与节点不可
+修改或取消。`CORE-013` 可按显式版本或医院与业务日期查询确定快照。
+
+COD-017 的默认医院已升级为正式 Link；旧文本在迁移时确定性转换为医院记录并保留原名称。
+本任务不映射 ERPNext `Department`/`Cost Center`，该能力留给 COD-019。完整模型、
+权限、接口、迁移和回滚规则见 `architecture/organization_hierarchy.md` 与
+`architecture/adr/ADR-0012-versioned-hospital-organization-hierarchy.md`。
 
 ## 非生产环境
 

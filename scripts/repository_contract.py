@@ -33,6 +33,11 @@ from ione_hrp.common.fixture_policy import (
 	load_fixture_policy,
 )
 from ione_hrp.common.immutable_ledger import BASE_LEDGER_FIELDS
+from ione_hrp.common.organization import (
+	MAX_HIERARCHY_NODES,
+	ORGANIZATION_SCHEMA_VERSION,
+	UNIT_TYPES,
+)
 from ione_hrp.common.performance_baseline import (
 	PerformanceBaselineContractError,
 	load_performance_baseline_registry,
@@ -1838,8 +1843,9 @@ def validate_system_settings_contract(root: Path) -> list[str]:
 		violations.append("integration timeout must be an explicit integer defaulting to 30")
 	if fields.get("default_company", {}).get("options") != "Company":
 		violations.append("default company must use the standard Company Link")
-	if fields.get("default_hospital", {}).get("fieldtype") != "Data":
-		violations.append("default hospital must remain an identifier until COD-018")
+	default_hospital = fields.get("default_hospital", {})
+	if default_hospital.get("fieldtype") != "Link" or default_hospital.get("options") != "HRP Hospital":
+		violations.append("default hospital must link to COD-018 HRP Hospital")
 
 	permissions = doctype.get("permissions", [])
 	if {permission.get("role") for permission in permissions} != {
@@ -1918,10 +1924,10 @@ def validate_system_settings_contract(root: Path) -> list[str]:
 	if blueprint_fields != expected_business_fields:
 		violations.append("system settings blueprint must match the runtime business fields")
 	workspace = json.loads(workspace_path.read_text(encoding="utf-8"))
-	if {role.get("role") for role in workspace.get("roles", [])} != {
+	if not {
 		"System Manager",
 		"HRP System Manager",
-	}:
+	}.issubset({role.get("role") for role in workspace.get("roles", [])}):
 		violations.append("HRP workspace must expose settings to both system admin roles")
 	if not any(
 		link.get("link_to") == "HRP System Settings" and link.get("label") == "系统设置"
@@ -1968,6 +1974,236 @@ def validate_system_settings_contract(root: Path) -> list[str]:
 		"expected_version",
 	}:
 		violations.append("PLT-021 system settings request has the wrong required fields")
+	return violations
+
+
+def validate_organization_hierarchy_contract(root: Path) -> list[str]:
+	module_root = root / APP_NAME / "hrp_organization"
+	common_path = root / APP_NAME / "common" / "organization.py"
+	service_path = module_root / "services" / "organization.py"
+	api_path = root / APP_NAME / "api" / "v1" / "organization.py"
+	setup_path = root / APP_NAME / "setup" / "organization.py"
+	install_path = root / APP_NAME / "setup" / "install.py"
+	workspace_path = module_root / "workspace" / "hrp_organization" / "hrp_organization.json"
+	documentation_path = root / "architecture" / "organization_hierarchy.md"
+	adr_path = root / "architecture" / "adr" / "ADR-0012-versioned-hospital-organization-hierarchy.md"
+	task_path = root / "backlog" / "COD-018.md"
+	change_path = root / "changes" / "COD-018.json"
+	pure_test_path = root / "tests" / "test_organization.py"
+	integration_test_path = module_root / "tests" / "test_organization.py"
+	doctype_names = (
+		("hrp_hospital", "HRP Hospital"),
+		("hrp_organization_version", "HRP Organization Version"),
+		("hrp_organization_unit", "HRP Organization Unit"),
+	)
+	doctype_paths = {
+		name: (
+			module_root / "doctype" / directory / f"{directory}.json",
+			module_root / "doctype" / directory / f"{directory}.py",
+			root / "doctype_blueprints" / "hrp_organization" / f"{directory}.json",
+		)
+		for directory, name in doctype_names
+	}
+	catalog_paths = (
+		root / "api" / "api_catalog.csv",
+		root / "api" / "api_catalog.yaml",
+		root / "api" / "openapi.yaml",
+	)
+	required_paths = (
+		common_path,
+		service_path,
+		api_path,
+		setup_path,
+		install_path,
+		workspace_path,
+		documentation_path,
+		adr_path,
+		task_path,
+		change_path,
+		pure_test_path,
+		integration_test_path,
+		*catalog_paths,
+		*(path for paths in doctype_paths.values() for path in paths),
+	)
+	missing = [str(path.relative_to(root)) for path in required_paths if not path.is_file()]
+	if missing:
+		return [f"missing organization hierarchy contract file: {path}" for path in missing]
+
+	violations: list[str] = []
+	expected_roles = {"System Manager", "HRP System Manager", "HRP Data Steward"}
+	for name, (doctype_path, controller_path, blueprint_path) in doctype_paths.items():
+		doctype = json.loads(doctype_path.read_text(encoding="utf-8"))
+		blueprint = json.loads(blueprint_path.read_text(encoding="utf-8"))
+		if "?" in blueprint_path.read_text(encoding="utf-8"):
+			violations.append(f"{name} blueprint must not contain replacement question marks")
+		if doctype.get("name") != name or doctype.get("module") != "HRP Organization":
+			violations.append(f"{name} must be owned by HRP Organization")
+		if blueprint.get("name") != name or blueprint.get("module") != "HRP Organization":
+			violations.append(f"{name} blueprint must match its runtime owner")
+		runtime_fields = {
+			field.get("fieldname")
+			for field in doctype.get("fields", [])
+			if field.get("fieldname") and field.get("fieldtype") not in {"Section Break", "Column Break"}
+		}
+		blueprint_fields = {
+			field.get("fieldname") for field in blueprint.get("fields", []) if field.get("fieldname")
+		}
+		if runtime_fields != blueprint_fields:
+			violations.append(f"{name} blueprint fields must match runtime metadata")
+		permissions = doctype.get("permissions", [])
+		if {permission.get("role") for permission in permissions} != expected_roles:
+			violations.append(f"{name} must use the three organization governance roles")
+		if not all(permission.get("read") == 1 for permission in permissions):
+			violations.append(f"{name} must remain readable by every organization governance role")
+		controller_text = controller_path.read_text(encoding="utf-8")
+		if "frappe.db.commit" in controller_text:
+			violations.append(f"{name} controller must not commit transactions")
+
+	hospital = json.loads(doctype_paths["HRP Hospital"][0].read_text(encoding="utf-8"))
+	hospital_fields = {field["fieldname"]: field for field in hospital.get("fields", [])}
+	if hospital.get("autoname") != "field:code":
+		violations.append("HRP Hospital must keep its stable canonical code as name")
+	if hospital_fields.get("company", {}).get("options") != "Company":
+		violations.append("HRP Hospital company must use the standard Company Link")
+	for permission in hospital.get("permissions", []):
+		if not all(permission.get(action) == 1 for action in ("read", "write", "create")):
+			violations.append("HRP Hospital governance roles must read, create and write")
+		if permission.get("delete"):
+			violations.append("HRP Hospital must not grant delete permission")
+
+	version = json.loads(doctype_paths["HRP Organization Version"][0].read_text(encoding="utf-8"))
+	version_fields = {field["fieldname"]: field for field in version.get("fields", [])}
+	if version.get("is_submittable") != 1:
+		violations.append("HRP Organization Version must remain submittable for immutable publication")
+	if version_fields.get("hospital", {}).get("options") != "HRP Hospital":
+		violations.append("HRP Organization Version must link to HRP Hospital")
+	for permission in version.get("permissions", []):
+		if any(permission.get(action) for action in ("write", "create", "delete", "submit", "cancel")):
+			violations.append("HRP Organization Version writes must remain service-only")
+
+	unit = json.loads(doctype_paths["HRP Organization Unit"][0].read_text(encoding="utf-8"))
+	unit_fields = {field["fieldname"]: field for field in unit.get("fields", [])}
+	if unit.get("is_tree") != 1 or unit.get("nsm_parent_field") != "parent_organization_unit":
+		violations.append("HRP Organization Unit must remain a NestedSet tree")
+	if unit_fields.get("organization_version", {}).get("options") != "HRP Organization Version":
+		violations.append("HRP Organization Unit must be scoped by organization version")
+	if tuple(unit_fields.get("unit_type", {}).get("options", "").splitlines()) != UNIT_TYPES:
+		violations.append("HRP Organization Unit types must match the public organization contract")
+	for permission in unit.get("permissions", []):
+		if any(permission.get(action) for action in ("write", "create", "delete", "submit", "cancel")):
+			violations.append("HRP Organization Unit writes must remain service-only")
+
+	common_text = common_path.read_text(encoding="utf-8")
+	for token in (
+		f"ORGANIZATION_SCHEMA_VERSION = {ORGANIZATION_SCHEMA_VERSION}",
+		f"MAX_HIERARCHY_NODES = {MAX_HIERARCHY_NODES}",
+		"class HospitalUpsert",
+		"class OrganizationVersionCreate",
+		"class HierarchyReplace",
+		"class OrganizationVersionPublish",
+		"normalize_hierarchy_nodes",
+		"hierarchy_digest",
+	):
+		if token not in common_text:
+			violations.append(f"organization public contract is missing: {token}")
+
+	service_text = service_path.read_text(encoding="utf-8")
+	for token in (
+		"class UpsertHospitalService",
+		"class CreateOrganizationVersionService",
+		"class ReplaceOrganizationHierarchyService",
+		"class PublishOrganizationVersionService",
+		"DomainService",
+		"FOR UPDATE",
+		"expected_revision",
+		"hierarchy_digest",
+		"require_roles",
+	):
+		if token not in service_text:
+			violations.append(f"organization service is missing: {token}")
+	if "frappe.db.commit" in service_text:
+		violations.append("organization services must not commit transactions")
+
+	api_text = api_path.read_text(encoding="utf-8")
+	if api_text.count('@frappe.whitelist(methods=["POST"])') != 4:
+		violations.append("COD-018 organization API must expose exactly four POST methods")
+	if api_text.count('@frappe.whitelist(methods=["GET"])') != 1:
+		violations.append("COD-018 organization API must expose exactly one GET method")
+	if "allow_guest=True" in api_text:
+		violations.append("organization APIs must never allow guests")
+
+	setup_text = setup_path.read_text(encoding="utf-8")
+	for token in (
+		"def ensure_organization_hierarchy",
+		"frappe.db.add_unique",
+		"_legacy_hospital_code",
+		"default_hospital_migrated",
+	):
+		if token not in setup_text:
+			violations.append(f"organization migration is missing: {token}")
+	install_text = install_path.read_text(encoding="utf-8")
+	if install_text.count("ensure_organization_hierarchy()") != 2:
+		violations.append("organization migration must run after install and migrate")
+
+	workspace = json.loads(workspace_path.read_text(encoding="utf-8"))
+	if {role.get("role") for role in workspace.get("roles", [])} != expected_roles:
+		violations.append("organization workspace must use the three governance roles")
+	expected_links = {"HRP Hospital", "HRP Organization Version", "HRP Organization Unit"}
+	actual_links = {link.get("link_to") for link in workspace.get("links", []) if link.get("link_to")}
+	if not expected_links.issubset(actual_links):
+		violations.append("organization workspace must expose hospital, version and hierarchy")
+
+	for catalog_path in (
+		root / "design" / "doctype_catalog.csv",
+		root / "design" / "field_catalog.csv",
+	):
+		with catalog_path.open(encoding="utf-8-sig", newline="") as stream:
+			for row in csv.DictReader(stream):
+				if row.get("doctype") in expected_links and any("?" in str(value) for value in row.values()):
+					violations.append(
+						f"{catalog_path.relative_to(root)} contains replacement question marks "
+						f"for {row.get('doctype')}"
+					)
+	settings_blueprint = root / "doctype_blueprints" / "hrp_foundation" / "hrp_system_settings.json"
+	if '"label": "默认医院"' not in settings_blueprint.read_text(encoding="utf-8"):
+		violations.append("system settings blueprint must retain the Chinese default hospital label")
+
+	endpoints = {
+		"/api/method/ione_hrp.api.v1.organization.upsert_hospital": "post",
+		"/api/method/ione_hrp.api.v1.organization.create_organization_version": "post",
+		"/api/method/ione_hrp.api.v1.organization.replace_organization_hierarchy": "post",
+		"/api/method/ione_hrp.api.v1.organization.publish_organization_version": "post",
+		"/api/method/ione_hrp.api.v1.organization.get_organization_hierarchy": "get",
+	}
+	for catalog_path in catalog_paths:
+		catalog_text = catalog_path.read_text(encoding="utf-8")
+		for endpoint in endpoints:
+			if endpoint not in catalog_text:
+				violations.append(
+					f"{catalog_path.relative_to(root)} is missing organization endpoint {endpoint}"
+				)
+	openapi = yaml.safe_load((root / "api" / "openapi.yaml").read_text(encoding="utf-8"))
+	expected_role_contract = "System Manager or HRP System Manager or HRP Data Steward"
+	for endpoint, method in endpoints.items():
+		path_contract = openapi.get("paths", {}).get(endpoint, {})
+		operation = path_contract.get(method, {})
+		if set(path_contract) != {method}:
+			violations.append(f"{endpoint} must expose only {method.upper()}")
+		if operation.get("x-required-role") != expected_role_contract:
+			violations.append(f"{endpoint} has the wrong organization role contract")
+		if method == "post":
+			if operation.get("x-transaction-boundary") != "Single DB transaction":
+				violations.append(f"{endpoint} must use one database transaction")
+			if operation.get("x-idempotency") != "Required for write":
+				violations.append(f"{endpoint} must require idempotency")
+			headers = operation.get("parameters", [])
+			if not any(
+				header.get("name") == "Idempotency-Key" and header.get("required") is True
+				for header in headers
+			):
+				violations.append(f"{endpoint} must declare a required Idempotency-Key header")
+		elif operation.get("x-transaction-boundary") != "Read-only":
+			violations.append(f"{endpoint} must remain read-only")
 	return violations
 
 
@@ -2229,6 +2465,7 @@ def collect_violations(root: Path) -> list[str]:
 	violations.extend(validate_performance_baseline_contract(root))
 	violations.extend(validate_software_supply_chain_contract(root))
 	violations.extend(validate_system_settings_contract(root))
+	violations.extend(validate_organization_hierarchy_contract(root))
 	return violations
 
 

@@ -110,6 +110,76 @@
   transaction_boundary: Single DB transaction
   audit: Always
   version: v1
+- api_code: CORE-009
+  app: ione_hrp
+  domain_group: Core
+  method: POST
+  path: /api/method/ione_hrp.api.v1.organization.upsert_hospital
+  description: ???????????
+  request_schema: code,company,display_name,enabled,valid_from,valid_to,remarks,expected_revision
+  response_schema: schema_version,name,code,company,display_name,enabled,valid_from,valid_to,remarks,revision,changed,changed_fields,correlation_id,request_id,idempotency_replayed
+  required_role: System Manager or HRP System Manager or HRP Data Steward
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Redacted field-name and revision log
+  version: v1
+- api_code: CORE-010
+  app: ione_hrp
+  domain_group: Core
+  method: POST
+  path: /api/method/ione_hrp.api.v1.organization.create_organization_version
+  description: ??????????
+  request_schema: hospital,effective_from,version_label,remarks
+  response_schema: schema_version,name,hospital,company,version_number,version_code,version_label,effective_from,status,docstatus,node_count,hierarchy_digest,revision,published_at,remarks,correlation_id,request_id,idempotency_replayed
+  required_role: System Manager or HRP System Manager or HRP Data Steward
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Redacted version and revision log
+  version: v1
+- api_code: CORE-011
+  app: ione_hrp
+  domain_group: Core
+  method: POST
+  path: /api/method/ione_hrp.api.v1.organization.replace_organization_hierarchy
+  description: ??????????????
+  request_schema: organization_version,expected_revision,nodes
+  response_schema: schema_version,name,hospital,company,version_number,version_code,version_label,effective_from,status,docstatus,node_count,hierarchy_digest,revision,published_at,remarks,changed,correlation_id,request_id,idempotency_replayed
+  required_role: System Manager or HRP System Manager or HRP Data Steward
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Redacted node-count digest and revision log
+  version: v1
+- api_code: CORE-012
+  app: ione_hrp
+  domain_group: Core
+  method: POST
+  path: /api/method/ione_hrp.api.v1.organization.publish_organization_version
+  description: ???????????
+  request_schema: organization_version,expected_revision
+  response_schema: schema_version,name,hospital,company,version_number,version_code,version_label,effective_from,status,docstatus,node_count,hierarchy_digest,revision,published_at,remarks,correlation_id,request_id,idempotency_replayed
+  required_role: System Manager or HRP System Manager or HRP Data Steward
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Redacted node-count digest and revision log
+  version: v1
+- api_code: CORE-013
+  app: ione_hrp
+  domain_group: Core
+  method: GET
+  path: /api/method/ione_hrp.api.v1.organization.get_organization_hierarchy
+  description: ???????????????
+  request_schema: organization_version or hospital,effective_on
+  response_schema: schema_version,version,nodes
+  required_role: System Manager or HRP System Manager or HRP Data Steward
+  idempotency: Read-only deterministic
+  async: 'No'
+  transaction_boundary: Read-only
+  audit: Redacted version revision and node-count log
+  version: v1
 - api_code: FIN-001
   app: ione_hrp
   domain_group: Finance

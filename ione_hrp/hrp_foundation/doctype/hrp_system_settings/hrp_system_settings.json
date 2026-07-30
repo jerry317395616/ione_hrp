@@ -52,8 +52,9 @@
 		},
 		{
 			"fieldname": "default_hospital",
-			"fieldtype": "Data",
-			"label": "默认医院标识"
+			"fieldtype": "Link",
+			"label": "默认医院",
+			"options": "HRP Hospital"
 		},
 		{
 			"fieldname": "security_section",

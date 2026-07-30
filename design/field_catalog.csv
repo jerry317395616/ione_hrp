@@ -1,9 +1,9 @@
-app,module,doctype,field_order,fieldname,label_cn,fieldtype,options,reqd,unique,indexed,read_only,in_list_view,precision,default,depends_on,description,domain_group
+﻿app,module,doctype,field_order,fieldname,label_cn,fieldtype,options,reqd,unique,indexed,read_only,in_list_view,precision,default,depends_on,description,domain_group
 ione_hrp,HRP Foundation,HRP System Settings,10,enabled,启用,Check,,0,0,0,0,0,,1,,启用,Core
 ione_hrp,HRP Foundation,HRP System Settings,11,release_channel,发布通道,Data,,0,0,0,1,0,,locked-develop,,由锁定上游基线决定，不允许在站点内修改,Core
 ione_hrp,HRP Foundation,HRP System Settings,12,configuration_version,配置版本,Int,,0,0,0,1,0,,1,,用于防止并发覆盖的单调版本,Core
 ione_hrp,HRP Foundation,HRP System Settings,13,default_company,默认法人,Link,Company,0,0,0,0,0,,,,默认法人,Core
-ione_hrp,HRP Foundation,HRP System Settings,14,default_hospital,默认医院标识,Data,,0,0,0,0,0,,,,医院主数据启用前使用的受控标识,Core
+ione_hrp,HRP Foundation,HRP System Settings,14,default_hospital,默认医院,Link,HRP Hospital,0,0,0,0,0,,,,默认医院；必须属于默认法人,Core
 ione_hrp,HRP Foundation,HRP System Settings,15,strict_data_scope,严格数据域,Check,,0,0,0,1,0,,1,,固定启用，禁止在站点内弱化,Core
 ione_hrp,HRP Foundation,HRP System Settings,16,require_human_confirmation_for_ai,AI 操作需要人工确认,Check,,0,0,0,1,0,,1,,固定启用，禁止在站点内弱化,Core
 ione_hrp,HRP Foundation,HRP System Settings,17,integration_timeout_seconds,集成超时（秒）,Int,,0,0,0,0,0,,30,,允许5至300秒,Core
@@ -365,29 +365,15 @@ ione_hrp,HRP Organization,HRP Legal Entity,22,valid_from,有效期开始,Date,,0
 ione_hrp,HRP Organization,HRP Legal Entity,23,valid_to,有效期结束,Date,,0,0,0,0,0,,,,有效期结束,Core
 ione_hrp,HRP Organization,HRP Legal Entity,24,owner_department,责任部门,Link,Department,0,0,0,0,0,,,,责任部门,Core
 ione_hrp,HRP Organization,HRP Legal Entity,25,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
-ione_hrp,HRP Organization,HRP Hospital,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
-ione_hrp,HRP Organization,HRP Hospital,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
-ione_hrp,HRP Organization,HRP Hospital,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core
-ione_hrp,HRP Organization,HRP Hospital,13,organization_unit,组织单元,Link,HRP Organization Unit,1,0,1,0,1,,,,组织单元,Core
-ione_hrp,HRP Organization,HRP Hospital,14,cost_center,成本中心,Link,Cost Center,0,0,1,0,0,,,,成本中心,Core
-ione_hrp,HRP Organization,HRP Hospital,15,fiscal_year,财政年度,Link,Fiscal Year,0,0,1,0,0,,,,财政年度,Core
-ione_hrp,HRP Organization,HRP Hospital,16,currency,币种,Link,Currency,0,0,0,0,0,,CNY,,币种,Core
-ione_hrp,HRP Organization,HRP Hospital,17,status,业务状态,Select,"Draft
-Under Review
-Approved
-Rejected
-In Progress
-Completed
-Cancelled
-Closed",0,0,1,0,1,,Draft,,业务状态,Core
-ione_hrp,HRP Organization,HRP Hospital,18,workflow_state,工作流状态,Link,Workflow State,0,0,1,1,0,,,,工作流状态,Core
-ione_hrp,HRP Organization,HRP Hospital,19,code,编码,Data,,1,1,1,0,1,,,,编码,Core
-ione_hrp,HRP Organization,HRP Hospital,20,display_name,名称,Data,,1,0,0,0,1,,,,名称,Core
-ione_hrp,HRP Organization,HRP Hospital,21,enabled,启用,Check,,0,0,1,0,0,,1,,启用,Core
-ione_hrp,HRP Organization,HRP Hospital,22,valid_from,有效期开始,Date,,0,0,0,0,0,,,,有效期开始,Core
-ione_hrp,HRP Organization,HRP Hospital,23,valid_to,有效期结束,Date,,0,0,0,0,0,,,,有效期结束,Core
-ione_hrp,HRP Organization,HRP Hospital,24,owner_department,责任部门,Link,Department,0,0,0,0,0,,,,责任部门,Core
-ione_hrp,HRP Organization,HRP Hospital,25,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
+ione_hrp,HRP Organization,HRP Hospital,10,code,医院编码,Data,,1,1,1,0,1,,,,医院编码,Core
+ione_hrp,HRP Organization,HRP Hospital,11,display_name,医院名称,Data,,1,0,1,0,1,,,,医院名称,Core
+ione_hrp,HRP Organization,HRP Hospital,12,company,所属法人,Link,Company,1,0,1,0,1,,,,所属法人,Core
+ione_hrp,HRP Organization,HRP Hospital,13,enabled,启用,Check,,0,0,1,0,1,,1,,启用,Core
+ione_hrp,HRP Organization,HRP Hospital,14,valid_from,有效期开始,Date,,0,0,0,0,0,,,,有效期开始,Core
+ione_hrp,HRP Organization,HRP Hospital,15,valid_to,有效期结束,Date,,0,0,0,0,0,,,,有效期结束,Core
+ione_hrp,HRP Organization,HRP Hospital,16,revision,修订号,Int,,1,0,0,1,0,,1,,修订号,Core
+ione_hrp,HRP Organization,HRP Hospital,17,next_version_number,下一个组织版本号,Int,,1,0,0,1,0,,1,,下一个组织版本号,Core
+ione_hrp,HRP Organization,HRP Hospital,18,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
 ione_hrp,HRP Organization,HRP Campus,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
 ione_hrp,HRP Organization,HRP Campus,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
 ione_hrp,HRP Organization,HRP Campus,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core
@@ -411,29 +397,31 @@ ione_hrp,HRP Organization,HRP Campus,22,valid_from,有效期开始,Date,,0,0,0,0
 ione_hrp,HRP Organization,HRP Campus,23,valid_to,有效期结束,Date,,0,0,0,0,0,,,,有效期结束,Core
 ione_hrp,HRP Organization,HRP Campus,24,owner_department,责任部门,Link,Department,0,0,0,0,0,,,,责任部门,Core
 ione_hrp,HRP Organization,HRP Campus,25,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
-ione_hrp,HRP Organization,HRP Organization Unit,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
-ione_hrp,HRP Organization,HRP Organization Unit,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
-ione_hrp,HRP Organization,HRP Organization Unit,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core
-ione_hrp,HRP Organization,HRP Organization Unit,13,organization_unit,组织单元,Link,HRP Organization Unit,1,0,1,0,1,,,,组织单元,Core
-ione_hrp,HRP Organization,HRP Organization Unit,14,cost_center,成本中心,Link,Cost Center,0,0,1,0,0,,,,成本中心,Core
-ione_hrp,HRP Organization,HRP Organization Unit,15,fiscal_year,财政年度,Link,Fiscal Year,0,0,1,0,0,,,,财政年度,Core
-ione_hrp,HRP Organization,HRP Organization Unit,16,currency,币种,Link,Currency,0,0,0,0,0,,CNY,,币种,Core
-ione_hrp,HRP Organization,HRP Organization Unit,17,status,业务状态,Select,"Draft
-Under Review
-Approved
-Rejected
-In Progress
-Completed
-Cancelled
-Closed",0,0,1,0,1,,Draft,,业务状态,Core
-ione_hrp,HRP Organization,HRP Organization Unit,18,workflow_state,工作流状态,Link,Workflow State,0,0,1,1,0,,,,工作流状态,Core
-ione_hrp,HRP Organization,HRP Organization Unit,19,code,编码,Data,,1,1,1,0,1,,,,编码,Core
-ione_hrp,HRP Organization,HRP Organization Unit,20,display_name,名称,Data,,1,0,0,0,1,,,,名称,Core
-ione_hrp,HRP Organization,HRP Organization Unit,21,enabled,启用,Check,,0,0,1,0,0,,1,,启用,Core
-ione_hrp,HRP Organization,HRP Organization Unit,22,valid_from,有效期开始,Date,,0,0,0,0,0,,,,有效期开始,Core
-ione_hrp,HRP Organization,HRP Organization Unit,23,valid_to,有效期结束,Date,,0,0,0,0,0,,,,有效期结束,Core
-ione_hrp,HRP Organization,HRP Organization Unit,24,owner_department,责任部门,Link,Department,0,0,0,0,0,,,,责任部门,Core
-ione_hrp,HRP Organization,HRP Organization Unit,25,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
+ione_hrp,HRP Organization,HRP Organization Unit,10,organization_version,组织版本,Link,HRP Organization Version,1,0,1,1,0,,,,组织版本,Core
+ione_hrp,HRP Organization,HRP Organization Unit,11,company,所属法人,Link,Company,1,0,1,1,0,,,,所属法人,Core
+ione_hrp,HRP Organization,HRP Organization Unit,12,hospital,医院,Link,HRP Hospital,1,0,1,1,0,,,,医院,Core
+ione_hrp,HRP Organization,HRP Organization Unit,13,code,组织编码,Data,,1,0,1,1,1,,,,组织编码,Core
+ione_hrp,HRP Organization,HRP Organization Unit,14,display_name,组织名称,Data,,1,0,1,1,1,,,,组织名称,Core
+ione_hrp,HRP Organization,HRP Organization Unit,15,unit_type,组织类型,Select,"HOSPITAL
+CAMPUS
+CLINICAL_DEPARTMENT
+ADMINISTRATIVE_DEPARTMENT
+NURSING_UNIT
+WARD
+MEDICAL_GROUP
+COST_RESPONSIBILITY_CENTER
+POSITION
+OTHER",1,0,1,1,1,,,,组织类型,Core
+ione_hrp,HRP Organization,HRP Organization Unit,16,parent_organization_unit,上级组织,Link,HRP Organization Unit,0,0,1,1,0,,,,上级组织,Core
+ione_hrp,HRP Organization,HRP Organization Unit,17,is_group,允许下级,Check,,0,0,0,1,0,,0,,允许下级,Core
+ione_hrp,HRP Organization,HRP Organization Unit,18,enabled,启用,Check,,0,0,1,1,1,,1,,启用,Core
+ione_hrp,HRP Organization,HRP Organization Unit,19,sequence,同级顺序,Int,,1,0,0,1,0,,1,,同级顺序,Core
+ione_hrp,HRP Organization,HRP Organization Unit,20,valid_from,有效期开始,Date,,0,0,0,1,0,,,,有效期开始,Core
+ione_hrp,HRP Organization,HRP Organization Unit,21,valid_to,有效期结束,Date,,0,0,0,1,0,,,,有效期结束,Core
+ione_hrp,HRP Organization,HRP Organization Unit,22,remarks,备注,Small Text,,0,0,0,1,0,,,,备注,Core
+ione_hrp,HRP Organization,HRP Organization Unit,23,lft,左边界,Int,,0,0,0,1,0,,,,左边界,Core
+ione_hrp,HRP Organization,HRP Organization Unit,24,rgt,右边界,Int,,0,0,0,1,0,,,,右边界,Core
+ione_hrp,HRP Organization,HRP Organization Unit,25,old_parent,原上级,Data,,0,0,0,1,0,,,,原上级,Core
 ione_hrp,HRP Organization,HRP Clinical Department,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
 ione_hrp,HRP Organization,HRP Clinical Department,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
 ione_hrp,HRP Organization,HRP Clinical Department,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core
@@ -604,33 +592,19 @@ ione_hrp,HRP Organization,HRP Position Assignment,34,shift_date,班次日期,Dat
 ione_hrp,HRP Organization,HRP Position Assignment,35,start_time,开始时间,Datetime,,0,0,0,0,0,,,,开始时间,Core
 ione_hrp,HRP Organization,HRP Position Assignment,36,end_time,结束时间,Datetime,,0,0,0,0,0,,,,结束时间,Core
 ione_hrp,HRP Organization,HRP Position Assignment,37,hours,小时数,Float,,0,0,0,0,0,2,,,小时数,Core
-ione_hrp,HRP Organization,HRP Organization Version,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
-ione_hrp,HRP Organization,HRP Organization Version,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
-ione_hrp,HRP Organization,HRP Organization Version,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core
-ione_hrp,HRP Organization,HRP Organization Version,13,organization_unit,组织单元,Link,HRP Organization Unit,1,0,1,0,1,,,,组织单元,Core
-ione_hrp,HRP Organization,HRP Organization Version,14,cost_center,成本中心,Link,Cost Center,0,0,1,0,0,,,,成本中心,Core
-ione_hrp,HRP Organization,HRP Organization Version,15,fiscal_year,财政年度,Link,Fiscal Year,0,0,1,0,0,,,,财政年度,Core
-ione_hrp,HRP Organization,HRP Organization Version,16,currency,币种,Link,Currency,0,0,0,0,0,,CNY,,币种,Core
-ione_hrp,HRP Organization,HRP Organization Version,17,status,业务状态,Select,"Draft
-Under Review
-Approved
-Rejected
-In Progress
-Completed
-Cancelled
-Closed",0,0,1,0,1,,Draft,,业务状态,Core
-ione_hrp,HRP Organization,HRP Organization Version,18,workflow_state,工作流状态,Link,Workflow State,0,0,1,1,0,,,,工作流状态,Core
-ione_hrp,HRP Organization,HRP Organization Version,19,posting_date,业务日期,Date,,1,0,1,0,1,,,,业务日期,Core
-ione_hrp,HRP Organization,HRP Organization Version,20,applicant,申请人,Link,User,1,0,1,0,0,,,,申请人,Core
-ione_hrp,HRP Organization,HRP Organization Version,21,employee,员工,Link,Employee,0,0,1,0,0,,,,员工,Core
-ione_hrp,HRP Organization,HRP Organization Version,22,subject,主题,Data,,1,0,0,0,1,,,,主题,Core
-ione_hrp,HRP Organization,HRP Organization Version,23,total_amount,总金额,Currency,currency,0,0,0,0,1,2,,,总金额,Core
-ione_hrp,HRP Organization,HRP Organization Version,24,external_id,外部ID,Data,,0,0,1,0,0,,,,外部ID,Core
-ione_hrp,HRP Organization,HRP Organization Version,25,source_doctype,来源类型,Link,DocType,0,0,0,0,0,,,,来源类型,Core
-ione_hrp,HRP Organization,HRP Organization Version,26,source_name,来源单据,Dynamic Link,source_doctype,0,0,1,0,0,,,,来源单据,Core
-ione_hrp,HRP Organization,HRP Organization Version,27,submitted_at,提交时间,Datetime,,0,0,0,1,0,,,,提交时间,Core
-ione_hrp,HRP Organization,HRP Organization Version,28,approved_at,批准时间,Datetime,,0,0,0,1,0,,,,批准时间,Core
-ione_hrp,HRP Organization,HRP Organization Version,29,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
+ione_hrp,HRP Organization,HRP Organization Version,10,hospital,医院,Link,HRP Hospital,1,0,1,1,1,,,,医院,Core
+ione_hrp,HRP Organization,HRP Organization Version,11,company,所属法人,Link,Company,1,0,1,1,0,,,,所属法人,Core
+ione_hrp,HRP Organization,HRP Organization Version,12,version_number,版本序号,Int,,1,0,1,1,0,,,,版本序号,Core
+ione_hrp,HRP Organization,HRP Organization Version,13,version_code,版本编码,Data,,1,0,1,1,1,,,,版本编码,Core
+ione_hrp,HRP Organization,HRP Organization Version,14,version_label,版本名称,Data,,1,0,0,0,1,,,,版本名称,Core
+ione_hrp,HRP Organization,HRP Organization Version,15,effective_from,生效日期,Date,,1,0,1,0,1,,,,生效日期,Core
+ione_hrp,HRP Organization,HRP Organization Version,16,status,版本状态,Select,"Draft
+Published",1,0,1,1,1,,Draft,,版本状态,Core
+ione_hrp,HRP Organization,HRP Organization Version,17,node_count,组织单元数,Int,,1,0,0,1,0,,0,,组织单元数,Core
+ione_hrp,HRP Organization,HRP Organization Version,18,hierarchy_digest,层级摘要,Data,,1,0,0,1,0,,,,层级摘要,Core
+ione_hrp,HRP Organization,HRP Organization Version,19,revision,修订号,Int,,1,0,0,1,0,,1,,修订号,Core
+ione_hrp,HRP Organization,HRP Organization Version,20,published_at,发布时间,Datetime,,0,0,0,1,0,,,,发布时间,Core
+ione_hrp,HRP Organization,HRP Organization Version,21,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
 ione_hrp,HRP Master Data,HRP Master Data Domain,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
 ione_hrp,HRP Master Data,HRP Master Data Domain,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
 ione_hrp,HRP Master Data,HRP Master Data Domain,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core
