@@ -1,5 +1,5 @@
 app,module,doctype,label_cn,kind,is_submittable,is_child,is_single,autoname,title_field,track_changes,allow_rename,retention_years,data_classification,primary_roles,description,key_indexes,standard_references,domain_group
-ione_hrp,HRP Foundation,HRP System Settings,HRP系统设置,Single,0,0,1,,,1,0,10,内部,HRP System Manager;HRP Data Steward,基础设置领域的HRP系统设置对象；用于支撑业务闭环、权限、审计与对账。,company;organization_unit,,Core
+ione_hrp,HRP Foundation,HRP System Settings,HRP系统设置,Single,0,0,1,,,1,0,10,内部,System Manager;HRP System Manager,HRP全局安全与集成默认值；固定策略只能随受控代码发布变更。,,,Core
 ione_hrp,HRP Foundation,HRP Feature Flag,HRP特性开关,Transaction,1,0,0,format:CORE-.YYYY.-.#####,subject,1,0,10,内部,HRP System Manager;HRP Data Steward,基础设置领域的HRP特性开关对象；用于支撑业务闭环、权限、审计与对账。,company;organization_unit;status;posting_date,,Core
 ione_hrp,HRP Foundation,HRP Numbering Scheme,HRP编号方案,Master,0,0,0,field:code,display_name,1,1,10,内部,HRP System Manager;HRP Data Steward,基础设置领域的HRP编号方案对象；用于支撑业务闭环、权限、审计与对账。,company;organization_unit,,Core
 ione_hrp,HRP Foundation,HRP Code Segment,HRP编码段,Transaction,1,0,0,format:CORE-.YYYY.-.#####,subject,1,0,10,内部,HRP System Manager;HRP Data Steward,基础设置领域的HRP编码段对象；用于支撑业务闭环、权限、审计与对账。,company;organization_unit;status;posting_date,,Core

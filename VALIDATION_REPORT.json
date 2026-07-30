@@ -1,14 +1,14 @@
 {
-  "status": "PASS_COD_016",
+  "status": "IN_PROGRESS_COD_017",
   "checks": {
     "python_compile": true,
     "pyproject_parse": true,
     "json_parse": true,
     "yaml_parse": true,
     "repository_contract": true,
-    "repository_contract_tests": 186,
+    "repository_contract_tests": 195,
     "frappe_integration_tests": 100,
-    "frappe_integration_tests_defined": 100,
+    "frappe_integration_tests_defined": 111,
     "quality_gate": true,
     "ci_pipeline": true,
     "ci_workflow": ".github/workflows/ci.yml",
@@ -85,12 +85,12 @@
     "fixture_guest_and_ordinary_user_rejected": true,
     "change_governance_schema_version": 1,
     "change_governance_decision_count": 11,
-    "change_governance_change_record_count": 16,
+    "change_governance_change_record_count": 17,
     "change_governance_risk_rule_count": 5,
     "change_governance_unit_tests": 21,
     "change_governance_integration_tests_defined": 5,
     "change_governance_integration_tests_passed": 5,
-    "change_governance_sha256": "48b01ad54dede7efb0ddf4bff2143df881abdc8a7f1efdedebfc4df97321d718",
+    "change_governance_sha256": "e5d5ca22f9d88c303e09a1d24fd74b7c86973d5dfbb0825a4d7f6e6795b1c977",
     "change_governance_diff_sha256": "74997632d4ab2a44a6a3ca24ec358cffebe977c6c887fc732c8435670abde13b",
     "change_governance_changed_file_count": 32,
     "change_governance_required_risk": "critical",
@@ -248,6 +248,18 @@
     "software_supply_chain_http_write_enabled": false,
     "software_supply_chain_production_doctypes_added": 0,
     "direct_software_supply_chain_policy_bypass_violations": 0,
+    "cod_017_local_quality_passed": true,
+    "system_settings_schema_version": 1,
+    "system_settings_unit_tests": 8,
+    "system_settings_integration_tests_defined": 11,
+    "system_settings_integration_tests_passed": 0,
+    "system_settings_permission_verified": false,
+    "system_settings_fixed_policy_verified": false,
+    "system_settings_version_conflict_verified": false,
+    "system_settings_idempotency_verified": false,
+    "system_settings_audit_redaction_verified": false,
+    "system_settings_http_contract_verified": false,
+    "system_settings_arbitrary_json_enabled": false,
     "upstream_validation_bench": "/home/zyd/validation/cod-002-bench",
     "upstream_validation_site": "cod002.localhost",
     "git_monorepo": true,
@@ -259,10 +271,10 @@
     "branch_protection_automation": true,
     "local_main_push_guard": true,
     "github_repository": "https://github.com/jerry317395616/ione_hrp",
-    "github_validated_parent_commit": "d4f1387e73e3a36fe1e16a0b6804e5637383f5ce",
+    "github_validated_parent_commit": "2273f86afcae83ace6787e28c9939de057154d30",
     "modules_txt_matches_registry": true,
     "doctype_catalog_count": 398,
-    "field_catalog_count": 10036,
+    "field_catalog_count": 10040,
     "blueprint_count": 398,
     "single_app_catalog": [
       "ione_hrp"
@@ -296,5 +308,5 @@
   "not_run": [
     "full upstream Frappe/ERPNext/HRMS application test suites"
   ],
-  "reason_not_run": "COD-016 GitHub run 30511020508 passed Quality, Security, locked-Bench Integration and Required checks at implementation commit 395692c023d8d4f17e537342f08eb79886ee4974. It verified 186 repository tests, 100 Frappe integration tests, repeated migration, the three locked upstream commits, CycloneDX 1.7 validation, Bandit, Gitleaks, pip-audit, npm audit, Grype and zero Error Log records on all isolated sites. The real local and CI security pipelines both passed all zero-tolerance gates; the CI SBOM contains 105 components and 105 dependency entries. Full upstream Frappe, ERPNext and HRMS application suites remain outside COD-016 scope. No Press or production migration is required because COD-016 adds no production DocType, table, Fixture, Workspace or patch and cannot execute scans from a Site."
+  "reason_not_run": "COD-017的195项仓库测试和本地类型检查已通过；新增的11项Frappe集成测试尚待首轮Pull Request锁定Bench流水线验证。上一已验证基线仍为COD-016 GitHub run 30511020508的100项集成测试与三个隔离站点零Error Log。生产Press站点未触碰。"
 }

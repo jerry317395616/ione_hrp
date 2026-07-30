@@ -15,15 +15,30 @@
   "sort_field": "modified",
   "sort_order": "DESC",
   "index_web_pages_for_search": 0,
-  "description": "基础设置领域的HRP系统设置对象；用于支撑业务闭环、权限、审计与对账。",
+  "description": "HRP全局安全与集成默认值；固定策略只能随受控代码发布变更。",
   "fields": [
     {
       "fieldname": "enabled",
       "label": "启用",
       "fieldtype": "Check",
       "default": "1",
-      "in_list_view": 1,
       "description": "启用"
+    },
+    {
+      "fieldname": "release_channel",
+      "label": "发布通道",
+      "fieldtype": "Data",
+      "default": "locked-develop",
+      "read_only": 1,
+      "description": "由锁定上游基线决定，不允许在站点内修改"
+    },
+    {
+      "fieldname": "configuration_version",
+      "label": "配置版本",
+      "fieldtype": "Int",
+      "default": "1",
+      "read_only": 1,
+      "description": "用于防止并发覆盖的单调版本"
     },
     {
       "fieldname": "default_company",
@@ -34,17 +49,32 @@
     },
     {
       "fieldname": "default_hospital",
-      "label": "默认医院",
-      "fieldtype": "Link",
-      "options": "HRP Hospital",
-      "description": "默认医院"
+      "label": "默认医院标识",
+      "fieldtype": "Data",
+      "description": "医院主数据启用前使用的受控标识"
     },
     {
-      "fieldname": "configuration_json",
-      "label": "扩展配置",
-      "fieldtype": "Code",
-      "options": "JSON",
-      "description": "扩展配置"
+      "fieldname": "strict_data_scope",
+      "label": "严格数据域",
+      "fieldtype": "Check",
+      "default": "1",
+      "read_only": 1,
+      "description": "固定启用，禁止在站点内弱化"
+    },
+    {
+      "fieldname": "require_human_confirmation_for_ai",
+      "label": "AI 操作需要人工确认",
+      "fieldtype": "Check",
+      "default": "1",
+      "read_only": 1,
+      "description": "固定启用，禁止在站点内弱化"
+    },
+    {
+      "fieldname": "integration_timeout_seconds",
+      "label": "集成超时（秒）",
+      "fieldtype": "Int",
+      "default": "30",
+      "description": "允许5至300秒"
     },
     {
       "fieldname": "remarks",
@@ -55,7 +85,7 @@
   ],
   "permissions": [
     {
-      "role": "HRP System Manager",
+      "role": "System Manager",
       "read": 1,
       "write": 1,
       "create": 1,
@@ -65,7 +95,7 @@
       "amend": 0
     },
     {
-      "role": "HRP Data Steward",
+      "role": "HRP System Manager",
       "read": 1,
       "write": 1,
       "create": 1,
@@ -81,10 +111,7 @@
     "app": "ione_hrp",
     "retention_years": 10,
     "data_classification": "内部",
-    "key_indexes": [
-      "company",
-      "organization_unit"
-    ],
+    "key_indexes": [],
     "standard_references": [],
     "domain_group": "Core",
     "module_package": "hrp_foundation"

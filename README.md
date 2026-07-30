@@ -30,6 +30,17 @@ scripts/                      初始化、安装、加模块、版本锁定和�
 AGENTS.md                      Codex 仓库级强制规则
 ```
 
+## HRP 系统设置
+
+`HRP System Settings` 是 `HRP Foundation` 拥有的全站 Single DocType。它以显式
+字段管理启用状态、默认法人/医院标识、集成超时和说明；发布通道、严格数据域及 AI
+人工确认固定为不可弱化的代码策略。系统管理角色可通过 `PLT-020` 读取，通过要求
+`Idempotency-Key` 与 `expected_version` 的 `PLT-021` 更新。
+
+写入使用 `tabSingles` 行锁、单调配置版本、加密幂等结果和仅字段名/版本的脱敏审计，
+没有任意 JSON 或动态代码入口。完整模型、权限、接口、迁移和回滚规则见
+`architecture/system_settings.md`。
+
 ## 非生产环境
 
 ```bash

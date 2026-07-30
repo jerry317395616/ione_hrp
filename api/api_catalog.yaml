@@ -1118,6 +1118,34 @@
   transaction_boundary: Read-only
   audit: Redacted site log
   version: v1
+- api_code: PLT-020
+  app: ione_hrp
+  domain_group: Platform
+  method: GET
+  path: /api/method/ione_hrp.api.v1.settings.get_system_settings
+  description: 查询HRP系统设置
+  request_schema: 无
+  response_schema: schema_version,doctype,enabled,release_channel,default_company,default_hospital,strict_data_scope,require_human_confirmation_for_ai,integration_timeout_seconds,remarks,configuration_version
+  required_role: System Manager or HRP System Manager
+  idempotency: Read-only deterministic
+  async: 'No'
+  transaction_boundary: Read-only
+  audit: Redacted field-state log
+  version: v1
+- api_code: PLT-021
+  app: ione_hrp
+  domain_group: Platform
+  method: POST
+  path: /api/method/ione_hrp.api.v1.settings.update_system_settings
+  description: 更新HRP系统设置
+  request_schema: enabled,default_company,default_hospital,integration_timeout_seconds,remarks,expected_version
+  response_schema: schema_version,doctype,enabled,release_channel,default_company,default_hospital,strict_data_scope,require_human_confirmation_for_ai,integration_timeout_seconds,remarks,configuration_version,changed,changed_fields,correlation_id,request_id,idempotency_replayed
+  required_role: System Manager or HRP System Manager
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Redacted field-name and version log
+  version: v1
 - api_code: POR-001
   app: ione_hrp
   domain_group: Portal

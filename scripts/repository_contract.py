@@ -41,6 +41,11 @@ from ione_hrp.common.software_supply_chain import (
 	SoftwareSupplyChainContractError,
 	load_software_supply_chain_policy,
 )
+from ione_hrp.common.system_settings import (
+	LOCKED_RELEASE_CHANNEL,
+	MAX_INTEGRATION_TIMEOUT_SECONDS,
+	MIN_INTEGRATION_TIMEOUT_SECONDS,
+)
 from ione_hrp.common.test_data_factory import (
 	TestDataFactoryContractError,
 	load_test_data_scenario_registry,
@@ -1749,6 +1754,223 @@ def validate_software_supply_chain_contract(root: Path) -> list[str]:
 	return violations
 
 
+def validate_system_settings_contract(root: Path) -> list[str]:
+	doctype_directory = root / APP_NAME / "hrp_foundation" / "doctype" / "hrp_system_settings"
+	doctype_json_path = doctype_directory / "hrp_system_settings.json"
+	controller_path = doctype_directory / "hrp_system_settings.py"
+	common_path = root / APP_NAME / "common" / "system_settings.py"
+	service_path = root / APP_NAME / "hrp_foundation" / "services" / "system_settings.py"
+	api_path = root / APP_NAME / "api" / "v1" / "settings.py"
+	setup_path = root / APP_NAME / "setup" / "settings.py"
+	install_path = root / APP_NAME / "setup" / "install.py"
+	workspace_path = root / APP_NAME / "hrp_foundation" / "workspace" / "hrp" / "hrp.json"
+	blueprint_path = root / "doctype_blueprints" / "hrp_foundation" / "hrp_system_settings.json"
+	documentation_path = root / "architecture" / "system_settings.md"
+	task_path = root / "backlog" / "COD-017.md"
+	change_path = root / "changes" / "COD-017.json"
+	test_paths = (
+		root / "tests" / "test_system_settings.py",
+		root / APP_NAME / "hrp_foundation" / "tests" / "test_system_settings.py",
+	)
+	catalog_paths = (
+		root / "api" / "api_catalog.csv",
+		root / "api" / "api_catalog.yaml",
+		root / "api" / "openapi.yaml",
+	)
+	required_paths = (
+		doctype_json_path,
+		controller_path,
+		common_path,
+		service_path,
+		api_path,
+		setup_path,
+		install_path,
+		workspace_path,
+		blueprint_path,
+		documentation_path,
+		task_path,
+		change_path,
+		*test_paths,
+		*catalog_paths,
+	)
+	missing = [str(path.relative_to(root)) for path in required_paths if not path.is_file()]
+	if missing:
+		return [f"missing system settings contract file: {path}" for path in missing]
+
+	violations: list[str] = []
+	doctype = json.loads(doctype_json_path.read_text(encoding="utf-8"))
+	if doctype.get("name") != "HRP System Settings" or doctype.get("issingle") != 1:
+		violations.append("HRP System Settings must remain a standard Single DocType")
+	if doctype.get("module") != "HRP Foundation":
+		violations.append("HRP System Settings must remain owned by HRP Foundation")
+	fields = {field["fieldname"]: field for field in doctype.get("fields", []) if field.get("fieldname")}
+	expected_business_fields = {
+		"enabled",
+		"release_channel",
+		"configuration_version",
+		"default_company",
+		"default_hospital",
+		"strict_data_scope",
+		"require_human_confirmation_for_ai",
+		"integration_timeout_seconds",
+		"remarks",
+	}
+	actual_business_fields = {
+		fieldname
+		for fieldname, field in fields.items()
+		if field.get("fieldtype") not in {"Section Break", "Column Break", "Tab Break"}
+	}
+	if actual_business_fields != expected_business_fields:
+		violations.append("HRP System Settings has an unexpected mutable schema")
+	if "configuration_json" in fields:
+		violations.append("HRP System Settings must not expose arbitrary JSON configuration")
+	for fieldname, default in (
+		("release_channel", LOCKED_RELEASE_CHANNEL),
+		("strict_data_scope", "1"),
+		("require_human_confirmation_for_ai", "1"),
+		("configuration_version", "1"),
+	):
+		field = fields.get(fieldname, {})
+		if field.get("read_only") != 1 or str(field.get("default")) != default:
+			violations.append(f"{fieldname} must be a locked read-only system setting")
+	timeout = fields.get("integration_timeout_seconds", {})
+	if timeout.get("fieldtype") != "Int" or str(timeout.get("default")) != "30":
+		violations.append("integration timeout must be an explicit integer defaulting to 30")
+	if fields.get("default_company", {}).get("options") != "Company":
+		violations.append("default company must use the standard Company Link")
+	if fields.get("default_hospital", {}).get("fieldtype") != "Data":
+		violations.append("default hospital must remain an identifier until COD-018")
+
+	permissions = doctype.get("permissions", [])
+	if {permission.get("role") for permission in permissions} != {
+		"System Manager",
+		"HRP System Manager",
+	}:
+		violations.append("system settings permissions must be limited to both system admin roles")
+	for permission in permissions:
+		if not all(permission.get(action) == 1 for action in ("read", "write", "create")):
+			violations.append("system settings admin roles must have read, write and create")
+		if permission.get("delete"):
+			violations.append("system settings must not grant delete permission")
+
+	common_text = common_path.read_text(encoding="utf-8")
+	for token in (
+		"class SystemSettingsUpdate",
+		"class SystemSettingsState",
+		"build_system_settings_update",
+		"build_system_settings_state",
+		"changed_mutable_fields",
+		f"MIN_INTEGRATION_TIMEOUT_SECONDS = {MIN_INTEGRATION_TIMEOUT_SECONDS}",
+		f"MAX_INTEGRATION_TIMEOUT_SECONDS = {MAX_INTEGRATION_TIMEOUT_SECONDS}",
+	):
+		if token not in common_text:
+			violations.append(f"system settings contract model is missing: {token}")
+
+	controller_text = controller_path.read_text(encoding="utf-8")
+	for token in (
+		"def lock_configuration",
+		"FOR UPDATE",
+		"configuration_version",
+		"OPERATION_NOT_ALLOWED",
+		"as_contract_state",
+	):
+		if token not in controller_text:
+			violations.append(f"system settings controller is missing: {token}")
+	service_text = service_path.read_text(encoding="utf-8")
+	for token in (
+		"class UpdateSystemSettingsService",
+		"DomainService",
+		"SYSTEM_SETTINGS_ADMIN_ROLES",
+		"changed_mutable_fields",
+		"system_settings_changed",
+		"changed_fields",
+	):
+		if token not in service_text:
+			violations.append(f"system settings service is missing: {token}")
+	for forbidden in ("frappe.db.commit", "configuration_json"):
+		if forbidden in service_text:
+			violations.append(f"system settings service contains forbidden behavior: {forbidden}")
+
+	api_text = api_path.read_text(encoding="utf-8")
+	if api_text.count('@frappe.whitelist(methods=["GET"])') != 1:
+		violations.append("PLT-020 system settings API must expose one GET method")
+	if api_text.count('@frappe.whitelist(methods=["POST"])') != 1:
+		violations.append("PLT-021 system settings API must expose one POST method")
+	if "allow_guest=True" in api_text:
+		violations.append("system settings APIs must never allow guests")
+	for token in (
+		"build_system_settings_update",
+		"idempotency_key=None",
+		"expected_version",
+	):
+		if token not in api_text:
+			violations.append(f"system settings API is missing: {token}")
+
+	setup_text = setup_path.read_text(encoding="utf-8")
+	install_text = install_path.read_text(encoding="utf-8")
+	if "def ensure_system_settings" not in setup_text:
+		violations.append("system settings migration repair is missing")
+	if install_text.count("ensure_system_settings()") != 2:
+		violations.append("system settings repair must run after install and migrate")
+
+	blueprint = json.loads(blueprint_path.read_text(encoding="utf-8"))
+	blueprint_fields = {field["fieldname"] for field in blueprint.get("fields", []) if field.get("fieldname")}
+	if blueprint_fields != expected_business_fields:
+		violations.append("system settings blueprint must match the runtime business fields")
+	workspace = json.loads(workspace_path.read_text(encoding="utf-8"))
+	if {role.get("role") for role in workspace.get("roles", [])} != {
+		"System Manager",
+		"HRP System Manager",
+	}:
+		violations.append("HRP workspace must expose settings to both system admin roles")
+	if not any(
+		link.get("link_to") == "HRP System Settings" and link.get("label") == "系统设置"
+		for link in workspace.get("links", [])
+	):
+		violations.append("HRP workspace must include the Chinese system settings link")
+
+	get_api = "/api/method/ione_hrp.api.v1.settings.get_system_settings"
+	post_api = "/api/method/ione_hrp.api.v1.settings.update_system_settings"
+	for catalog_path in catalog_paths:
+		catalog_text = catalog_path.read_text(encoding="utf-8")
+		for endpoint in (get_api, post_api):
+			if endpoint not in catalog_text:
+				violations.append(
+					f"{catalog_path.relative_to(root)} is missing system settings endpoint {endpoint}"
+				)
+	openapi = yaml.safe_load((root / "api" / "openapi.yaml").read_text(encoding="utf-8"))
+	get_contract = openapi.get("paths", {}).get(get_api, {})
+	get_operation = get_contract.get("get", {})
+	if set(get_contract) != {"get"}:
+		violations.append("PLT-020 system settings contract must be GET-only")
+	if get_operation.get("x-transaction-boundary") != "Read-only":
+		violations.append("PLT-020 system settings API must be read-only")
+	if get_operation.get("x-required-role") != "System Manager or HRP System Manager":
+		violations.append("PLT-020 system settings API has the wrong role contract")
+	post_contract = openapi.get("paths", {}).get(post_api, {})
+	post_operation = post_contract.get("post", {})
+	if set(post_contract) != {"post"}:
+		violations.append("PLT-021 system settings contract must be POST-only")
+	if post_operation.get("x-transaction-boundary") != "Single DB transaction":
+		violations.append("PLT-021 system settings API needs one transaction")
+	if post_operation.get("x-idempotency") != "Required for write":
+		violations.append("PLT-021 system settings API must require idempotency")
+	if post_operation.get("x-required-role") != "System Manager or HRP System Manager":
+		violations.append("PLT-021 system settings API has the wrong role contract")
+	request_schema = (
+		post_operation.get("requestBody", {}).get("content", {}).get("application/json", {}).get("schema", {})
+	)
+	if request_schema.get("additionalProperties") is not False:
+		violations.append("PLT-021 system settings request must reject unknown fields")
+	if set(request_schema.get("required", [])) != {
+		"enabled",
+		"integration_timeout_seconds",
+		"expected_version",
+	}:
+		violations.append("PLT-021 system settings request has the wrong required fields")
+	return violations
+
+
 def validate_environment_profiles(root: Path) -> list[str]:
 	profile_path = root / APP_NAME / "config" / "environment_profiles.json"
 	manager_path = root / "scripts" / "environment_manager.py"
@@ -2006,6 +2228,7 @@ def collect_violations(root: Path) -> list[str]:
 	violations.extend(validate_test_data_factory_contract(root))
 	violations.extend(validate_performance_baseline_contract(root))
 	violations.extend(validate_software_supply_chain_contract(root))
+	violations.extend(validate_system_settings_contract(root))
 	return violations
 
 
