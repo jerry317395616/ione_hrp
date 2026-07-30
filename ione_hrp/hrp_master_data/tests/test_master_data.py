@@ -5,6 +5,7 @@ from typing import cast
 from unittest.mock import patch
 
 import frappe
+from frappe.boot import build_default_workspace_map, get_sidebar_items
 from frappe.tests import IntegrationTestCase
 from frappe.tests.test_api import FrappeAPITestCase
 
@@ -50,6 +51,10 @@ SAVE_REQUEST_METHOD = "ione_hrp.api.v1.master_data.save_master_data_request"
 SUBMIT_REQUEST_METHOD = "ione_hrp.api.v1.master_data.submit_master_data_request"
 REVIEW_REQUEST_METHOD = "ione_hrp.api.v1.master_data.review_master_data_request"
 GET_REQUEST_METHOD = "ione_hrp.api.v1.master_data.get_master_data_request"
+UPSERT_HOSPITAL_METHOD = "ione_hrp.api.v1.organization.upsert_hospital"
+CREATE_VERSION_METHOD = "ione_hrp.api.v1.organization.create_organization_version"
+REPLACE_HIERARCHY_METHOD = "ione_hrp.api.v1.organization.replace_organization_hierarchy"
+PUBLISH_VERSION_METHOD = "ione_hrp.api.v1.organization.publish_organization_version"
 
 TEST_DOMAIN = "COD020-ITEM"
 TEST_ITEM = "COD020-ITEM-001"
@@ -366,6 +371,16 @@ class TestMasterDataGovernance(IntegrationTestCase):
 		self.assertEqual(ensure_master_data_governance()["schema_version"], 1)
 		workspace = frappe.get_doc("Workspace", "HRP Master Data")
 		self.assertEqual(workspace.title, "主数据中心")
+		sidebars = get_sidebar_items()
+		self.assertIn("hrp", sidebars)
+		self.assertEqual(sidebars["hrp"]["app"], "ione_hrp")
+		self.assertEqual(
+			[item["label"] for item in sidebars["hrp"]["items"][:3]],
+			["首页", "组织管理", "主数据中心"],
+		)
+		default_workspace_map = build_default_workspace_map(sidebars)
+		self.assertEqual(default_workspace_map["HRP Organization"], "HRP")
+		self.assertEqual(default_workspace_map["HRP Master Data Request"], "HRP")
 
 		direct = frappe.get_doc(
 			{
@@ -594,17 +609,19 @@ class TestMasterDataGovernance(IntegrationTestCase):
 		)
 		self.assertNotIn(sentinel, record.request_fingerprint)
 		self.assertEqual(get_master_data_request(request_name=draft["name"])["name"], draft["name"])
-		with (
-			patch(
-				"ione_hrp.hrp_master_data.services.master_data.frappe.get_roles", return_value=["HRP User"]
-			),
-			patch(
-				"ione_hrp.hrp_master_data.services.master_data.frappe.session.user",
-				"another@example.com",
-			),
-			self.assertRaises(IoneApplicationError) as denied,
-		):
-			get_master_data_request(request_name=draft["name"])
+		original_user = frappe.session.user
+		try:
+			frappe.session.user = "another@example.com"
+			with (
+				patch(
+					"ione_hrp.hrp_master_data.services.master_data.frappe.get_roles",
+					return_value=["HRP User"],
+				),
+				self.assertRaises(IoneApplicationError) as denied,
+			):
+				get_master_data_request(request_name=draft["name"])
+		finally:
+			frappe.session.user = original_user
 		self.assertEqual(denied.exception.code, "IONE-CORE-0002")
 
 
@@ -617,10 +634,11 @@ class TestMasterDataGovernanceAPI(FrappeAPITestCase):
 	def setUp(self) -> None:
 		super().setUp()
 		reset_master_data_state()
+		frappe.local.db.commit()
 		self.TEST_CLIENT.set_cookie(key="sid", value=self.sid)
 
-	def test_http_domain_draft_submit_and_query(self) -> None:
-		domain_response = self.post(
+	def _upsert_domain_over_http(self, *, suffix: str) -> dict[str, object]:
+		response = self.post(
 			self.method(UPSERT_DOMAIN_METHOD),
 			{
 				"code": TEST_DOMAIN,
@@ -628,12 +646,79 @@ class TestMasterDataGovernanceAPI(FrappeAPITestCase):
 				"target_doctype": "Item",
 				"expected_revision": 0,
 			},
-			headers={"Idempotency-Key": "COD-020-http-domain"},
+			headers={"Idempotency-Key": f"COD-020-http-domain-{suffix}"},
 		)
-		self.assertEqual(domain_response.status_code, 200, domain_response.get_data(as_text=True))
-		version = create_version(suffix="cod020-http")
-		organization_unit = unit_name(cast(str, version["name"]), "OUTPATIENT")
-		draft_response = self.post(
+		self.assertEqual(response.status_code, 200, response.get_data(as_text=True))
+		return cast(dict[str, object], response.get_json()["message"])
+
+	def _create_published_version_over_http(self, *, suffix: str) -> dict[str, object]:
+		hospital_response = self.post(
+			self.method(UPSERT_HOSPITAL_METHOD),
+			{
+				"code": TEST_HOSPITAL,
+				"company": TEST_COMPANY,
+				"display_name": "COD-020 HTTP测试医院",
+				"expected_revision": 0,
+			},
+			headers={"Idempotency-Key": f"COD-020-http-hospital-{suffix}"},
+		)
+		self.assertEqual(
+			hospital_response.status_code,
+			200,
+			hospital_response.get_data(as_text=True),
+		)
+		version_response = self.post(
+			self.method(CREATE_VERSION_METHOD),
+			{
+				"hospital": TEST_HOSPITAL,
+				"effective_from": "2026-01-01",
+				"version_label": "COD-020 HTTP组织版本",
+			},
+			headers={"Idempotency-Key": f"COD-020-http-version-{suffix}"},
+		)
+		self.assertEqual(
+			version_response.status_code,
+			200,
+			version_response.get_data(as_text=True),
+		)
+		version = version_response.get_json()["message"]
+		hierarchy_response = self.post(
+			self.method(REPLACE_HIERARCHY_METHOD),
+			{
+				"organization_version": version["name"],
+				"expected_revision": version["revision"],
+				"nodes": json.dumps(hierarchy_nodes(), ensure_ascii=False),
+			},
+			headers={"Idempotency-Key": f"COD-020-http-hierarchy-{suffix}"},
+		)
+		self.assertEqual(
+			hierarchy_response.status_code,
+			200,
+			hierarchy_response.get_data(as_text=True),
+		)
+		replaced = hierarchy_response.get_json()["message"]
+		publish_response = self.post(
+			self.method(PUBLISH_VERSION_METHOD),
+			{
+				"organization_version": version["name"],
+				"expected_revision": replaced["revision"],
+			},
+			headers={"Idempotency-Key": f"COD-020-http-publish-{suffix}"},
+		)
+		self.assertEqual(
+			publish_response.status_code,
+			200,
+			publish_response.get_data(as_text=True),
+		)
+		return cast(dict[str, object], publish_response.get_json()["message"])
+
+	def _save_request_over_http(
+		self,
+		*,
+		organization_unit: str,
+		suffix: str,
+	) -> dict[str, object]:
+		response = self.post(
 			self.method(SAVE_REQUEST_METHOD),
 			{
 				"master_data_domain": TEST_DOMAIN,
@@ -649,17 +734,37 @@ class TestMasterDataGovernanceAPI(FrappeAPITestCase):
 					ensure_ascii=False,
 				),
 			},
-			headers={"Idempotency-Key": "COD-020-http-draft"},
+			headers={"Idempotency-Key": f"COD-020-http-draft-{suffix}"},
 		)
-		self.assertEqual(draft_response.status_code, 200, draft_response.get_data(as_text=True))
-		draft = draft_response.get_json()["message"]
-		submit_response = self.post(
+		self.assertEqual(response.status_code, 200, response.get_data(as_text=True))
+		return cast(dict[str, object], response.get_json()["message"])
+
+	def _submit_request_over_http(
+		self,
+		*,
+		draft: dict[str, object],
+		suffix: str,
+	) -> dict[str, object]:
+		response = self.post(
 			self.method(SUBMIT_REQUEST_METHOD),
-			{"request_name": draft["name"], "expected_revision": draft["revision"]},
-			headers={"Idempotency-Key": "COD-020-http-submit"},
+			{
+				"request_name": draft["name"],
+				"expected_revision": draft["revision"],
+			},
+			headers={"Idempotency-Key": f"COD-020-http-submit-{suffix}"},
 		)
-		self.assertEqual(submit_response.status_code, 200, submit_response.get_data(as_text=True))
-		submitted = submit_response.get_json()["message"]
+		self.assertEqual(response.status_code, 200, response.get_data(as_text=True))
+		return cast(dict[str, object], response.get_json()["message"])
+
+	def test_http_domain_draft_submit_and_query(self) -> None:
+		self._upsert_domain_over_http(suffix="lifecycle")
+		version = self._create_published_version_over_http(suffix="lifecycle")
+		organization_unit = f"{version['name']}-OUTPATIENT"
+		draft = self._save_request_over_http(
+			organization_unit=organization_unit,
+			suffix="lifecycle",
+		)
+		submitted = self._submit_request_over_http(draft=draft, suffix="lifecycle")
 		query_response = self.get(
 			self.method(GET_REQUEST_METHOD),
 			{"request_name": draft["name"]},
@@ -680,19 +785,13 @@ class TestMasterDataGovernanceAPI(FrappeAPITestCase):
 		)
 		self.assertEqual(response.status_code, 400, response.get_data(as_text=True))
 		self.assertEqual(response.headers["X-Ione-Error-Code"], "IONE-CORE-0003")
-		create_domain(suffix="http-review")
-		_, organization_unit = create_context(suffix="http-review")
-		draft = save_master_data_request(
-			request_command(organization_unit),
-			idempotency_key="COD-020-http-review-draft",
+		self._upsert_domain_over_http(suffix="review")
+		version = self._create_published_version_over_http(suffix="review")
+		draft = self._save_request_over_http(
+			organization_unit=f"{version['name']}-OUTPATIENT",
+			suffix="review",
 		)
-		submitted = submit_master_data_request(
-			build_master_data_request_submit(
-				request_name=draft["name"],
-				expected_revision=draft["revision"],
-			),
-			idempotency_key="COD-020-http-review-submit",
-		)
+		submitted = self._submit_request_over_http(draft=draft, suffix="review")
 		review_response = self.post(
 			self.method(REVIEW_REQUEST_METHOD),
 			{
