@@ -23,6 +23,7 @@
 		"doctype_blueprints/hrp_foundation/hrp_system_settings.json",
 		"doctype_blueprints/hrp_organization/**",
 		"ione_hrp/**",
+		"scripts/ci_integration.sh",
 		"scripts/repository_contract.py",
 		"tests/**"
 	],
