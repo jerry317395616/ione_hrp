@@ -34,7 +34,7 @@ def get_software_supply_chain_contract_status() -> dict[str, Any]:
 			policy_sha256=policy.sha256,
 			tool_count=len(policy.tools),
 			exception_count=len(policy.exceptions),
-			scan_available_from_site=False,
+			external_execution_only=True,
 		)
 		return result
 

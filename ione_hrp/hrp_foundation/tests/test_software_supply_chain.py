@@ -91,7 +91,7 @@ class TestSoftwareSupplyChainContract(IntegrationTestCase):
 		self.assertEqual(audit_payload["policy_sha256"], contract["sha256"])
 		self.assertEqual(audit_payload["tool_count"], len(contract["tools"]))
 		self.assertEqual(audit_payload["exception_count"], contract["exception_count"])
-		self.assertFalse(audit_payload["scan_available_from_site"])
+		self.assertTrue(audit_payload["external_execution_only"])
 		serialized = json.dumps(audit_payload, ensure_ascii=False)
 		self.assertNotIn(frappe.local.site, serialized)
 		self.assertNotIn("Administrator", serialized)

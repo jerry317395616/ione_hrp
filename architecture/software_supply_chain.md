@@ -78,7 +78,7 @@ GET /api/method/ione_hrp.api.v1.security.get_software_supply_chain_contract
 - `production_execution_enabled=false`。
 
 权限在读取策略前校验。重复读取不创建 Version、Comment、Error Log 或幂等记录。
-审计仅记录策略 SHA、工具数、例外数和站点扫描禁用标志。
+审计仅记录策略 SHA、工具数、例外数和仅限外部执行标志。
 
 ## 本地运行
 
