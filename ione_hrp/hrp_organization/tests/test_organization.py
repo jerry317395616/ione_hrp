@@ -49,9 +49,9 @@ ORGANIZATION_SERVICE_NAMES = (
 )
 
 
-def company_name() -> str:
+def ensure_company_fixture() -> None:
 	if frappe.db.exists("Company", TEST_COMPANY):
-		return TEST_COMPANY
+		return
 	if not frappe.db.exists("Warehouse Type", TEST_WAREHOUSE_TYPE):
 		frappe.get_doc(
 			{
@@ -70,7 +70,13 @@ def company_name() -> str:
 		}
 	)
 	company.insert(ignore_permissions=True)
-	return cast(str, company.name)
+	frappe.local.db.commit()
+
+
+def company_name() -> str:
+	if not frappe.db.exists("Company", TEST_COMPANY):
+		raise RuntimeError("COD-018 company fixture is not initialized")
+	return TEST_COMPANY
 
 
 def reset_organization_test_state() -> None:
@@ -251,6 +257,11 @@ def create_hospital_and_version(
 
 
 class TestOrganizationHierarchy(IntegrationTestCase):
+	@classmethod
+	def setUpClass(cls) -> None:
+		super().setUpClass()
+		ensure_company_fixture()
+
 	def setUp(self) -> None:
 		super().setUp()
 		reset_organization_test_state()
@@ -578,6 +589,11 @@ class TestOrganizationHierarchy(IntegrationTestCase):
 
 
 class TestOrganizationHierarchyAPI(FrappeAPITestCase):
+	@classmethod
+	def setUpClass(cls) -> None:
+		super().setUpClass()
+		ensure_company_fixture()
+
 	def setUp(self) -> None:
 		super().setUp()
 		reset_organization_test_state()
