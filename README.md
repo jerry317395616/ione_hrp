@@ -68,6 +68,19 @@ ERPNext 标准 `Department`/`Cost Center`。`CORE-014` 负责幂等修订并校�
 必须继续调用对应标准控制器。完整规则见 `architecture/master_data_change_requests.md` 与
 `architecture/adr/ADR-0014-governed-master-data-change-proposals.md`。
 
+## 外部编码映射
+
+`HRP External Code Mapping` 在外部系统编码与受控 ERPNext 标准主数据之间提供一对一双向解析。
+外部编码保留前导零和大小写，映射按法人、医院、可选组织单元、主数据域、外部系统和显式业务日期
+确定。源身份和目标身份分别生成版本化 SHA-256 键并由数据库唯一约束保护，避免 MariaDB 长复合
+索引限制和并发重复。
+
+`CORE-021` 是唯一写入口，要求治理角色、`Idempotency-Key`、行锁和乐观修订；`CORE-004` 与
+`CORE-022` 分别负责入站和出站只读解析。映射 DocType 在 Desk 中只读，标准 `Department`、
+`Cost Center`、`Item`、`Supplier`、`Warehouse` 仍完全由 ERPNext 控制器维护。完整模型、权限、
+审计、迁移和回滚规则见 `architecture/external_code_mapping.md` 与
+`architecture/adr/ADR-0015-service-owned-bidirectional-external-code-mapping.md`。
+
 ## 非生产环境
 
 ```bash

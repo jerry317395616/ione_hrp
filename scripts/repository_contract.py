@@ -27,6 +27,10 @@ from ione_hrp.common.error_catalog import (
 	load_error_catalog,
 	validate_error_translations,
 )
+from ione_hrp.common.external_code_mapping import (
+	EXTERNAL_CODE_MAPPING_DOCTYPE,
+	EXTERNAL_CODE_MAPPING_SCHEMA_VERSION,
+)
 from ione_hrp.common.fixture_policy import (
 	FixturePolicyError,
 	inspect_fixture_repository,
@@ -2673,10 +2677,19 @@ def validate_master_data_governance_contract(root: Path) -> list[str]:
 			violations.append(f"master data permission hook is missing: {token}")
 
 	api_text = api_path.read_text(encoding="utf-8")
-	if api_text.count('@frappe.whitelist(methods=["POST"])') != 4:
-		violations.append("COD-020 API must expose exactly four POST methods")
-	if api_text.count('@frappe.whitelist(methods=["GET"])') != 1:
-		violations.append("COD-020 API must expose exactly one GET method")
+	for method_name in (
+		"upsert_master_data_domain",
+		"save_master_data_request",
+		"submit_master_data_request",
+		"review_master_data_request",
+		"get_master_data_request",
+	):
+		if f"def {method_name}(" not in api_text:
+			violations.append(f"COD-020 API is missing method: {method_name}")
+	if api_text.count('@frappe.whitelist(methods=["POST"])') < 4:
+		violations.append("COD-020 API must retain at least four POST methods")
+	if api_text.count('@frappe.whitelist(methods=["GET"])') < 1:
+		violations.append("COD-020 API must retain at least one GET method")
 	if "allow_guest=True" in api_text:
 		violations.append("master data APIs must never allow guests")
 
@@ -2764,6 +2777,301 @@ def validate_master_data_governance_contract(root: Path) -> list[str]:
 	):
 		if token not in integration_text:
 			violations.append(f"master data integration tests are missing: {token}")
+	return violations
+
+
+def validate_external_code_mapping_contract(root: Path) -> list[str]:
+	module_root = root / APP_NAME / "hrp_master_data"
+	common_path = root / APP_NAME / "common" / "external_code_mapping.py"
+	service_path = module_root / "services" / "external_code_mapping.py"
+	permission_path = module_root / "permissions.py"
+	api_path = root / APP_NAME / "api" / "v1" / "master_data.py"
+	setup_path = root / APP_NAME / "setup" / "master_data.py"
+	hooks_path = root / APP_NAME / "hooks.py"
+	runtime_path = module_root / "doctype" / "hrp_external_code_mapping" / "hrp_external_code_mapping.json"
+	controller_path = runtime_path.with_suffix(".py")
+	blueprint_path = root / "doctype_blueprints" / "hrp_master_data" / "hrp_external_code_mapping.json"
+	workspace_path = module_root / "workspace" / "hrp_master_data" / "hrp_master_data.json"
+	root_workspace_path = root / APP_NAME / "hrp_foundation" / "workspace" / "hrp" / "hrp.json"
+	documentation_path = root / "architecture" / "external_code_mapping.md"
+	adr_path = root / "architecture" / "adr" / "ADR-0015-service-owned-bidirectional-external-code-mapping.md"
+	task_path = root / "backlog" / "COD-021.md"
+	change_path = root / "changes" / "COD-021.json"
+	pure_test_path = root / "tests" / "test_external_code_mapping.py"
+	integration_test_path = module_root / "tests" / "test_external_code_mapping.py"
+	catalog_paths = (
+		root / "api" / "api_catalog.csv",
+		root / "api" / "api_catalog.yaml",
+		root / "api" / "openapi.yaml",
+	)
+	required_paths = (
+		common_path,
+		service_path,
+		permission_path,
+		api_path,
+		setup_path,
+		hooks_path,
+		runtime_path,
+		controller_path,
+		blueprint_path,
+		workspace_path,
+		root_workspace_path,
+		documentation_path,
+		adr_path,
+		task_path,
+		change_path,
+		pure_test_path,
+		integration_test_path,
+		*catalog_paths,
+	)
+	missing = [str(path.relative_to(root)) for path in required_paths if not path.is_file()]
+	if missing:
+		return [f"missing external code mapping contract file: {path}" for path in missing]
+
+	violations: list[str] = []
+	expected_fields = {
+		"master_data_domain",
+		"target_doctype",
+		"internal_name",
+		"company",
+		"hospital",
+		"organization_unit",
+		"scope_key",
+		"source_key",
+		"target_key",
+		"external_system",
+		"external_code",
+		"external_label",
+		"enabled",
+		"valid_from",
+		"valid_to",
+		"revision",
+		"remarks",
+	}
+	runtime_text = runtime_path.read_text(encoding="utf-8")
+	blueprint_text = blueprint_path.read_text(encoding="utf-8")
+	runtime = json.loads(runtime_text)
+	blueprint = json.loads(blueprint_text)
+	if "?" in blueprint_text:
+		violations.append("external code mapping blueprint contains replacement question marks")
+	for metadata, source in ((runtime, "runtime"), (blueprint, "blueprint")):
+		if metadata.get("name") != EXTERNAL_CODE_MAPPING_DOCTYPE:
+			violations.append(f"external code mapping {source} has the wrong DocType name")
+		if metadata.get("module") != "HRP Master Data":
+			violations.append(f"external code mapping {source} has the wrong module")
+		fields = {field.get("fieldname") for field in metadata.get("fields", []) if field.get("fieldname")}
+		if fields != expected_fields:
+			violations.append(f"external code mapping {source} fields must match the contract")
+	if runtime.get("autoname") != "hash" or runtime.get("allow_rename"):
+		violations.append("external code mapping must have a stable hash name")
+	if runtime.get("is_submittable"):
+		violations.append("external code mapping must not be submittable")
+	expected_roles = {
+		"System Manager",
+		"HRP System Manager",
+		"HRP Data Steward",
+		"HRP Integration User",
+	}
+	for metadata, source in ((runtime, "runtime"), (blueprint, "blueprint")):
+		permissions = metadata.get("permissions", [])
+		if {permission.get("role") for permission in permissions} != expected_roles:
+			violations.append(f"external code mapping {source} has the wrong roles")
+		for permission in permissions:
+			if permission.get("read") != 1 or any(
+				permission.get(action)
+				for action in ("write", "create", "delete", "submit", "cancel", "amend")
+			):
+				violations.append(f"external code mapping {source} must remain read-only")
+	for fieldname in ("scope_key", "source_key", "target_key"):
+		field = next(
+			(item for item in runtime.get("fields", []) if item.get("fieldname") == fieldname),
+			{},
+		)
+		if not field.get("hidden") or not field.get("read_only") or not field.get("reqd"):
+			violations.append(f"external code mapping {fieldname} must be hidden and read-only")
+
+	common_text = common_path.read_text(encoding="utf-8")
+	for token in (
+		f"EXTERNAL_CODE_MAPPING_SCHEMA_VERSION = {EXTERNAL_CODE_MAPPING_SCHEMA_VERSION}",
+		"class ExternalCodeMappingUpsert",
+		"class ExternalCodeMappingResolve",
+		"class InternalCodeMappingResolve",
+		"def source_key_for",
+		"def target_key_for",
+		"ione-hrp-external-code-mapping-v1",
+		"effective_on",
+	):
+		if token not in common_text:
+			violations.append(f"external code mapping public contract is missing: {token}")
+
+	controller_text = controller_path.read_text(encoding="utf-8")
+	for token in (
+		"external_code_mapping_service_write",
+		"source_key_for",
+		"target_key_for",
+		"lock_revision",
+		"as_public_dict",
+		"OPERATION_NOT_ALLOWED",
+	):
+		if token not in controller_text:
+			violations.append(f"external code mapping controller is missing: {token}")
+	if "frappe.db.commit" in controller_text:
+		violations.append("external code mapping controller must not commit transactions")
+
+	service_text = service_path.read_text(encoding="utf-8")
+	for token in (
+		"class UpsertExternalCodeMappingService",
+		"class ResolveExternalCodeMappingService",
+		"class ResolveInternalCodeMappingService",
+		"EXTERNAL_CODE_MAPPING_WRITE_ROLES",
+		"EXTERNAL_CODE_MAPPING_READ_ROLES",
+		"FOR UPDATE",
+		"_assert_hospital_scope",
+		"_assert_internal_target",
+		"_conflicting_mapping",
+		'key_field not in {"source_key", "target_key"}',
+	):
+		if token not in service_text:
+			violations.append(f"external code mapping service is missing: {token}")
+	if "frappe.db.commit" in service_text:
+		violations.append("external code mapping services must not commit transactions")
+	for forbidden in (
+		'frappe.get_doc("Department"',
+		'frappe.get_doc("Cost Center"',
+		'frappe.get_doc("Item"',
+		'frappe.get_doc("Supplier"',
+		'frappe.get_doc("Warehouse"',
+		"frappe.db.set_value",
+	):
+		if forbidden in service_text:
+			violations.append(f"external code mapping must not mutate a standard record: {forbidden}")
+
+	permission_text = permission_path.read_text(encoding="utf-8")
+	hooks_text = hooks_path.read_text(encoding="utf-8")
+	for token in (
+		"def external_code_mapping_query",
+		"def can_read_external_code_mapping",
+		"EXTERNAL_CODE_MAPPING_READ_ROLES",
+	):
+		if token not in permission_text:
+			violations.append(f"external code mapping permission contract is missing: {token}")
+	for token in (
+		'"HRP External Code Mapping": "ione_hrp.hrp_master_data.permissions.external_code_mapping_query"',
+		'"HRP External Code Mapping": "ione_hrp.hrp_master_data.permissions.can_read_external_code_mapping"',
+	):
+		if token not in hooks_text:
+			violations.append(f"external code mapping permission hook is missing: {token}")
+
+	api_text = api_path.read_text(encoding="utf-8")
+	for method_name in (
+		"upsert_external_code_mapping",
+		"resolve_external_code_mapping",
+		"resolve_internal_code_mapping",
+	):
+		if f"def {method_name}(" not in api_text:
+			violations.append(f"external code mapping API is missing method: {method_name}")
+	if "allow_guest=True" in api_text:
+		violations.append("external code mapping APIs must never allow guests")
+
+	setup_text = setup_path.read_text(encoding="utf-8")
+	for token in (
+		"uniq_hrp_external_code_source",
+		"uniq_hrp_external_code_target",
+		"idx_hrp_external_code_effectivity",
+	):
+		if token not in setup_text:
+			violations.append(f"external code mapping migration is missing: {token}")
+
+	workspace = json.loads(workspace_path.read_text(encoding="utf-8"))
+	root_workspace = json.loads(root_workspace_path.read_text(encoding="utf-8"))
+	if EXTERNAL_CODE_MAPPING_DOCTYPE not in {link.get("link_to") for link in workspace.get("links", [])}:
+		violations.append("master data workspace must expose external code mappings")
+	if EXTERNAL_CODE_MAPPING_DOCTYPE not in {
+		item.get("link_to") for item in root_workspace.get("sidebar_items", [])
+	}:
+		violations.append("HRP sidebar must expose external code mappings")
+
+	with (root / "design" / "doctype_catalog.csv").open(
+		encoding="utf-8-sig",
+		newline="",
+	) as stream:
+		doctype_rows = [
+			row for row in csv.DictReader(stream) if row.get("doctype") == EXTERNAL_CODE_MAPPING_DOCTYPE
+		]
+	if len(doctype_rows) != 1 or doctype_rows[0].get("kind") != "Master":
+		violations.append("external code mapping DocType catalog row is invalid")
+	with (root / "design" / "field_catalog.csv").open(
+		encoding="utf-8-sig",
+		newline="",
+	) as stream:
+		field_rows = [
+			row for row in csv.DictReader(stream) if row.get("doctype") == EXTERNAL_CODE_MAPPING_DOCTYPE
+		]
+	if {row.get("fieldname") for row in field_rows} != expected_fields:
+		violations.append("external code mapping field catalog must match runtime metadata")
+	for key_field in ("source_key", "target_key"):
+		row = next((item for item in field_rows if item.get("fieldname") == key_field), {})
+		if row.get("unique") != "1" or row.get("read_only") != "1":
+			violations.append(f"external code mapping {key_field} catalog contract is invalid")
+
+	endpoints = {
+		"/api/method/ione_hrp.api.v1.master_data.resolve_external_code_mapping": "get",
+		"/api/method/ione_hrp.api.v1.master_data.upsert_external_code_mapping": "post",
+		"/api/method/ione_hrp.api.v1.master_data.resolve_internal_code_mapping": "get",
+	}
+	for catalog_path in catalog_paths:
+		catalog_text = catalog_path.read_text(encoding="utf-8")
+		for endpoint in endpoints:
+			if endpoint not in catalog_text:
+				violations.append(
+					f"{catalog_path.relative_to(root)} is missing external mapping endpoint {endpoint}"
+				)
+	openapi = yaml.safe_load((root / "api" / "openapi.yaml").read_text(encoding="utf-8"))
+	write_role = "System Manager or HRP System Manager or HRP Data Steward"
+	read_role = f"{write_role} or HRP Integration User"
+	for endpoint, method in endpoints.items():
+		path_contract = openapi.get("paths", {}).get(endpoint, {})
+		operation = path_contract.get(method, {})
+		if set(path_contract) != {method}:
+			violations.append(f"{endpoint} must expose only {method.upper()}")
+		expected_role = write_role if method == "post" else read_role
+		if operation.get("x-required-role") != expected_role:
+			violations.append(f"{endpoint} has the wrong external mapping role contract")
+		if method == "post":
+			if operation.get("x-transaction-boundary") != "Single DB transaction":
+				violations.append(f"{endpoint} must use one database transaction")
+			if operation.get("x-idempotency") != "Required for write":
+				violations.append(f"{endpoint} must require idempotency")
+			if not any(
+				parameter.get("$ref") == "#/components/parameters/IdempotencyKey"
+				for parameter in operation.get("parameters", [])
+			):
+				violations.append(f"{endpoint} must declare Idempotency-Key")
+		else:
+			if operation.get("x-transaction-boundary") != "Read-only":
+				violations.append(f"{endpoint} must remain read-only")
+			if operation.get("x-idempotency") != "Read-only deterministic":
+				violations.append(f"{endpoint} must remain deterministic")
+
+	pure_test_text = pure_test_path.read_text(encoding="utf-8")
+	integration_test_text = integration_test_path.read_text(encoding="utf-8")
+	for token in (
+		"test_source_and_target_keys_are_deterministic_and_directional",
+		"test_bidirectional_resolvers_require_explicit_effective_date",
+	):
+		if token not in pure_test_text:
+			violations.append(f"external code mapping pure tests are missing: {token}")
+	for token in (
+		"test_metadata_migration_workspace_and_service_only_write",
+		"test_upsert_is_idempotent_revisioned_and_identity_is_immutable",
+		"test_uniqueness_and_bidirectional_effectivity",
+		"test_scope_target_and_role_checks_precede_idempotency",
+		"test_permissions_and_audit_are_redacted",
+		"test_http_write_requires_idempotency_header",
+		"test_http_upsert_and_bidirectional_queries",
+	):
+		if token not in integration_test_text:
+			violations.append(f"external code mapping integration tests are missing: {token}")
 	return violations
 
 
@@ -3028,6 +3336,7 @@ def collect_violations(root: Path) -> list[str]:
 	violations.extend(validate_organization_hierarchy_contract(root))
 	violations.extend(validate_organization_mapping_contract(root))
 	violations.extend(validate_master_data_governance_contract(root))
+	violations.extend(validate_external_code_mapping_contract(root))
 	return violations
 
 

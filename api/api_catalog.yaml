@@ -44,15 +44,15 @@
   app: ione_hrp
   domain_group: Core
   method: GET
-  path: /api/method/ione_hrp.api.v1.core.master.get_mapping
-  description: 查询外部编码映射
-  request_schema: domain,external_system,external_code
-  response_schema: internal_doctype,internal_name
-  required_role: HRP Integration User
-  idempotency: Not applicable
+  path: /api/method/ione_hrp.api.v1.master_data.resolve_external_code_mapping
+  description: 按外部编码解析内部主数据
+  request_schema: master_data_domain,company,hospital,organization_unit,external_system,external_code,effective_on
+  response_schema: schema_version,name,master_data_domain,target_doctype,internal_name,company,hospital,organization_unit,external_system,external_code,external_label,enabled,valid_from,valid_to,revision,remarks,correlation_id,request_id,idempotency_replayed
+  required_role: System Manager or HRP System Manager or HRP Data Steward or HRP Integration User
+  idempotency: Read-only deterministic
   async: 'No'
-  transaction_boundary: Single DB transaction
-  audit: Always
+  transaction_boundary: Read-only
+  audit: Redacted source digest and revision log
   version: v1
 - api_code: CORE-005
   app: ione_hrp
@@ -277,6 +277,34 @@
   async: 'No'
   transaction_boundary: Read-only
   audit: Redacted status change-count and revision log
+  version: v1
+- api_code: CORE-021
+  app: ione_hrp
+  domain_group: Core
+  method: POST
+  path: /api/method/ione_hrp.api.v1.master_data.upsert_external_code_mapping
+  description: 创建或修订外部编码映射
+  request_schema: master_data_domain,company,hospital,organization_unit,external_system,external_code,external_label,internal_name,enabled,valid_from,valid_to,expected_revision,mapping_name,remarks
+  response_schema: schema_version,name,master_data_domain,target_doctype,internal_name,company,hospital,organization_unit,external_system,external_code,external_label,enabled,valid_from,valid_to,revision,remarks,changed,changed_fields,correlation_id,request_id,idempotency_replayed
+  required_role: System Manager or HRP System Manager or HRP Data Steward
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Redacted source and target digests changed-fields and revision log
+  version: v1
+- api_code: CORE-022
+  app: ione_hrp
+  domain_group: Core
+  method: GET
+  path: /api/method/ione_hrp.api.v1.master_data.resolve_internal_code_mapping
+  description: 按内部主数据解析外部编码
+  request_schema: master_data_domain,company,hospital,organization_unit,external_system,internal_name,effective_on
+  response_schema: schema_version,name,master_data_domain,target_doctype,internal_name,company,hospital,organization_unit,external_system,external_code,external_label,enabled,valid_from,valid_to,revision,remarks,correlation_id,request_id,idempotency_replayed
+  required_role: System Manager or HRP System Manager or HRP Data Steward or HRP Integration User
+  idempotency: Read-only deterministic
+  async: 'No'
+  transaction_boundary: Read-only
+  audit: Redacted target digest and revision log
   version: v1
 - api_code: FIN-001
   app: ione_hrp
