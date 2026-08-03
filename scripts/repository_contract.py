@@ -33,6 +33,13 @@ from ione_hrp.common.fixture_policy import (
 	load_fixture_policy,
 )
 from ione_hrp.common.immutable_ledger import BASE_LEDGER_FIELDS
+from ione_hrp.common.master_data import (
+	MASTER_DATA_CHANGE_ITEM_DOCTYPE,
+	MASTER_DATA_DOMAIN_DOCTYPE,
+	MASTER_DATA_REQUEST_DOCTYPE,
+	MASTER_DATA_SCHEMA_VERSION,
+	MASTER_DATA_TARGET_POLICIES,
+)
 from ione_hrp.common.organization import (
 	MAX_HIERARCHY_NODES,
 	ORGANIZATION_SCHEMA_VERSION,
@@ -2449,6 +2456,317 @@ def validate_organization_mapping_contract(root: Path) -> list[str]:
 	return violations
 
 
+def validate_master_data_governance_contract(root: Path) -> list[str]:
+	module_root = root / APP_NAME / "hrp_master_data"
+	common_path = root / APP_NAME / "common" / "master_data.py"
+	service_path = module_root / "services" / "master_data.py"
+	permission_path = module_root / "permissions.py"
+	api_path = root / APP_NAME / "api" / "v1" / "master_data.py"
+	setup_path = root / APP_NAME / "setup" / "master_data.py"
+	workspace_path = module_root / "workspace" / "hrp_master_data" / "hrp_master_data.json"
+	documentation_path = root / "architecture" / "master_data_change_requests.md"
+	adr_path = root / "architecture" / "adr" / "ADR-0014-governed-master-data-change-proposals.md"
+	task_path = root / "backlog" / "COD-020.md"
+	change_path = root / "changes" / "COD-020.json"
+	pure_test_path = root / "tests" / "test_master_data.py"
+	integration_test_path = module_root / "tests" / "test_master_data.py"
+	doctypes = {
+		MASTER_DATA_DOMAIN_DOCTYPE: "hrp_master_data_domain",
+		MASTER_DATA_REQUEST_DOCTYPE: "hrp_master_data_request",
+		MASTER_DATA_CHANGE_ITEM_DOCTYPE: "hrp_master_data_change_item",
+	}
+	runtime_paths = {
+		name: module_root / "doctype" / directory / f"{directory}.json"
+		for name, directory in doctypes.items()
+	}
+	controller_paths = {
+		name: module_root / "doctype" / directory / f"{directory}.py" for name, directory in doctypes.items()
+	}
+	blueprint_paths = {
+		name: root / "doctype_blueprints" / "hrp_master_data" / f"{directory}.json"
+		for name, directory in doctypes.items()
+	}
+	catalog_paths = (
+		root / "api" / "api_catalog.csv",
+		root / "api" / "api_catalog.yaml",
+		root / "api" / "openapi.yaml",
+	)
+	required_paths = (
+		common_path,
+		service_path,
+		permission_path,
+		api_path,
+		setup_path,
+		workspace_path,
+		documentation_path,
+		adr_path,
+		task_path,
+		change_path,
+		pure_test_path,
+		integration_test_path,
+		*runtime_paths.values(),
+		*controller_paths.values(),
+		*blueprint_paths.values(),
+		*catalog_paths,
+	)
+	missing = [str(path.relative_to(root)) for path in required_paths if not path.is_file()]
+	if missing:
+		return [f"missing master data governance contract file: {path}" for path in missing]
+
+	violations: list[str] = []
+	expected_fields = {
+		MASTER_DATA_DOMAIN_DOCTYPE: {
+			"code",
+			"display_name",
+			"target_doctype",
+			"enabled",
+			"allow_create",
+			"allow_update",
+			"allow_disable",
+			"allowed_fields",
+			"policy_version",
+			"policy_digest",
+			"revision",
+			"remarks",
+		},
+		MASTER_DATA_REQUEST_DOCTYPE: {
+			"master_data_domain",
+			"target_doctype",
+			"operation",
+			"target_name",
+			"subject",
+			"company",
+			"hospital",
+			"organization_unit",
+			"effective_on",
+			"changes",
+			"proposal_digest",
+			"baseline_modified_at",
+			"request_status",
+			"requested_by",
+			"requested_at",
+			"submitted_at",
+			"reviewed_by",
+			"reviewed_at",
+			"decision_reason",
+			"revision",
+		},
+		MASTER_DATA_CHANGE_ITEM_DOCTYPE: {
+			"sequence_no",
+			"field_name",
+			"field_label",
+			"value_type",
+			"current_value",
+			"proposed_value",
+			"reason",
+		},
+	}
+	for name in doctypes:
+		runtime = json.loads(runtime_paths[name].read_text(encoding="utf-8"))
+		blueprint_text = blueprint_paths[name].read_text(encoding="utf-8")
+		blueprint = json.loads(blueprint_text)
+		if "?" in blueprint_text:
+			violations.append(f"{name} blueprint must not contain replacement question marks")
+		if runtime.get("name") != name or blueprint.get("name") != name:
+			violations.append(f"{name} runtime and blueprint names must match")
+		if runtime.get("module") != "HRP Master Data" or blueprint.get("module") != "HRP Master Data":
+			violations.append(f"{name} must be owned by HRP Master Data")
+		runtime_fields = {
+			field.get("fieldname")
+			for field in runtime.get("fields", [])
+			if field.get("fieldname") and field.get("fieldtype") not in {"Section Break", "Column Break"}
+		}
+		blueprint_fields = {
+			field.get("fieldname") for field in blueprint.get("fields", []) if field.get("fieldname")
+		}
+		if runtime_fields != expected_fields[name] or blueprint_fields != expected_fields[name]:
+			violations.append(f"{name} runtime and blueprint fields must match the contract")
+
+	domain = json.loads(runtime_paths[MASTER_DATA_DOMAIN_DOCTYPE].read_text(encoding="utf-8"))
+	request = json.loads(runtime_paths[MASTER_DATA_REQUEST_DOCTYPE].read_text(encoding="utf-8"))
+	change_item = json.loads(runtime_paths[MASTER_DATA_CHANGE_ITEM_DOCTYPE].read_text(encoding="utf-8"))
+	if domain.get("autoname") != "field:code" or domain.get("allow_rename"):
+		violations.append("master data domain must have a stable non-renamable code")
+	if request.get("is_submittable") != 1 or change_item.get("istable") != 1:
+		violations.append("master data request must be submittable with a child change table")
+	for metadata in (domain, request):
+		for permission in metadata.get("permissions", []):
+			if permission.get("read") != 1:
+				violations.append(f"{metadata.get('name')} roles must retain read access")
+			if any(
+				permission.get(action)
+				for action in ("write", "create", "delete", "submit", "cancel", "amend")
+			):
+				violations.append(f"{metadata.get('name')} writes must remain service-only")
+
+	common_text = common_path.read_text(encoding="utf-8")
+	for token in (
+		f"MASTER_DATA_SCHEMA_VERSION = {MASTER_DATA_SCHEMA_VERSION}",
+		"MASTER_DATA_TARGET_POLICIES",
+		"SENSITIVE_FIELD_TOKENS",
+		"MAX_CHANGE_ITEMS = 64",
+		"MAX_CHANGE_PAYLOAD_BYTES = 64 * 1024",
+		"class MasterDataDomainUpsert",
+		"class MasterDataRequestUpsert",
+		"class MasterDataRequestSubmit",
+		"class MasterDataRequestReview",
+	):
+		if token not in common_text:
+			violations.append(f"master data public contract is missing: {token}")
+	for target in ("Department", "Cost Center", "Item", "Supplier", "Warehouse"):
+		if target not in MASTER_DATA_TARGET_POLICIES or f'target_doctype="{target}"' not in common_text:
+			violations.append(f"master data static policy is missing: {target}")
+
+	for name, controller_path in controller_paths.items():
+		controller_text = controller_path.read_text(encoding="utf-8")
+		if name != MASTER_DATA_CHANGE_ITEM_DOCTYPE:
+			for token in ("master_data_service_write", "lock_revision", "as_public_dict"):
+				if token not in controller_text:
+					violations.append(f"{name} controller is missing: {token}")
+		if "frappe.db.commit" in controller_text:
+			violations.append(f"{name} controller must not commit transactions")
+
+	service_text = service_path.read_text(encoding="utf-8")
+	for token in (
+		"class UpsertMasterDataDomainService",
+		"class SaveMasterDataRequestService",
+		"class SubmitMasterDataRequestService",
+		"class ReviewMasterDataRequestService",
+		"DomainService",
+		"MASTER_DATA_TARGET_POLICIES",
+		"FOR UPDATE",
+		"expected_revision",
+		"requested_by == frappe.session.user",
+		"_assert_proposal_current",
+		"_assert_organization_scope",
+	):
+		if token not in service_text:
+			violations.append(f"master data service is missing: {token}")
+	if "frappe.db.commit" in service_text:
+		violations.append("master data services must not commit transactions")
+	for forbidden in (
+		'frappe.get_doc("Department"',
+		'frappe.get_doc("Cost Center"',
+		'frappe.get_doc("Item"',
+		'frappe.get_doc("Supplier"',
+		'frappe.get_doc("Warehouse"',
+		"frappe.db.set_value",
+	):
+		if forbidden in service_text:
+			violations.append(f"master data approval must not mutate standard records: {forbidden}")
+
+	permission_text = permission_path.read_text(encoding="utf-8")
+	hooks_text = (root / APP_NAME / "hooks.py").read_text(encoding="utf-8")
+	for token in (
+		"def master_data_request_query",
+		"def can_read_master_data_request",
+		"requested_by",
+		"HRP User",
+	):
+		if token not in permission_text:
+			violations.append(f"master data Desk permission contract is missing: {token}")
+	for token in (
+		'"HRP Master Data Request": "ione_hrp.hrp_master_data.permissions.master_data_request_query"',
+		'"HRP Master Data Request": "ione_hrp.hrp_master_data.permissions.can_read_master_data_request"',
+	):
+		if token not in hooks_text:
+			violations.append(f"master data permission hook is missing: {token}")
+
+	api_text = api_path.read_text(encoding="utf-8")
+	if api_text.count('@frappe.whitelist(methods=["POST"])') != 4:
+		violations.append("COD-020 API must expose exactly four POST methods")
+	if api_text.count('@frappe.whitelist(methods=["GET"])') != 1:
+		violations.append("COD-020 API must expose exactly one GET method")
+	if "allow_guest=True" in api_text:
+		violations.append("master data APIs must never allow guests")
+
+	setup_text = setup_path.read_text(encoding="utf-8")
+	for token in (
+		"uniq_hrp_master_data_domain_target",
+		"idx_hrp_master_data_request_target_status",
+	):
+		if token not in setup_text:
+			violations.append(f"master data migration is missing: {token}")
+
+	workspace = json.loads(workspace_path.read_text(encoding="utf-8"))
+	actual_links = {link.get("link_to") for link in workspace.get("links", []) if link.get("link_to")}
+	if not {MASTER_DATA_DOMAIN_DOCTYPE, MASTER_DATA_REQUEST_DOCTYPE}.issubset(actual_links):
+		violations.append("master data workspace must expose domains and requests")
+
+	with (root / "design" / "doctype_catalog.csv").open(
+		encoding="utf-8-sig",
+		newline="",
+	) as stream:
+		doctype_rows = [row for row in csv.DictReader(stream) if row.get("doctype") in expected_fields]
+	if {row.get("doctype") for row in doctype_rows} != set(expected_fields):
+		violations.append("master data DocType catalog must include all three governed objects")
+	with (root / "design" / "field_catalog.csv").open(
+		encoding="utf-8-sig",
+		newline="",
+	) as stream:
+		field_rows = [row for row in csv.DictReader(stream) if row.get("doctype") in expected_fields]
+	for name, fields in expected_fields.items():
+		if {row.get("fieldname") for row in field_rows if row.get("doctype") == name} != fields:
+			violations.append(f"{name} field catalog must match runtime metadata")
+
+	endpoints = {
+		"/api/method/ione_hrp.api.v1.master_data.upsert_master_data_domain": "post",
+		"/api/method/ione_hrp.api.v1.master_data.save_master_data_request": "post",
+		"/api/method/ione_hrp.api.v1.master_data.submit_master_data_request": "post",
+		"/api/method/ione_hrp.api.v1.master_data.review_master_data_request": "post",
+		"/api/method/ione_hrp.api.v1.master_data.get_master_data_request": "get",
+	}
+	for catalog_path in catalog_paths:
+		catalog_text = catalog_path.read_text(encoding="utf-8")
+		for endpoint in endpoints:
+			if endpoint not in catalog_text:
+				violations.append(
+					f"{catalog_path.relative_to(root)} is missing master data endpoint {endpoint}"
+				)
+	openapi = yaml.safe_load((root / "api" / "openapi.yaml").read_text(encoding="utf-8"))
+	admin_role = "System Manager or HRP System Manager or HRP Data Steward"
+	requester_role = f"{admin_role} or HRP User"
+	for endpoint, method in endpoints.items():
+		path_contract = openapi.get("paths", {}).get(endpoint, {})
+		operation = path_contract.get(method, {})
+		if set(path_contract) != {method}:
+			violations.append(f"{endpoint} must expose only {method.upper()}")
+		expected_role = (
+			admin_role if endpoint.endswith(("domain", "review_master_data_request")) else requester_role
+		)
+		if operation.get("x-required-role") != expected_role:
+			violations.append(f"{endpoint} has the wrong master data role contract")
+		if method == "post":
+			if operation.get("x-transaction-boundary") != "Single DB transaction":
+				violations.append(f"{endpoint} must use one database transaction")
+			if operation.get("x-idempotency") != "Required for write":
+				violations.append(f"{endpoint} must require idempotency")
+			parameters = operation.get("parameters", [])
+			if not any(
+				parameter.get("name") == "Idempotency-Key"
+				or parameter.get("$ref") == "#/components/parameters/IdempotencyKey"
+				for parameter in parameters
+			):
+				violations.append(f"{endpoint} must declare a required Idempotency-Key header")
+		else:
+			if operation.get("x-transaction-boundary") != "Read-only":
+				violations.append(f"{endpoint} must remain read-only")
+			if operation.get("x-idempotency") != "Read-only deterministic":
+				violations.append(f"{endpoint} must remain deterministic")
+
+	integration_text = integration_test_path.read_text(encoding="utf-8")
+	for token in (
+		"test_desk_permissions_limit_hrp_users_to_their_own_requests",
+		"test_submit_and_review_enforce_maker_checker_without_mutating_item",
+		"test_target_drift_unknown_field_and_link_are_rejected",
+		"test_http_domain_draft_submit_and_query",
+		"test_http_write_requires_idempotency_header_and_review_is_maker_checked",
+	):
+		if token not in integration_text:
+			violations.append(f"master data integration tests are missing: {token}")
+	return violations
+
+
 def validate_environment_profiles(root: Path) -> list[str]:
 	profile_path = root / APP_NAME / "config" / "environment_profiles.json"
 	manager_path = root / "scripts" / "environment_manager.py"
@@ -2709,6 +3027,7 @@ def collect_violations(root: Path) -> list[str]:
 	violations.extend(validate_system_settings_contract(root))
 	violations.extend(validate_organization_hierarchy_contract(root))
 	violations.extend(validate_organization_mapping_contract(root))
+	violations.extend(validate_master_data_governance_contract(root))
 	return violations
 
 

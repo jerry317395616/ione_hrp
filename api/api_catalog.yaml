@@ -208,6 +208,76 @@
   transaction_boundary: Read-only
   audit: Redacted revision and target-count log
   version: v1
+- api_code: CORE-016
+  app: ione_hrp
+  domain_group: Core
+  method: POST
+  path: /api/method/ione_hrp.api.v1.master_data.upsert_master_data_domain
+  description: 创建或修订主数据域
+  request_schema: code,display_name,target_doctype,enabled,expected_revision,remarks
+  response_schema: schema_version,code,display_name,target_doctype,enabled,allow_create,allow_update,allow_disable,allowed_fields,policy_version,policy_digest,revision,remarks,changed,changed_fields,correlation_id,request_id,idempotency_replayed
+  required_role: System Manager or HRP System Manager or HRP Data Steward
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Redacted policy digest and changed-field log
+  version: v1
+- api_code: CORE-017
+  app: ione_hrp
+  domain_group: Core
+  method: POST
+  path: /api/method/ione_hrp.api.v1.master_data.save_master_data_request
+  description: 创建或修订主数据变更申请草稿
+  request_schema: master_data_domain,company,hospital,organization_unit,operation,target_name,subject,effective_on,changes,request_name,expected_revision
+  response_schema: schema_version,name,master_data_domain,target_doctype,operation,target_name,subject,company,hospital,organization_unit,effective_on,request_status,docstatus,proposal_digest,baseline_modified_at,requested_by,requested_at,submitted_at,reviewed_by,reviewed_at,decision_reason,revision,changes,changed,correlation_id,request_id,idempotency_replayed
+  required_role: System Manager or HRP System Manager or HRP Data Steward or HRP User
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Redacted proposal digest change-count and operation log
+  version: v1
+- api_code: CORE-018
+  app: ione_hrp
+  domain_group: Core
+  method: POST
+  path: /api/method/ione_hrp.api.v1.master_data.submit_master_data_request
+  description: 提交主数据变更申请
+  request_schema: request_name,expected_revision
+  response_schema: schema_version,name,request_status,docstatus,revision,submitted_at,correlation_id,request_id,idempotency_replayed
+  required_role: System Manager or HRP System Manager or HRP Data Steward or HRP User
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Redacted proposal digest change-count and revision log
+  version: v1
+- api_code: CORE-019
+  app: ione_hrp
+  domain_group: Core
+  method: POST
+  path: /api/method/ione_hrp.api.v1.master_data.review_master_data_request
+  description: 复核主数据变更申请
+  request_schema: request_name,expected_revision,decision,reason
+  response_schema: schema_version,name,request_status,docstatus,revision,reviewed_by,reviewed_at,decision_reason,correlation_id,request_id,idempotency_replayed
+  required_role: System Manager or HRP System Manager or HRP Data Steward
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Redacted decision proposal digest change-count and revision log
+  version: v1
+- api_code: CORE-020
+  app: ione_hrp
+  domain_group: Core
+  method: GET
+  path: /api/method/ione_hrp.api.v1.master_data.get_master_data_request
+  description: 查询主数据变更申请
+  request_schema: request_name
+  response_schema: schema_version,name,master_data_domain,target_doctype,operation,target_name,subject,company,hospital,organization_unit,effective_on,request_status,docstatus,proposal_digest,baseline_modified_at,requested_by,requested_at,submitted_at,reviewed_by,reviewed_at,decision_reason,revision,changes
+  required_role: System Manager or HRP System Manager or HRP Data Steward or HRP User
+  idempotency: Read-only deterministic
+  async: 'No'
+  transaction_boundary: Read-only
+  audit: Redacted status change-count and revision log
+  version: v1
 - api_code: FIN-001
   app: ione_hrp
   domain_group: Finance

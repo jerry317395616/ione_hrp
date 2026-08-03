@@ -12,105 +12,27 @@
   "track_changes": 0,
   "allow_rename": 0,
   "editable_grid": 1,
-  "sort_field": "modified",
-  "sort_order": "DESC",
+  "sort_field": "idx",
+  "sort_order": "ASC",
   "index_web_pages_for_search": 0,
-  "description": "主数据领域的HRP主数据变更明细对象；用于支撑业务闭环、权限、审计与对账。",
+  "description": "主数据变更申请中的字段级当前值、建议值和原因快照。",
   "fields": [
-    {
-      "fieldname": "sequence_no",
-      "label": "序号",
-      "fieldtype": "Int",
-      "default": "1",
-      "in_list_view": 1,
-      "description": "序号"
-    },
-    {
-      "fieldname": "reference_doctype",
-      "label": "引用类型",
-      "fieldtype": "Link",
-      "options": "DocType",
-      "description": "引用类型"
-    },
-    {
-      "fieldname": "reference_name",
-      "label": "引用单据",
-      "fieldtype": "Dynamic Link",
-      "options": "reference_doctype",
-      "search_index": 1,
-      "description": "引用单据"
-    },
-    {
-      "fieldname": "description",
-      "label": "说明",
-      "fieldtype": "Small Text",
-      "description": "说明"
-    },
-    {
-      "fieldname": "quantity",
-      "label": "数量",
-      "fieldtype": "Float",
-      "precision": "6",
-      "description": "数量"
-    },
-    {
-      "fieldname": "rate",
-      "label": "单价",
-      "fieldtype": "Currency",
-      "options": "currency",
-      "precision": "6",
-      "description": "单价"
-    },
-    {
-      "fieldname": "amount",
-      "label": "金额",
-      "fieldtype": "Currency",
-      "options": "currency",
-      "read_only": 1,
-      "in_list_view": 1,
-      "precision": "2",
-      "description": "金额"
-    },
-    {
-      "fieldname": "dimension_json",
-      "label": "核算维度",
-      "fieldtype": "Code",
-      "options": "JSON",
-      "description": "核算维度"
-    }
+    {"fieldname": "sequence_no", "label": "序号", "fieldtype": "Int", "default": "1", "reqd": 1, "read_only": 1, "in_list_view": 1},
+    {"fieldname": "field_name", "label": "字段名", "fieldtype": "Data", "reqd": 1, "read_only": 1, "in_list_view": 1},
+    {"fieldname": "field_label", "label": "字段名称", "fieldtype": "Data", "reqd": 1, "read_only": 1, "in_list_view": 1},
+    {"fieldname": "value_type", "label": "值类型", "fieldtype": "Select", "options": "Text\nBoolean\nLink\nChoice", "reqd": 1, "read_only": 1},
+    {"fieldname": "current_value", "label": "当前值", "fieldtype": "Small Text", "read_only": 1},
+    {"fieldname": "proposed_value", "label": "建议值", "fieldtype": "Small Text", "read_only": 1, "in_list_view": 1},
+    {"fieldname": "reason", "label": "变更原因", "fieldtype": "Small Text", "read_only": 1}
   ],
-  "permissions": [
-    {
-      "role": "HRP System Manager",
-      "read": 1,
-      "write": 1,
-      "create": 1,
-      "delete": 0,
-      "submit": 0,
-      "cancel": 0,
-      "amend": 0
-    },
-    {
-      "role": "HRP Data Steward",
-      "read": 1,
-      "write": 1,
-      "create": 1,
-      "delete": 0,
-      "submit": 0,
-      "cancel": 0,
-      "amend": 0
-    }
-  ],
+  "permissions": [],
   "links": [],
   "actions": [],
   "x_hrp": {
     "app": "ione_hrp",
     "retention_years": 10,
     "data_classification": "内部",
-    "key_indexes": [
-      "company",
-      "organization_unit"
-    ],
+    "key_indexes": ["field_name"],
     "standard_references": [],
     "domain_group": "Core",
     "module_package": "hrp_master_data"

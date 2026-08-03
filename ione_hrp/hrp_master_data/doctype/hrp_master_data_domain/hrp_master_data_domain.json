@@ -1,0 +1,159 @@
+{
+	"actions": [],
+	"allow_rename": 0,
+	"autoname": "field:code",
+	"creation": "2026-07-30 00:00:00.000000",
+	"doctype": "DocType",
+	"engine": "InnoDB",
+	"field_order": [
+		"identity_section",
+		"code",
+		"display_name",
+		"target_doctype",
+		"enabled",
+		"policy_section",
+		"allow_create",
+		"allow_update",
+		"allow_disable",
+		"allowed_fields",
+		"policy_version",
+		"policy_digest",
+		"revision",
+		"remarks"
+	],
+	"fields": [
+		{
+			"fieldname": "identity_section",
+			"fieldtype": "Section Break",
+			"label": "主数据域"
+		},
+		{
+			"fieldname": "code",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"label": "域编码",
+			"reqd": 1,
+			"search_index": 1,
+			"unique": 1
+		},
+		{
+			"fieldname": "display_name",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"label": "域名称",
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "target_doctype",
+			"fieldtype": "Link",
+			"in_list_view": 1,
+			"label": "标准主数据类型",
+			"options": "DocType",
+			"reqd": 1,
+			"search_index": 1,
+			"unique": 1
+		},
+		{
+			"default": "1",
+			"fieldname": "enabled",
+			"fieldtype": "Check",
+			"in_list_view": 1,
+			"label": "启用",
+			"search_index": 1
+		},
+		{
+			"fieldname": "policy_section",
+			"fieldtype": "Section Break",
+			"label": "变更策略"
+		},
+		{
+			"fieldname": "allow_create",
+			"fieldtype": "Check",
+			"label": "允许新增",
+			"read_only": 1
+		},
+		{
+			"fieldname": "allow_update",
+			"fieldtype": "Check",
+			"label": "允许修改",
+			"read_only": 1
+		},
+		{
+			"fieldname": "allow_disable",
+			"fieldtype": "Check",
+			"label": "允许停用",
+			"read_only": 1
+		},
+		{
+			"fieldname": "allowed_fields",
+			"fieldtype": "Small Text",
+			"label": "允许变更字段",
+			"read_only": 1
+		},
+		{
+			"fieldname": "policy_version",
+			"fieldtype": "Int",
+			"label": "策略版本",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "policy_digest",
+			"fieldtype": "Data",
+			"label": "策略摘要",
+			"no_copy": 1,
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "revision",
+			"fieldtype": "Int",
+			"label": "修订号",
+			"no_copy": 1,
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "remarks",
+			"fieldtype": "Small Text",
+			"label": "说明"
+		}
+	],
+	"index_web_pages_for_search": 0,
+	"links": [],
+	"modified": "2026-07-30 00:00:00.000000",
+	"modified_by": "Administrator",
+	"module": "HRP Master Data",
+	"name": "HRP Master Data Domain",
+	"naming_rule": "By fieldname",
+	"owner": "Administrator",
+	"permissions": [
+		{
+			"read": 1,
+			"role": "System Manager"
+		},
+		{
+			"read": 1,
+			"role": "HRP System Manager"
+		},
+		{
+			"read": 1,
+			"role": "HRP Data Steward"
+		},
+		{
+			"read": 1,
+			"role": "HRP User"
+		},
+		{
+			"read": 1,
+			"role": "HRP Integration User"
+		}
+	],
+	"search_fields": "code,display_name,target_doctype",
+	"sort_field": "code",
+	"sort_order": "ASC",
+	"states": [],
+	"title_field": "display_name",
+	"track_changes": 1
+}

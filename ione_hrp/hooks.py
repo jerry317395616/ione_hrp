@@ -36,6 +36,13 @@ after_job = ["ione_hrp.services.audit_context.finish_job_audit_context"]
 extend_doctype_class = {}
 doc_events = {}
 
+permission_query_conditions = {
+	"HRP Master Data Request": "ione_hrp.hrp_master_data.permissions.master_data_request_query",
+}
+has_permission = {
+	"HRP Master Data Request": "ione_hrp.hrp_master_data.permissions.can_read_master_data_request",
+}
+
 scheduler_events = {
 	"daily": [
 		"ione_hrp.setup.maintenance.daily_maintenance",
