@@ -23,8 +23,8 @@
 pyproject.toml                  Press/Frappe 应用元数据
 ione_hrp/                       单一 Frappe 应用源码
 architecture/                 单应用架构、模块注册表和版本策略
-design/                       398 个 DocType 与字段等机器可读设计
-doctype_blueprints/           按模块重组的 398 份 DocType 蓝图
+design/                       399 个 DocType 与字段等机器可读设计
+doctype_blueprints/           按模块重组的 399 份 DocType 蓝图
 api/ workflows/ backlog/      API、工作流和 Codex 任务
 scripts/                      初始化、安装、加模块、版本锁定和校验脚本
 AGENTS.md                      Codex 仓库级强制规则
@@ -56,6 +56,16 @@ ERPNext 标准 `Department`/`Cost Center`。`CORE-014` 负责幂等修订并校�
 `architecture/organization_hierarchy.md`、`architecture/organization_mapping.md`、
 `architecture/adr/ADR-0012-versioned-hospital-organization-hierarchy.md`、
 `architecture/adr/ADR-0013-version-scoped-standard-organization-mapping.md` 与
+`architecture/adr/ADR-0014-governed-master-data-change-proposals.md`。
+
+## 主数据治理
+
+`HRP Master Data Domain` 为 `Department`、`Cost Center`、`Item`、`Supplier` 和
+`Warehouse` 定义静态治理边界；`HRP Master Data Request` 及其字段提案子表只保存
+结构化变更建议、目标基线和复核结果。`CORE-016` 至 `CORE-020` 提供领域维护、草稿、
+提交、批准、拒绝和查询能力，并执行幂等、行锁、乐观修订、目标漂移、组织范围和申请人
+与审核人职责分离校验。批准只形成治理结论，不直接修改 ERPNext 标准主数据；后续执行
+必须继续调用对应标准控制器。完整规则见 `architecture/master_data_change_requests.md` 与
 `architecture/adr/ADR-0014-governed-master-data-change-proposals.md`。
 
 ## 非生产环境
