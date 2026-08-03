@@ -2,7 +2,7 @@
   "schema_version": 1,
   "task_id": "COD-021",
   "title": "实现外部编码映射",
-  "status": "In Progress",
+  "status": "Implemented",
   "risk_level": "critical",
   "change_types": ["application", "architecture", "configuration", "data", "documentation", "security"],
   "affected_modules": ["HRP Foundation", "HRP Master Data"],
