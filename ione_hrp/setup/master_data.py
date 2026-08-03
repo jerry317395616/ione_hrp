@@ -15,6 +15,21 @@ def ensure_master_data_governance() -> dict[str, object]:
 			["master_data_domain", "target_name", "request_status"],
 			"idx_hrp_master_data_request_target_status",
 		),
+		(
+			"HRP External Code Mapping",
+			["source_key"],
+			"uniq_hrp_external_code_source",
+		),
+		(
+			"HRP External Code Mapping",
+			["target_key"],
+			"uniq_hrp_external_code_target",
+		),
+		(
+			"HRP External Code Mapping",
+			["enabled", "valid_from", "valid_to"],
+			"idx_hrp_external_code_effectivity",
+		),
 	):
 		if not frappe.db.table_exists(doctype):
 			continue

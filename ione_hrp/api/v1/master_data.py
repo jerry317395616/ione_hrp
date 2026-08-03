@@ -2,6 +2,12 @@ from __future__ import annotations
 
 import frappe
 
+from ione_hrp.common.external_code_mapping import (
+	ExternalCodeMappingContractError,
+	build_external_code_mapping_resolve,
+	build_external_code_mapping_upsert,
+	build_internal_code_mapping_resolve,
+)
 from ione_hrp.common.master_data import (
 	MasterDataContractError,
 	build_master_data_domain_upsert,
@@ -13,6 +19,12 @@ from ione_hrp.hrp_master_data.services import (
 	get_master_data_request as get_master_data_request_service,
 )
 from ione_hrp.hrp_master_data.services import (
+	resolve_external_code_mapping as resolve_external_code_mapping_service,
+)
+from ione_hrp.hrp_master_data.services import (
+	resolve_internal_code_mapping as resolve_internal_code_mapping_service,
+)
+from ione_hrp.hrp_master_data.services import (
 	review_master_data_request as review_master_data_request_service,
 )
 from ione_hrp.hrp_master_data.services import (
@@ -20,6 +32,9 @@ from ione_hrp.hrp_master_data.services import (
 )
 from ione_hrp.hrp_master_data.services import (
 	submit_master_data_request as submit_master_data_request_service,
+)
+from ione_hrp.hrp_master_data.services import (
+	upsert_external_code_mapping as upsert_external_code_mapping_service,
 )
 from ione_hrp.hrp_master_data.services import (
 	upsert_master_data_domain as upsert_master_data_domain_service,
@@ -151,3 +166,108 @@ def get_master_data_request(
 		request_name=request_name,
 		correlation_id=correlation_id,
 	)
+
+
+@frappe.whitelist(methods=["POST"])
+def upsert_external_code_mapping(
+	master_data_domain: str,
+	company: str,
+	hospital: str,
+	external_system: str,
+	external_code: str,
+	internal_name: str,
+	valid_from: str,
+	organization_unit: str | None = None,
+	external_label: str | None = None,
+	enabled: bool | int | str = True,
+	valid_to: str | None = None,
+	expected_revision: int | str = 0,
+	mapping_name: str | None = None,
+	remarks: str | None = None,
+	correlation_id: str | None = None,
+) -> dict[str, object]:
+	with service_audit_scope(correlation_id):
+		try:
+			command = build_external_code_mapping_upsert(
+				mapping_name=mapping_name,
+				master_data_domain=master_data_domain,
+				company=company,
+				hospital=hospital,
+				organization_unit=organization_unit,
+				external_system=external_system,
+				external_code=external_code,
+				external_label=external_label,
+				internal_name=internal_name,
+				enabled=enabled,
+				valid_from=valid_from,
+				valid_to=valid_to,
+				expected_revision=expected_revision,
+				remarks=remarks,
+			)
+		except ExternalCodeMappingContractError as exc:
+			raise_ione_error("INVALID_REQUEST", cause=exc)
+		return upsert_external_code_mapping_service(
+			command,
+			idempotency_key=None,
+			correlation_id=correlation_id,
+		)
+
+
+@frappe.whitelist(methods=["GET"])
+def resolve_external_code_mapping(
+	master_data_domain: str,
+	company: str,
+	hospital: str,
+	external_system: str,
+	external_code: str,
+	effective_on: str,
+	organization_unit: str | None = None,
+	correlation_id: str | None = None,
+) -> dict[str, object]:
+	with service_audit_scope(correlation_id):
+		try:
+			query = build_external_code_mapping_resolve(
+				master_data_domain=master_data_domain,
+				company=company,
+				hospital=hospital,
+				organization_unit=organization_unit,
+				external_system=external_system,
+				external_code=external_code,
+				effective_on=effective_on,
+			)
+		except ExternalCodeMappingContractError as exc:
+			raise_ione_error("INVALID_REQUEST", cause=exc)
+		return resolve_external_code_mapping_service(
+			query,
+			correlation_id=correlation_id,
+		)
+
+
+@frappe.whitelist(methods=["GET"])
+def resolve_internal_code_mapping(
+	master_data_domain: str,
+	company: str,
+	hospital: str,
+	external_system: str,
+	internal_name: str,
+	effective_on: str,
+	organization_unit: str | None = None,
+	correlation_id: str | None = None,
+) -> dict[str, object]:
+	with service_audit_scope(correlation_id):
+		try:
+			query = build_internal_code_mapping_resolve(
+				master_data_domain=master_data_domain,
+				company=company,
+				hospital=hospital,
+				organization_unit=organization_unit,
+				external_system=external_system,
+				internal_name=internal_name,
+				effective_on=effective_on,
+			)
+		except ExternalCodeMappingContractError as exc:
+			raise_ione_error("INVALID_REQUEST", cause=exc)
+		return resolve_internal_code_mapping_service(
+			query,
+			correlation_id=correlation_id,
+		)

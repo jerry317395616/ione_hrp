@@ -22,6 +22,7 @@ from scripts.repository_contract import (
 	validate_domain_service_contract,
 	validate_environment_profiles,
 	validate_error_contract,
+	validate_external_code_mapping_contract,
 	validate_fixture_governance,
 	validate_immutable_ledger_contract,
 	validate_master_data_governance_contract,
@@ -183,6 +184,9 @@ class RepositoryContractTest(unittest.TestCase):
 
 	def test_current_master_data_governance_contract_is_mandatory(self) -> None:
 		self.assertEqual(validate_master_data_governance_contract(ROOT), [])
+
+	def test_current_external_code_mapping_contract_is_mandatory(self) -> None:
+		self.assertEqual(validate_external_code_mapping_contract(ROOT), [])
 
 	def test_rejects_direct_transaction_commit(self) -> None:
 		with tempfile.TemporaryDirectory() as temp:

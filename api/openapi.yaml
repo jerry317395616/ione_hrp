@@ -777,48 +777,78 @@ paths:
               type: object
               description: user,action,doctype,docname
               additionalProperties: true
-  /api/method/ione_hrp_core.api.v1.master.get_mapping:
+  /api/method/ione_hrp.api.v1.master_data.resolve_external_code_mapping:
     get:
       operationId: core_004
-      summary: 查询外部编码映射
+      summary: 按外部编码解析内部主数据
       tags:
       - ione_hrp
       security:
       - tokenAuth: []
       parameters:
-      - name: X-Correlation-ID
-        in: header
-        required: false
+      - $ref: '#/components/parameters/CorrelationId'
+      - name: master_data_domain
+        in: query
+        required: true
         schema:
           type: string
-      - name: Idempotency-Key
-        in: header
-        required: false
+          maxLength: 140
+      - name: company
+        in: query
+        required: true
         schema:
           type: string
-      - name: filters
+          maxLength: 140
+      - name: hospital
+        in: query
+        required: true
+        schema:
+          type: string
+          maxLength: 140
+      - name: organization_unit
         in: query
         required: false
         schema:
           type: string
+          maxLength: 140
+      - name: external_system
+        in: query
+        required: true
+        schema:
+          type: string
+          maxLength: 140
+      - name: external_code
+        in: query
+        required: true
+        schema:
+          type: string
+          maxLength: 140
+      - name: effective_on
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
       responses:
         '200':
-          description: Success
+          description: 已生效的外部编码映射
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/FrappeResponse'
+        '400':
+          description: Invalid request
+        '401':
+          description: Authentication required
         '403':
-          description: Forbidden
-        '409':
-          description: Conflict / duplicate request
-        '422':
-          description: Business validation error
+          description: External code mapping read role required
+        '404':
+          description: Effective mapping or referenced scope not found
         '500':
-          description: Internal error
-      x-required-role: HRP Integration User
-      x-transaction-boundary: Single DB transaction
-      x-idempotency: Not applicable
+          description: Persisted mapping configuration is invalid
+      x-required-role: System Manager or HRP System Manager or HRP Data Steward or HRP Integration User
+      x-transaction-boundary: Read-only
+      x-idempotency: Read-only deterministic
   /api/method/ione_hrp_core.api.v1.master.submit_change:
     post:
       operationId: core_005
@@ -4371,6 +4401,190 @@ paths:
           description: Persisted request configuration is invalid
           content: *id001
       x-required-role: System Manager or HRP System Manager or HRP Data Steward or HRP User
+      x-transaction-boundary: Read-only
+      x-idempotency: Read-only deterministic
+  /api/method/ione_hrp.api.v1.master_data.upsert_external_code_mapping:
+    post:
+      operationId: core_021
+      summary: 创建或修订外部编码映射
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - master_data_domain
+              - company
+              - hospital
+              - external_system
+              - external_code
+              - internal_name
+              - valid_from
+              properties:
+                master_data_domain:
+                  type: string
+                  maxLength: 140
+                company:
+                  type: string
+                  maxLength: 140
+                hospital:
+                  type: string
+                  maxLength: 140
+                organization_unit:
+                  type:
+                  - string
+                  - 'null'
+                  maxLength: 140
+                external_system:
+                  type: string
+                  maxLength: 140
+                external_code:
+                  type: string
+                  maxLength: 140
+                external_label:
+                  type:
+                  - string
+                  - 'null'
+                  maxLength: 140
+                internal_name:
+                  type: string
+                  maxLength: 140
+                enabled:
+                  type: boolean
+                  default: true
+                valid_from:
+                  type: string
+                  format: date
+                valid_to:
+                  type:
+                  - string
+                  - 'null'
+                  format: date
+                expected_revision:
+                  type: integer
+                  minimum: 0
+                  default: 0
+                mapping_name:
+                  type:
+                  - string
+                  - 'null'
+                  maxLength: 140
+                remarks:
+                  type:
+                  - string
+                  - 'null'
+      responses:
+        '200':
+          description: 外部编码映射已创建、修订或幂等重放
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '400':
+          description: Invalid request or missing idempotency key
+          content: *id001
+        '401':
+          description: Authentication required
+          content: *id001
+        '403':
+          description: External code mapping write role required
+          content: *id001
+        '404':
+          description: Referenced domain scope or target not found
+          content: *id001
+        '409':
+          description: Revision source or target uniqueness conflict
+          content: *id001
+        '500':
+          description: Persisted mapping configuration is invalid
+          content: *id001
+      x-required-role: System Manager or HRP System Manager or HRP Data Steward
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+  /api/method/ione_hrp.api.v1.master_data.resolve_internal_code_mapping:
+    get:
+      operationId: core_022
+      summary: 按内部主数据解析外部编码
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      - name: master_data_domain
+        in: query
+        required: true
+        schema:
+          type: string
+          maxLength: 140
+      - name: company
+        in: query
+        required: true
+        schema:
+          type: string
+          maxLength: 140
+      - name: hospital
+        in: query
+        required: true
+        schema:
+          type: string
+          maxLength: 140
+      - name: organization_unit
+        in: query
+        required: false
+        schema:
+          type: string
+          maxLength: 140
+      - name: external_system
+        in: query
+        required: true
+        schema:
+          type: string
+          maxLength: 140
+      - name: internal_name
+        in: query
+        required: true
+        schema:
+          type: string
+          maxLength: 140
+      - name: effective_on
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      responses:
+        '200':
+          description: 已生效的内部主数据映射
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '400':
+          description: Invalid request
+          content: *id001
+        '401':
+          description: Authentication required
+          content: *id001
+        '403':
+          description: External code mapping read role required
+          content: *id001
+        '404':
+          description: Effective mapping or referenced scope not found
+          content: *id001
+        '500':
+          description: Persisted mapping configuration is invalid
+          content: *id001
+      x-required-role: System Manager or HRP System Manager or HRP Data Steward or HRP Integration User
       x-transaction-boundary: Read-only
       x-idempotency: Read-only deterministic
 components:

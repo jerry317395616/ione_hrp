@@ -672,33 +672,23 @@ Choice",1,0,0,1,0,,,,值类型,Core
 ione_hrp,HRP Master Data,HRP Master Data Change Item,14,current_value,当前值,Small Text,,0,0,0,1,0,,,,当前值,Core
 ione_hrp,HRP Master Data,HRP Master Data Change Item,15,proposed_value,建议值,Small Text,,0,0,0,1,1,,,,建议值,Core
 ione_hrp,HRP Master Data,HRP Master Data Change Item,16,reason,变更原因,Small Text,,0,0,0,1,0,,,,变更原因,Core
-ione_hrp,HRP Master Data,HRP External Code Mapping,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
-ione_hrp,HRP Master Data,HRP External Code Mapping,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
-ione_hrp,HRP Master Data,HRP External Code Mapping,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core
-ione_hrp,HRP Master Data,HRP External Code Mapping,13,organization_unit,组织单元,Link,HRP Organization Unit,1,0,1,0,1,,,,组织单元,Core
-ione_hrp,HRP Master Data,HRP External Code Mapping,14,cost_center,成本中心,Link,Cost Center,0,0,1,0,0,,,,成本中心,Core
-ione_hrp,HRP Master Data,HRP External Code Mapping,15,fiscal_year,财政年度,Link,Fiscal Year,0,0,1,0,0,,,,财政年度,Core
-ione_hrp,HRP Master Data,HRP External Code Mapping,16,currency,币种,Link,Currency,0,0,0,0,0,,CNY,,币种,Core
-ione_hrp,HRP Master Data,HRP External Code Mapping,17,status,业务状态,Select,"Draft
-Under Review
-Approved
-Rejected
-In Progress
-Completed
-Cancelled
-Closed",0,0,1,0,1,,Draft,,业务状态,Core
-ione_hrp,HRP Master Data,HRP External Code Mapping,18,workflow_state,工作流状态,Link,Workflow State,0,0,1,1,0,,,,工作流状态,Core
-ione_hrp,HRP Master Data,HRP External Code Mapping,19,posting_date,业务日期,Date,,1,0,1,0,1,,,,业务日期,Core
-ione_hrp,HRP Master Data,HRP External Code Mapping,20,applicant,申请人,Link,User,1,0,1,0,0,,,,申请人,Core
-ione_hrp,HRP Master Data,HRP External Code Mapping,21,employee,员工,Link,Employee,0,0,1,0,0,,,,员工,Core
-ione_hrp,HRP Master Data,HRP External Code Mapping,22,subject,主题,Data,,1,0,0,0,1,,,,主题,Core
-ione_hrp,HRP Master Data,HRP External Code Mapping,23,total_amount,总金额,Currency,currency,0,0,0,0,1,2,,,总金额,Core
-ione_hrp,HRP Master Data,HRP External Code Mapping,24,external_id,外部ID,Data,,0,0,1,0,0,,,,外部ID,Core
-ione_hrp,HRP Master Data,HRP External Code Mapping,25,source_doctype,来源类型,Link,DocType,0,0,0,0,0,,,,来源类型,Core
-ione_hrp,HRP Master Data,HRP External Code Mapping,26,source_name,来源单据,Dynamic Link,source_doctype,0,0,1,0,0,,,,来源单据,Core
-ione_hrp,HRP Master Data,HRP External Code Mapping,27,submitted_at,提交时间,Datetime,,0,0,0,1,0,,,,提交时间,Core
-ione_hrp,HRP Master Data,HRP External Code Mapping,28,approved_at,批准时间,Datetime,,0,0,0,1,0,,,,批准时间,Core
-ione_hrp,HRP Master Data,HRP External Code Mapping,29,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
+ione_hrp,HRP Master Data,HRP External Code Mapping,10,master_data_domain,主数据域,Link,HRP Master Data Domain,1,0,1,0,1,,,,受控主数据域,Core
+ione_hrp,HRP Master Data,HRP External Code Mapping,11,target_doctype,内部单据类型,Link,DocType,1,0,0,1,0,,,,由主数据域策略确定,Core
+ione_hrp,HRP Master Data,HRP External Code Mapping,12,internal_name,内部记录,Dynamic Link,target_doctype,1,0,1,0,1,,,,受控标准主数据记录,Core
+ione_hrp,HRP Master Data,HRP External Code Mapping,13,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
+ione_hrp,HRP Master Data,HRP External Code Mapping,14,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
+ione_hrp,HRP Master Data,HRP External Code Mapping,15,organization_unit,组织单元,Link,HRP Organization Unit,0,0,1,0,0,,,,可选组织作用域,Core
+ione_hrp,HRP Master Data,HRP External Code Mapping,16,scope_key,作用域键,Data,,1,0,0,1,0,,,,组织单元为空时使用全局作用域键,Core
+ione_hrp,HRP Master Data,HRP External Code Mapping,17,source_key,外部身份键,Data,,1,1,1,1,0,,,,外部映射身份的SHA-256键,Core
+ione_hrp,HRP Master Data,HRP External Code Mapping,18,target_key,内部身份键,Data,,1,1,1,1,0,,,,内部映射身份的SHA-256键,Core
+ione_hrp,HRP Master Data,HRP External Code Mapping,19,external_system,外部系统,Data,,1,0,1,0,1,,,,标准化外部系统代码,Core
+ione_hrp,HRP Master Data,HRP External Code Mapping,20,external_code,外部编码,Data,,1,0,1,0,1,,,,保留大小写和前导零的外部编码,Core
+ione_hrp,HRP Master Data,HRP External Code Mapping,21,external_label,外部名称,Data,,0,0,0,0,0,,,,外部系统中的显示名称,Core
+ione_hrp,HRP Master Data,HRP External Code Mapping,22,enabled,启用,Check,,0,0,1,0,1,,1,,是否允许解析,Core
+ione_hrp,HRP Master Data,HRP External Code Mapping,23,valid_from,生效日期,Date,,1,0,1,0,1,,,,映射生效日期,Core
+ione_hrp,HRP Master Data,HRP External Code Mapping,24,valid_to,失效日期,Date,,0,0,1,0,0,,,,映射失效日期,Core
+ione_hrp,HRP Master Data,HRP External Code Mapping,25,revision,修订号,Int,,1,0,0,1,0,,1,,乐观并发修订号,Core
+ione_hrp,HRP Master Data,HRP External Code Mapping,26,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
 ione_hrp,HRP Master Data,HRP Data Steward,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
 ione_hrp,HRP Master Data,HRP Data Steward,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
 ione_hrp,HRP Master Data,HRP Data Steward,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core

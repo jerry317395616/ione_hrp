@@ -37,9 +37,11 @@ extend_doctype_class = {}
 doc_events = {}
 
 permission_query_conditions = {
+	"HRP External Code Mapping": "ione_hrp.hrp_master_data.permissions.external_code_mapping_query",
 	"HRP Master Data Request": "ione_hrp.hrp_master_data.permissions.master_data_request_query",
 }
 has_permission = {
+	"HRP External Code Mapping": "ione_hrp.hrp_master_data.permissions.can_read_external_code_mapping",
 	"HRP Master Data Request": "ione_hrp.hrp_master_data.permissions.can_read_master_data_request",
 }
 

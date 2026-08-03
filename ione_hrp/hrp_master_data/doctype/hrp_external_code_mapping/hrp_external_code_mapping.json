@@ -1,0 +1,192 @@
+{
+	"actions": [],
+	"allow_rename": 0,
+	"autoname": "hash",
+	"creation": "2026-08-03 00:00:00.000000",
+	"doctype": "DocType",
+	"engine": "InnoDB",
+	"field_order": [
+		"master_data_domain",
+		"target_doctype",
+		"internal_name",
+		"company",
+		"hospital",
+		"organization_unit",
+		"scope_key",
+		"source_key",
+		"target_key",
+		"external_system",
+		"external_code",
+		"external_label",
+		"enabled",
+		"valid_from",
+		"valid_to",
+		"revision",
+		"remarks"
+	],
+	"fields": [
+		{
+			"fieldname": "master_data_domain",
+			"fieldtype": "Link",
+			"in_list_view": 1,
+			"label": "主数据域",
+			"options": "HRP Master Data Domain",
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "target_doctype",
+			"fieldtype": "Link",
+			"label": "内部单据类型",
+			"options": "DocType",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "internal_name",
+			"fieldtype": "Dynamic Link",
+			"in_list_view": 1,
+			"label": "内部记录",
+			"options": "target_doctype",
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "company",
+			"fieldtype": "Link",
+			"in_list_view": 1,
+			"label": "法人",
+			"options": "Company",
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "hospital",
+			"fieldtype": "Link",
+			"label": "医院",
+			"options": "HRP Hospital",
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "organization_unit",
+			"fieldtype": "Link",
+			"label": "组织单元",
+			"options": "HRP Organization Unit",
+			"search_index": 1
+		},
+		{
+			"fieldname": "scope_key",
+			"fieldtype": "Data",
+			"hidden": 1,
+			"label": "作用域键",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "source_key",
+			"fieldtype": "Data",
+			"hidden": 1,
+			"label": "外部身份键",
+			"no_copy": 1,
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "target_key",
+			"fieldtype": "Data",
+			"hidden": 1,
+			"label": "内部身份键",
+			"no_copy": 1,
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "external_system",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"label": "外部系统",
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "external_code",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"label": "外部编码",
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "external_label",
+			"fieldtype": "Data",
+			"label": "外部名称"
+		},
+		{
+			"default": "1",
+			"fieldname": "enabled",
+			"fieldtype": "Check",
+			"in_list_view": 1,
+			"label": "启用",
+			"search_index": 1
+		},
+		{
+			"fieldname": "valid_from",
+			"fieldtype": "Date",
+			"in_list_view": 1,
+			"label": "生效日期",
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "valid_to",
+			"fieldtype": "Date",
+			"label": "失效日期",
+			"search_index": 1
+		},
+		{
+			"fieldname": "revision",
+			"fieldtype": "Int",
+			"label": "修订号",
+			"no_copy": 1,
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "remarks",
+			"fieldtype": "Small Text",
+			"label": "备注"
+		}
+	],
+	"index_web_pages_for_search": 0,
+	"links": [],
+	"modified": "2026-08-03 00:00:00.000000",
+	"modified_by": "Administrator",
+	"module": "HRP Master Data",
+	"name": "HRP External Code Mapping",
+	"owner": "Administrator",
+	"permissions": [
+		{
+			"read": 1,
+			"role": "System Manager"
+		},
+		{
+			"read": 1,
+			"role": "HRP System Manager"
+		},
+		{
+			"read": 1,
+			"role": "HRP Data Steward"
+		},
+		{
+			"read": 1,
+			"role": "HRP Integration User"
+		}
+	],
+	"search_fields": "external_system,external_code,internal_name,company,hospital",
+	"sort_field": "modified",
+	"sort_order": "DESC",
+	"states": [],
+	"title_field": "external_code",
+	"track_changes": 1
+}
