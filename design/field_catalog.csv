@@ -716,56 +716,52 @@ ione_hrp,HRP Master Data,HRP Data Steward,26,source_name,来源单据,Dynamic Li
 ione_hrp,HRP Master Data,HRP Data Steward,27,submitted_at,提交时间,Datetime,,0,0,0,1,0,,,,提交时间,Core
 ione_hrp,HRP Master Data,HRP Data Steward,28,approved_at,批准时间,Datetime,,0,0,0,1,0,,,,批准时间,Core
 ione_hrp,HRP Master Data,HRP Data Steward,29,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
-ione_hrp,HRP Master Data,HRP Data Quality Rule,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
-ione_hrp,HRP Master Data,HRP Data Quality Rule,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
-ione_hrp,HRP Master Data,HRP Data Quality Rule,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core
-ione_hrp,HRP Master Data,HRP Data Quality Rule,13,organization_unit,组织单元,Link,HRP Organization Unit,1,0,1,0,1,,,,组织单元,Core
-ione_hrp,HRP Master Data,HRP Data Quality Rule,14,cost_center,成本中心,Link,Cost Center,0,0,1,0,0,,,,成本中心,Core
-ione_hrp,HRP Master Data,HRP Data Quality Rule,15,fiscal_year,财政年度,Link,Fiscal Year,0,0,1,0,0,,,,财政年度,Core
-ione_hrp,HRP Master Data,HRP Data Quality Rule,16,currency,币种,Link,Currency,0,0,0,0,0,,CNY,,币种,Core
-ione_hrp,HRP Master Data,HRP Data Quality Rule,17,status,业务状态,Select,"Draft
-Under Review
-Approved
-Rejected
-In Progress
-Completed
-Cancelled
-Closed",0,0,1,0,1,,Draft,,业务状态,Core
-ione_hrp,HRP Master Data,HRP Data Quality Rule,18,workflow_state,工作流状态,Link,Workflow State,0,0,1,1,0,,,,工作流状态,Core
-ione_hrp,HRP Master Data,HRP Data Quality Rule,19,code,编码,Data,,1,1,1,0,1,,,,编码,Core
-ione_hrp,HRP Master Data,HRP Data Quality Rule,20,display_name,名称,Data,,1,0,0,0,1,,,,名称,Core
-ione_hrp,HRP Master Data,HRP Data Quality Rule,21,enabled,启用,Check,,0,0,1,0,0,,1,,启用,Core
-ione_hrp,HRP Master Data,HRP Data Quality Rule,22,valid_from,有效期开始,Date,,0,0,0,0,0,,,,有效期开始,Core
-ione_hrp,HRP Master Data,HRP Data Quality Rule,23,valid_to,有效期结束,Date,,0,0,0,0,0,,,,有效期结束,Core
-ione_hrp,HRP Master Data,HRP Data Quality Rule,24,owner_department,责任部门,Link,Department,0,0,0,0,0,,,,责任部门,Core
-ione_hrp,HRP Master Data,HRP Data Quality Rule,25,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
-ione_hrp,HRP Master Data,HRP Data Quality Issue,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
-ione_hrp,HRP Master Data,HRP Data Quality Issue,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
-ione_hrp,HRP Master Data,HRP Data Quality Issue,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core
-ione_hrp,HRP Master Data,HRP Data Quality Issue,13,organization_unit,组织单元,Link,HRP Organization Unit,1,0,1,0,1,,,,组织单元,Core
-ione_hrp,HRP Master Data,HRP Data Quality Issue,14,cost_center,成本中心,Link,Cost Center,0,0,1,0,0,,,,成本中心,Core
-ione_hrp,HRP Master Data,HRP Data Quality Issue,15,fiscal_year,财政年度,Link,Fiscal Year,0,0,1,0,0,,,,财政年度,Core
-ione_hrp,HRP Master Data,HRP Data Quality Issue,16,currency,币种,Link,Currency,0,0,0,0,0,,CNY,,币种,Core
-ione_hrp,HRP Master Data,HRP Data Quality Issue,17,status,业务状态,Select,"Draft
-Under Review
-Approved
-Rejected
-In Progress
-Completed
-Cancelled
-Closed",0,0,1,0,1,,Draft,,业务状态,Core
-ione_hrp,HRP Master Data,HRP Data Quality Issue,18,workflow_state,工作流状态,Link,Workflow State,0,0,1,1,0,,,,工作流状态,Core
-ione_hrp,HRP Master Data,HRP Data Quality Issue,19,posting_date,业务日期,Date,,1,0,1,0,1,,,,业务日期,Core
-ione_hrp,HRP Master Data,HRP Data Quality Issue,20,applicant,申请人,Link,User,1,0,1,0,0,,,,申请人,Core
-ione_hrp,HRP Master Data,HRP Data Quality Issue,21,employee,员工,Link,Employee,0,0,1,0,0,,,,员工,Core
-ione_hrp,HRP Master Data,HRP Data Quality Issue,22,subject,主题,Data,,1,0,0,0,1,,,,主题,Core
-ione_hrp,HRP Master Data,HRP Data Quality Issue,23,total_amount,总金额,Currency,currency,0,0,0,0,1,2,,,总金额,Core
-ione_hrp,HRP Master Data,HRP Data Quality Issue,24,external_id,外部ID,Data,,0,0,1,0,0,,,,外部ID,Core
-ione_hrp,HRP Master Data,HRP Data Quality Issue,25,source_doctype,来源类型,Link,DocType,0,0,0,0,0,,,,来源类型,Core
-ione_hrp,HRP Master Data,HRP Data Quality Issue,26,source_name,来源单据,Dynamic Link,source_doctype,0,0,1,0,0,,,,来源单据,Core
-ione_hrp,HRP Master Data,HRP Data Quality Issue,27,submitted_at,提交时间,Datetime,,0,0,0,1,0,,,,提交时间,Core
-ione_hrp,HRP Master Data,HRP Data Quality Issue,28,approved_at,批准时间,Datetime,,0,0,0,1,0,,,,批准时间,Core
-ione_hrp,HRP Master Data,HRP Data Quality Issue,29,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
+ione_hrp,HRP Master Data,HRP Data Quality Rule,10,master_data_domain,主数据域,Link,HRP Master Data Domain,1,0,1,0,1,,,,受控主数据域,Core
+ione_hrp,HRP Master Data,HRP Data Quality Rule,11,target_doctype,标准主数据类型,Link,DocType,1,0,1,1,0,,,,由主数据域确定的标准DocType,Core
+ione_hrp,HRP Master Data,HRP Data Quality Rule,12,code,规则编码,Data,,1,1,1,0,1,,,,稳定且不可重命名的规则编码,Core
+ione_hrp,HRP Master Data,HRP Data Quality Rule,13,display_name,规则名称,Data,,1,0,0,0,1,,,,规则显示名称,Core
+ione_hrp,HRP Master Data,HRP Data Quality Rule,14,company,法人,Link,Company,1,0,1,0,1,,,,规则所属法人,Core
+ione_hrp,HRP Master Data,HRP Data Quality Rule,15,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,规则所属医院,Core
+ione_hrp,HRP Master Data,HRP Data Quality Rule,16,organization_unit,组织单元,Link,HRP Organization Unit,0,0,1,0,0,,,,可选组织数据范围,Core
+ione_hrp,HRP Master Data,HRP Data Quality Rule,17,target_field,校验字段,Data,,1,0,0,0,1,,,,静态策略允许校验的字段,Core
+ione_hrp,HRP Master Data,HRP Data Quality Rule,18,rule_type,规则类型,Select,"Required
+Allowed Values
+Maximum Length
+Named Pattern
+Reference Exists",1,0,0,0,1,,,,声明式规则操作符,Core
+ione_hrp,HRP Master Data,HRP Data Quality Rule,19,parameters_json,规则参数,Code,JSON,1,0,0,0,0,,,,规范化JSON参数,Core
+ione_hrp,HRP Master Data,HRP Data Quality Rule,20,severity,严重程度,Select,"Critical
+Major
+Minor",1,0,1,0,1,,Major,,问题严重程度,Core
+ione_hrp,HRP Master Data,HRP Data Quality Rule,21,enabled,启用,Check,,0,0,1,0,1,,1,,是否参与评估,Core
+ione_hrp,HRP Master Data,HRP Data Quality Rule,22,valid_from,生效日期,Date,,1,0,1,0,1,,,,规则生效日期,Core
+ione_hrp,HRP Master Data,HRP Data Quality Rule,23,valid_to,失效日期,Date,,0,0,1,0,0,,,,规则失效日期,Core
+ione_hrp,HRP Master Data,HRP Data Quality Rule,24,rule_digest,规则摘要,Data,,1,0,0,1,0,,,,规范规则的SHA-256摘要,Core
+ione_hrp,HRP Master Data,HRP Data Quality Rule,25,revision,修订号,Int,,1,0,0,1,0,,1,,乐观锁修订号,Core
+ione_hrp,HRP Master Data,HRP Data Quality Rule,26,remarks,说明,Small Text,,0,0,0,0,0,,,,规则说明；审计中仅保存摘要,Core
+ione_hrp,HRP Master Data,HRP Data Quality Issue,10,quality_rule,质量规则,Link,HRP Data Quality Rule,1,0,1,0,1,,,,触发问题的质量规则,Core
+ione_hrp,HRP Master Data,HRP Data Quality Issue,11,master_data_domain,主数据域,Link,HRP Master Data Domain,1,0,1,0,0,,,,受控主数据域,Core
+ione_hrp,HRP Master Data,HRP Data Quality Issue,12,target_doctype,标准主数据类型,Link,DocType,1,0,1,1,0,,,,被评估的标准DocType,Core
+ione_hrp,HRP Master Data,HRP Data Quality Issue,13,target_name,主数据记录,Dynamic Link,target_doctype,1,0,1,0,1,,,,被评估的标准记录,Core
+ione_hrp,HRP Master Data,HRP Data Quality Issue,14,company,法人,Link,Company,1,0,1,0,1,,,,问题所属法人,Core
+ione_hrp,HRP Master Data,HRP Data Quality Issue,15,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,问题所属医院,Core
+ione_hrp,HRP Master Data,HRP Data Quality Issue,16,organization_unit,组织单元,Link,HRP Organization Unit,0,0,1,0,0,,,,可选组织数据范围,Core
+ione_hrp,HRP Master Data,HRP Data Quality Issue,17,issue_key,问题唯一键,Data,,1,1,1,1,0,,,,规则与目标组合的稳定SHA-256键,Core
+ione_hrp,HRP Master Data,HRP Data Quality Issue,18,issue_status,问题状态,Select,"Open
+Resolved",1,0,1,1,1,,Open,,由评估服务自动流转,Core
+ione_hrp,HRP Master Data,HRP Data Quality Issue,19,severity,严重程度,Select,"Critical
+Major
+Minor",1,0,1,1,1,,,,问题严重程度,Core
+ione_hrp,HRP Master Data,HRP Data Quality Issue,20,failure_code,失败代码,Data,,0,0,0,1,0,,,,稳定的失败代码,Core
+ione_hrp,HRP Master Data,HRP Data Quality Issue,21,failure_message,失败说明,Data,,0,0,0,1,0,,,,不含观察值的失败说明,Core
+ione_hrp,HRP Master Data,HRP Data Quality Issue,22,observed_value_digest,观察值摘要,Data,,1,0,0,1,0,,,,观察值的SHA-256摘要,Core
+ione_hrp,HRP Master Data,HRP Data Quality Issue,23,rule_revision,规则修订号,Int,,1,0,0,1,0,,,,评估时的规则修订号,Core
+ione_hrp,HRP Master Data,HRP Data Quality Issue,24,rule_digest,规则摘要,Data,,1,0,0,1,0,,,,评估时的规则摘要,Core
+ione_hrp,HRP Master Data,HRP Data Quality Issue,25,first_detected_at,首次发现时间,Datetime,,1,0,1,1,1,,,,首次失败时间,Core
+ione_hrp,HRP Master Data,HRP Data Quality Issue,26,last_evaluated_at,最近评估时间,Datetime,,1,0,1,1,0,,,,最近评估时间,Core
+ione_hrp,HRP Master Data,HRP Data Quality Issue,27,resolved_at,解决时间,Datetime,,0,0,0,1,0,,,,最近解决时间,Core
+ione_hrp,HRP Master Data,HRP Data Quality Issue,28,occurrence_count,发现次数,Int,,1,0,0,1,0,,1,,累计失败次数,Core
+ione_hrp,HRP Master Data,HRP Data Quality Issue,29,revision,修订号,Int,,1,0,0,1,0,,1,,乐观锁修订号,Core
 ione_hrp,HRP Master Data,HRP Dictionary Value,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
 ione_hrp,HRP Master Data,HRP Dictionary Value,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
 ione_hrp,HRP Master Data,HRP Dictionary Value,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core

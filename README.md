@@ -81,6 +81,17 @@ ERPNext 标准 `Department`/`Cost Center`。`CORE-014` 负责幂等修订并校�
 审计、迁移和回滚规则见 `architecture/external_code_mapping.md` 与
 `architecture/adr/ADR-0015-service-owned-bidirectional-external-code-mapping.md`。
 
+## 主数据质量
+
+`HRP Data Quality Rule` 使用五类声明式白名单规则检查受控 ERPNext 标准主数据，既不执行用户
+SQL、Python 或任意正则，也不修改标准记录。`HRP Data Quality Issue` 按“规则 + 目标记录”维护
+唯一问题：失败时创建或重开，通过时自动解决；观察值只保存摘要且不进入公开响应。
+
+`CORE-023` 负责幂等创建和修订规则，`CORE-024` 评估单条记录并维护问题，`CORE-025` 查询脱敏
+问题。每日调度按规则排队，目标记录每批最多 200 条。两个 DocType 在 Desk 中只读，完整模型、
+安全边界、迁移和回滚规则见 `architecture/data_quality_rules.md` 与
+`architecture/adr/ADR-0016-declarative-master-data-quality-rules.md`。
+
 ## 非生产环境
 
 ```bash

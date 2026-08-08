@@ -306,6 +306,48 @@
   transaction_boundary: Read-only
   audit: Redacted target digest and revision log
   version: v1
+- api_code: CORE-023
+  app: ione_hrp
+  domain_group: Core
+  method: POST
+  path: /api/method/ione_hrp.api.v1.master_data.upsert_data_quality_rule
+  description: 创建或修订主数据质量规则
+  request_schema: code,display_name,master_data_domain,company,hospital,organization_unit,target_field,rule_type,parameters,severity,enabled,valid_from,valid_to,expected_revision,rule_name,remarks
+  response_schema: schema_version,name,code,display_name,master_data_domain,target_doctype,company,hospital,organization_unit,target_field,rule_type,parameters,severity,enabled,valid_from,valid_to,rule_digest,revision,remarks,changed,changed_fields,correlation_id,request_id,idempotency_replayed
+  required_role: System Manager or HRP System Manager or HRP Data Steward
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Redacted rule digest changed-fields and revision log
+  version: v1
+- api_code: CORE-024
+  app: ione_hrp
+  domain_group: Core
+  method: POST
+  path: /api/method/ione_hrp.api.v1.master_data.evaluate_data_quality
+  description: 评估一条标准主数据记录
+  request_schema: rule_name,target_name,effective_on,expected_rule_revision
+  response_schema: schema_version,passed,failure_code,issue,changed,correlation_id,request_id,idempotency_replayed
+  required_role: System Manager or HRP System Manager or HRP Data Steward
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Redacted issue key rule digest outcome and revision log
+  version: v1
+- api_code: CORE-025
+  app: ione_hrp
+  domain_group: Core
+  method: GET
+  path: /api/method/ione_hrp.api.v1.master_data.get_data_quality_issue
+  description: 查询主数据质量问题
+  request_schema: issue_name
+  response_schema: schema_version,name,quality_rule,master_data_domain,target_doctype,target_name,company,hospital,organization_unit,issue_status,severity,failure_code,failure_message,rule_revision,first_detected_at,last_evaluated_at,resolved_at,occurrence_count,revision
+  required_role: System Manager or HRP System Manager or HRP Data Steward
+  idempotency: Read-only deterministic
+  async: 'No'
+  transaction_boundary: Read-only
+  audit: Redacted issue key status and revision log
+  version: v1
 - api_code: FIN-001
   app: ione_hrp
   domain_group: Finance

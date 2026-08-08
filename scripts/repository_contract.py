@@ -18,6 +18,13 @@ from ione_hrp.common.change_governance import (
 	ChangeGovernanceError,
 	inspect_change_governance,
 )
+from ione_hrp.common.data_quality import (
+	DATA_QUALITY_ISSUE_DOCTYPE,
+	DATA_QUALITY_RULE_DOCTYPE,
+	DATA_QUALITY_SCHEMA_VERSION,
+	NAMED_PATTERNS,
+	RULE_TYPES,
+)
 from ione_hrp.common.environment_profiles import (
 	EnvironmentProfileError,
 	load_environment_registry,
@@ -3075,6 +3082,335 @@ def validate_external_code_mapping_contract(root: Path) -> list[str]:
 	return violations
 
 
+def validate_data_quality_contract(root: Path) -> list[str]:
+	module_root = root / APP_NAME / "hrp_master_data"
+	common_path = root / APP_NAME / "common" / "data_quality.py"
+	service_path = module_root / "services" / "data_quality.py"
+	permission_path = module_root / "permissions.py"
+	api_path = root / APP_NAME / "api" / "v1" / "master_data.py"
+	setup_path = root / APP_NAME / "setup" / "master_data.py"
+	hooks_path = root / APP_NAME / "hooks.py"
+	doctypes = {
+		DATA_QUALITY_RULE_DOCTYPE: "hrp_data_quality_rule",
+		DATA_QUALITY_ISSUE_DOCTYPE: "hrp_data_quality_issue",
+	}
+	runtime_paths = {
+		name: module_root / "doctype" / directory / f"{directory}.json"
+		for name, directory in doctypes.items()
+	}
+	controller_paths = {
+		name: module_root / "doctype" / directory / f"{directory}.py" for name, directory in doctypes.items()
+	}
+	blueprint_paths = {
+		name: root / "doctype_blueprints" / "hrp_master_data" / f"{directory}.json"
+		for name, directory in doctypes.items()
+	}
+	workspace_path = module_root / "workspace" / "hrp_master_data" / "hrp_master_data.json"
+	root_workspace_path = root / APP_NAME / "hrp_foundation" / "workspace" / "hrp" / "hrp.json"
+	documentation_path = root / "architecture" / "data_quality_rules.md"
+	adr_path = root / "architecture" / "adr" / "ADR-0016-declarative-master-data-quality-rules.md"
+	task_path = root / "backlog" / "COD-022.md"
+	change_path = root / "changes" / "COD-022.json"
+	pure_test_path = root / "tests" / "test_data_quality.py"
+	integration_test_path = module_root / "tests" / "test_data_quality.py"
+	catalog_paths = (
+		root / "api" / "api_catalog.csv",
+		root / "api" / "api_catalog.yaml",
+		root / "api" / "openapi.yaml",
+	)
+	required_paths = (
+		common_path,
+		service_path,
+		permission_path,
+		api_path,
+		setup_path,
+		hooks_path,
+		workspace_path,
+		root_workspace_path,
+		documentation_path,
+		adr_path,
+		task_path,
+		change_path,
+		pure_test_path,
+		integration_test_path,
+		*runtime_paths.values(),
+		*controller_paths.values(),
+		*blueprint_paths.values(),
+		*catalog_paths,
+	)
+	missing = [str(path.relative_to(root)) for path in required_paths if not path.is_file()]
+	if missing:
+		return [f"missing data quality contract file: {path}" for path in missing]
+
+	violations: list[str] = []
+	expected_fields = {
+		DATA_QUALITY_RULE_DOCTYPE: {
+			"master_data_domain",
+			"target_doctype",
+			"code",
+			"display_name",
+			"company",
+			"hospital",
+			"organization_unit",
+			"target_field",
+			"rule_type",
+			"parameters_json",
+			"severity",
+			"enabled",
+			"valid_from",
+			"valid_to",
+			"rule_digest",
+			"revision",
+			"remarks",
+		},
+		DATA_QUALITY_ISSUE_DOCTYPE: {
+			"quality_rule",
+			"master_data_domain",
+			"target_doctype",
+			"target_name",
+			"company",
+			"hospital",
+			"organization_unit",
+			"issue_key",
+			"issue_status",
+			"severity",
+			"failure_code",
+			"failure_message",
+			"observed_value_digest",
+			"rule_revision",
+			"rule_digest",
+			"first_detected_at",
+			"last_evaluated_at",
+			"resolved_at",
+			"occurrence_count",
+			"revision",
+		},
+	}
+	expected_roles = {"System Manager", "HRP System Manager", "HRP Data Steward"}
+	for name in doctypes:
+		runtime_text = runtime_paths[name].read_text(encoding="utf-8")
+		blueprint_text = blueprint_paths[name].read_text(encoding="utf-8")
+		runtime = json.loads(runtime_text)
+		blueprint = json.loads(blueprint_text)
+		if "?" in blueprint_text:
+			violations.append(f"{name} blueprint contains replacement question marks")
+		for metadata, source in ((runtime, "runtime"), (blueprint, "blueprint")):
+			if metadata.get("name") != name or metadata.get("module") != "HRP Master Data":
+				violations.append(f"{name} {source} has the wrong owner")
+			fields = {
+				field.get("fieldname") for field in metadata.get("fields", []) if field.get("fieldname")
+			}
+			if fields != expected_fields[name]:
+				violations.append(f"{name} {source} fields must match the contract")
+			permissions = metadata.get("permissions", [])
+			if {permission.get("role") for permission in permissions} != expected_roles:
+				violations.append(f"{name} {source} has the wrong roles")
+			for permission in permissions:
+				if permission.get("read") != 1 or any(
+					permission.get(action)
+					for action in ("write", "create", "delete", "submit", "cancel", "amend")
+				):
+					violations.append(f"{name} {source} must remain read-only")
+		if runtime.get("is_submittable") or runtime.get("allow_rename"):
+			violations.append(f"{name} must be non-submittable and non-renamable")
+	if (
+		json.loads(runtime_paths[DATA_QUALITY_RULE_DOCTYPE].read_text(encoding="utf-8")).get("autoname")
+		!= "field:code"
+	):
+		violations.append("data quality rule must use its stable code as name")
+	if (
+		json.loads(runtime_paths[DATA_QUALITY_ISSUE_DOCTYPE].read_text(encoding="utf-8")).get("autoname")
+		!= "hash"
+	):
+		violations.append("data quality issue must use a stable hash name")
+
+	common_text = common_path.read_text(encoding="utf-8")
+	for token in (
+		f"DATA_QUALITY_SCHEMA_VERSION = {DATA_QUALITY_SCHEMA_VERSION}",
+		"MAX_RULE_PARAMETERS_BYTES = 8 * 1024",
+		"MAX_ALLOWED_VALUES = 64",
+		"MAX_TEXT_RULE_LENGTH = 500",
+		"class DataQualityRuleUpsert",
+		"class DataQualityEvaluate",
+		"def evaluate_quality_value",
+		"def issue_key_for",
+		"def observed_value_digest",
+		"SENSITIVE_FIELD_TOKENS",
+	):
+		if token not in common_text:
+			violations.append(f"data quality public contract is missing: {token}")
+	for rule_type in RULE_TYPES:
+		if f'"{rule_type}"' not in common_text:
+			violations.append(f"data quality rule type is missing: {rule_type}")
+	for pattern_name in NAMED_PATTERNS:
+		if f'"{pattern_name}"' not in common_text:
+			violations.append(f"data quality named pattern is missing: {pattern_name}")
+	for forbidden in ("eval(", "exec(", "ast.literal_eval", "parameters_sql", "custom_regex"):
+		if forbidden in common_text:
+			violations.append(f"data quality rules must not execute user code: {forbidden}")
+
+	for name, controller_path in controller_paths.items():
+		controller_text = controller_path.read_text(encoding="utf-8")
+		for token in ("data_quality_service_write", "as_public_dict", "OPERATION_NOT_ALLOWED"):
+			if token not in controller_text:
+				violations.append(f"{name} controller is missing: {token}")
+		if "frappe.db.commit" in controller_text:
+			violations.append(f"{name} controller must not commit transactions")
+
+	service_text = service_path.read_text(encoding="utf-8")
+	for token in (
+		"class UpsertDataQualityRuleService",
+		"class EvaluateDataQualityService",
+		"DATA_QUALITY_BATCH_SIZE = 200",
+		"DomainService",
+		"FOR UPDATE",
+		"expected_rule_revision",
+		"issue_key_for",
+		"observed_value_digest",
+		"enqueue_with_audit",
+		"run_data_quality_rule_batch",
+		"run_data_quality_rules",
+	):
+		if token not in service_text:
+			violations.append(f"data quality service is missing: {token}")
+	if "frappe.db.commit" in service_text:
+		violations.append("data quality services must not commit transactions")
+	for forbidden in (
+		'frappe.get_doc("Department"',
+		'frappe.get_doc("Cost Center"',
+		'frappe.get_doc("Item"',
+		'frappe.get_doc("Supplier"',
+		'frappe.get_doc("Warehouse"',
+		"frappe.db.set_value",
+	):
+		if forbidden in service_text:
+			violations.append(f"data quality must not mutate a standard record: {forbidden}")
+
+	permission_text = permission_path.read_text(encoding="utf-8")
+	hooks_text = hooks_path.read_text(encoding="utf-8")
+	for token in ("def data_quality_query", "def can_read_data_quality", "DATA_QUALITY_READ_ROLES"):
+		if token not in permission_text:
+			violations.append(f"data quality permission contract is missing: {token}")
+	for name in doctypes:
+		for token in (
+			f'"{name}": "ione_hrp.hrp_master_data.permissions.data_quality_query"',
+			f'"{name}": "ione_hrp.hrp_master_data.permissions.can_read_data_quality"',
+		):
+			if token not in hooks_text:
+				violations.append(f"data quality permission hook is missing: {token}")
+	if "ione_hrp.hrp_master_data.services.data_quality.run_data_quality_rules" not in hooks_text:
+		violations.append("daily data quality scheduler hook is missing")
+
+	api_text = api_path.read_text(encoding="utf-8")
+	for method_name in (
+		"upsert_data_quality_rule",
+		"evaluate_data_quality",
+		"get_data_quality_issue",
+	):
+		if f"def {method_name}(" not in api_text:
+			violations.append(f"data quality API is missing method: {method_name}")
+	if "allow_guest=True" in api_text:
+		violations.append("data quality APIs must never allow guests")
+
+	setup_text = setup_path.read_text(encoding="utf-8")
+	for token in (
+		"idx_hrp_data_quality_rule_schedule",
+		"uniq_hrp_data_quality_issue_key",
+		"idx_hrp_data_quality_issue_status",
+	):
+		if token not in setup_text:
+			violations.append(f"data quality migration is missing: {token}")
+
+	workspace = json.loads(workspace_path.read_text(encoding="utf-8"))
+	root_workspace = json.loads(root_workspace_path.read_text(encoding="utf-8"))
+	workspace_links = {link.get("link_to") for link in workspace.get("links", [])}
+	root_links = {item.get("link_to") for item in root_workspace.get("sidebar_items", [])}
+	if not set(doctypes).issubset(workspace_links):
+		violations.append("master data workspace must expose data quality rules and issues")
+	if not set(doctypes).issubset(root_links):
+		violations.append("HRP sidebar must expose data quality rules and issues")
+
+	with (root / "design" / "doctype_catalog.csv").open(
+		encoding="utf-8-sig",
+		newline="",
+	) as stream:
+		doctype_rows = [row for row in csv.DictReader(stream) if row.get("doctype") in doctypes]
+	if {row.get("doctype") for row in doctype_rows} != set(doctypes):
+		violations.append("data quality DocType catalog rows are missing")
+	for row in doctype_rows:
+		if row.get("is_submittable") != "0" or row.get("allow_rename") != "0":
+			violations.append(f"{row.get('doctype')} catalog lifecycle is invalid")
+	with (root / "design" / "field_catalog.csv").open(
+		encoding="utf-8-sig",
+		newline="",
+	) as stream:
+		field_rows = [row for row in csv.DictReader(stream) if row.get("doctype") in doctypes]
+	for name, fields in expected_fields.items():
+		if {row.get("fieldname") for row in field_rows if row.get("doctype") == name} != fields:
+			violations.append(f"{name} field catalog must match runtime metadata")
+
+	endpoints = {
+		"/api/method/ione_hrp.api.v1.master_data.upsert_data_quality_rule": "post",
+		"/api/method/ione_hrp.api.v1.master_data.evaluate_data_quality": "post",
+		"/api/method/ione_hrp.api.v1.master_data.get_data_quality_issue": "get",
+	}
+	for catalog_path in catalog_paths:
+		catalog_text = catalog_path.read_text(encoding="utf-8")
+		for endpoint in endpoints:
+			if endpoint not in catalog_text:
+				violations.append(
+					f"{catalog_path.relative_to(root)} is missing data quality endpoint {endpoint}"
+				)
+	openapi = yaml.safe_load((root / "api" / "openapi.yaml").read_text(encoding="utf-8"))
+	required_role = "System Manager or HRP System Manager or HRP Data Steward"
+	for endpoint, method in endpoints.items():
+		path_contract = openapi.get("paths", {}).get(endpoint, {})
+		operation = path_contract.get(method, {})
+		if set(path_contract) != {method}:
+			violations.append(f"{endpoint} must expose only {method.upper()}")
+		if operation.get("x-required-role") != required_role:
+			violations.append(f"{endpoint} has the wrong data quality role contract")
+		if method == "post":
+			if operation.get("x-transaction-boundary") != "Single DB transaction":
+				violations.append(f"{endpoint} must use one database transaction")
+			if operation.get("x-idempotency") != "Required for write":
+				violations.append(f"{endpoint} must require idempotency")
+			if not any(
+				parameter.get("$ref") == "#/components/parameters/IdempotencyKey"
+				for parameter in operation.get("parameters", [])
+			):
+				violations.append(f"{endpoint} must declare Idempotency-Key")
+		else:
+			if operation.get("x-transaction-boundary") != "Read-only":
+				violations.append(f"{endpoint} must remain read-only")
+			if operation.get("x-idempotency") != "Read-only deterministic":
+				violations.append(f"{endpoint} must remain deterministic")
+
+	pure_test_text = pure_test_path.read_text(encoding="utf-8")
+	integration_test_text = integration_test_path.read_text(encoding="utf-8")
+	for token in (
+		"test_rule_parameters_reject_executable_or_ambiguous_content",
+		"test_declarative_evaluator_covers_all_rule_types",
+		"test_issue_and_observed_digests_are_deterministic_and_directional",
+	):
+		if token not in pure_test_text:
+			violations.append(f"data quality pure tests are missing: {token}")
+	for token in (
+		"test_metadata_migration_workspace_and_service_only_write",
+		"test_upsert_is_idempotent_revisioned_and_identity_is_immutable",
+		"test_failure_creates_issue_then_resolves_and_reopens",
+		"test_scope_role_and_unknown_target_checks_precede_idempotency",
+		"test_database_issue_uniqueness_race_is_reported_as_conflict",
+		"test_permissions_and_audit_are_redacted",
+		"test_scheduler_batches_rules_and_targets_without_unbounded_work",
+		"test_http_write_requires_idempotency_header",
+		"test_http_rule_evaluation_and_issue_query",
+	):
+		if token not in integration_test_text:
+			violations.append(f"data quality integration tests are missing: {token}")
+	return violations
+
+
 def validate_environment_profiles(root: Path) -> list[str]:
 	profile_path = root / APP_NAME / "config" / "environment_profiles.json"
 	manager_path = root / "scripts" / "environment_manager.py"
@@ -3337,6 +3673,7 @@ def collect_violations(root: Path) -> list[str]:
 	violations.extend(validate_organization_mapping_contract(root))
 	violations.extend(validate_master_data_governance_contract(root))
 	violations.extend(validate_external_code_mapping_contract(root))
+	violations.extend(validate_data_quality_contract(root))
 	return violations
 
 

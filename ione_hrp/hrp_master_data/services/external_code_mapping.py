@@ -132,6 +132,31 @@ def _assert_hospital_scope(
 		raise_ione_error("CONFLICT")
 
 
+def assert_master_data_hospital_scope(
+	*,
+	company: str,
+	hospital: str,
+	organization_unit: str | None,
+	effective_on: str,
+) -> None:
+	"""Validate the shared master-data organization boundary."""
+	_assert_hospital_scope(
+		company=company,
+		hospital=hospital,
+		organization_unit=organization_unit,
+		effective_on=effective_on,
+	)
+
+
+def get_operational_master_data_domain(
+	domain_code: str,
+	*,
+	lock: bool,
+) -> tuple[HRPMasterDataDomain, MasterDataTargetPolicy]:
+	"""Return an enabled master-data domain whose code policy still matches."""
+	return _operational_domain(domain_code, lock=lock)
+
+
 def _assert_internal_target(
 	policy: MasterDataTargetPolicy,
 	*,
@@ -504,6 +529,8 @@ __all__ = [
 	"ResolveExternalCodeMappingService",
 	"ResolveInternalCodeMappingService",
 	"UpsertExternalCodeMappingService",
+	"assert_master_data_hospital_scope",
+	"get_operational_master_data_domain",
 	"resolve_external_code_mapping",
 	"resolve_internal_code_mapping",
 	"upsert_external_code_mapping",
