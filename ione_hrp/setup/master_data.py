@@ -30,6 +30,21 @@ def ensure_master_data_governance() -> dict[str, object]:
 			["enabled", "valid_from", "valid_to"],
 			"idx_hrp_external_code_effectivity",
 		),
+		(
+			"HRP Data Quality Rule",
+			["enabled", "valid_from", "valid_to"],
+			"idx_hrp_data_quality_rule_schedule",
+		),
+		(
+			"HRP Data Quality Issue",
+			["issue_key"],
+			"uniq_hrp_data_quality_issue_key",
+		),
+		(
+			"HRP Data Quality Issue",
+			["issue_status", "severity", "last_evaluated_at"],
+			"idx_hrp_data_quality_issue_status",
+		),
 	):
 		if not frappe.db.table_exists(doctype):
 			continue

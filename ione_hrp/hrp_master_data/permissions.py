@@ -4,6 +4,7 @@ from typing import Protocol
 
 import frappe
 
+from ione_hrp.hrp_master_data.services.data_quality import DATA_QUALITY_READ_ROLES
 from ione_hrp.hrp_master_data.services.external_code_mapping import (
 	EXTERNAL_CODE_MAPPING_READ_ROLES,
 )
@@ -66,9 +67,31 @@ def can_read_external_code_mapping(
 	return bool(EXTERNAL_CODE_MAPPING_READ_ROLES.intersection(_user_roles(user)))
 
 
+def data_quality_query(user: str | None = None) -> str:
+	user = user or frappe.session.user
+	if user == "Guest":
+		return "1=0"
+	return "" if DATA_QUALITY_READ_ROLES.intersection(_user_roles(user)) else "1=0"
+
+
+def can_read_data_quality(
+	doc: object,
+	user: str | None = None,
+	ptype: str | None = None,
+	debug: bool = False,
+) -> bool:
+	del doc, debug
+	user = user or frappe.session.user
+	if user == "Guest" or ptype not in {None, "read"}:
+		return False
+	return bool(DATA_QUALITY_READ_ROLES.intersection(_user_roles(user)))
+
+
 __all__ = [
+	"can_read_data_quality",
 	"can_read_external_code_mapping",
 	"can_read_master_data_request",
+	"data_quality_query",
 	"external_code_mapping_query",
 	"master_data_request_query",
 ]

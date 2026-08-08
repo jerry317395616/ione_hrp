@@ -4587,6 +4587,231 @@ paths:
       x-required-role: System Manager or HRP System Manager or HRP Data Steward or HRP Integration User
       x-transaction-boundary: Read-only
       x-idempotency: Read-only deterministic
+  /api/method/ione_hrp.api.v1.master_data.upsert_data_quality_rule:
+    post:
+      operationId: core_023
+      summary: 创建或修订主数据质量规则
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - code
+              - display_name
+              - master_data_domain
+              - company
+              - hospital
+              - target_field
+              - rule_type
+              - valid_from
+              properties:
+                code:
+                  type: string
+                  maxLength: 140
+                display_name:
+                  type: string
+                  maxLength: 140
+                master_data_domain:
+                  type: string
+                  maxLength: 140
+                company:
+                  type: string
+                  maxLength: 140
+                hospital:
+                  type: string
+                  maxLength: 140
+                organization_unit:
+                  type:
+                  - string
+                  - 'null'
+                  maxLength: 140
+                target_field:
+                  type: string
+                  pattern: ^[a-z][a-z0-9_]{0,63}$
+                rule_type:
+                  type: string
+                  enum:
+                  - Required
+                  - Allowed Values
+                  - Maximum Length
+                  - Named Pattern
+                  - Reference Exists
+                parameters:
+                  oneOf:
+                  - type: object
+                  - type: string
+                  - type: 'null'
+                severity:
+                  type: string
+                  enum:
+                  - Critical
+                  - Major
+                  - Minor
+                  default: Major
+                enabled:
+                  type: boolean
+                  default: true
+                valid_from:
+                  type: string
+                  format: date
+                valid_to:
+                  type:
+                  - string
+                  - 'null'
+                  format: date
+                expected_revision:
+                  type: integer
+                  minimum: 0
+                  default: 0
+                rule_name:
+                  type:
+                  - string
+                  - 'null'
+                  maxLength: 140
+                remarks:
+                  type:
+                  - string
+                  - 'null'
+      responses:
+        '200':
+          description: 质量规则已创建、修订或幂等重放
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '400':
+          description: Invalid rule contract or missing idempotency key
+          content: *id001
+        '401':
+          description: Authentication required
+          content: *id001
+        '403':
+          description: Data quality write role required
+          content: *id001
+        '404':
+          description: Referenced domain or scope not found
+          content: *id001
+        '409':
+          description: Revision or stable-code conflict
+          content: *id001
+        '500':
+          description: Persisted rule configuration is invalid
+          content: *id001
+      x-required-role: System Manager or HRP System Manager or HRP Data Steward
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+  /api/method/ione_hrp.api.v1.master_data.evaluate_data_quality:
+    post:
+      operationId: core_024
+      summary: 评估一条标准主数据记录
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - rule_name
+              - target_name
+              - effective_on
+              - expected_rule_revision
+              properties:
+                rule_name:
+                  type: string
+                  maxLength: 140
+                target_name:
+                  type: string
+                  maxLength: 140
+                effective_on:
+                  type: string
+                  format: date
+                expected_rule_revision:
+                  type: integer
+                  minimum: 1
+      responses:
+        '200':
+          description: 评估完成并自动创建、解决或重新打开质量问题
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '400':
+          description: Invalid evaluation contract or missing idempotency key
+          content: *id001
+        '401':
+          description: Authentication required
+          content: *id001
+        '403':
+          description: Data quality write role required
+          content: *id001
+        '404':
+          description: Rule target or scope not found
+          content: *id001
+        '409':
+          description: Rule revision or issue uniqueness conflict
+          content: *id001
+        '500':
+          description: Persisted rule configuration is invalid
+          content: *id001
+      x-required-role: System Manager or HRP System Manager or HRP Data Steward
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+  /api/method/ione_hrp.api.v1.master_data.get_data_quality_issue:
+    get:
+      operationId: core_025
+      summary: 查询主数据质量问题
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      - name: issue_name
+        in: query
+        required: true
+        schema:
+          type: string
+          maxLength: 140
+      responses:
+        '200':
+          description: 不含观察值与内部摘要的质量问题
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '400':
+          description: Invalid request
+          content: *id001
+        '401':
+          description: Authentication required
+          content: *id001
+        '403':
+          description: Data quality read role required
+          content: *id001
+        '404':
+          description: Quality issue not found
+          content: *id001
+      x-required-role: System Manager or HRP System Manager or HRP Data Steward
+      x-transaction-boundary: Read-only
+      x-idempotency: Read-only deterministic
 components:
   headers:
     CorrelationId:

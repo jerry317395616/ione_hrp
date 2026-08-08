@@ -1,0 +1,198 @@
+{
+	"actions": [],
+	"allow_rename": 0,
+	"autoname": "hash",
+	"creation": "2026-08-08 00:00:00.000000",
+	"doctype": "DocType",
+	"engine": "InnoDB",
+	"field_order": [
+		"quality_rule",
+		"master_data_domain",
+		"target_doctype",
+		"target_name",
+		"company",
+		"hospital",
+		"organization_unit",
+		"issue_key",
+		"issue_status",
+		"severity",
+		"failure_code",
+		"failure_message",
+		"observed_value_digest",
+		"rule_revision",
+		"rule_digest",
+		"first_detected_at",
+		"last_evaluated_at",
+		"resolved_at",
+		"occurrence_count",
+		"revision"
+	],
+	"fields": [
+		{
+			"fieldname": "quality_rule",
+			"fieldtype": "Link",
+			"in_list_view": 1,
+			"label": "质量规则",
+			"options": "HRP Data Quality Rule",
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "master_data_domain",
+			"fieldtype": "Link",
+			"label": "主数据域",
+			"options": "HRP Master Data Domain",
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "target_doctype",
+			"fieldtype": "Link",
+			"label": "标准主数据类型",
+			"options": "DocType",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "target_name",
+			"fieldtype": "Dynamic Link",
+			"in_list_view": 1,
+			"label": "主数据记录",
+			"options": "target_doctype",
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "company",
+			"fieldtype": "Link",
+			"in_list_view": 1,
+			"label": "法人",
+			"options": "Company",
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "hospital",
+			"fieldtype": "Link",
+			"label": "医院",
+			"options": "HRP Hospital",
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "organization_unit",
+			"fieldtype": "Link",
+			"label": "组织单元",
+			"options": "HRP Organization Unit",
+			"search_index": 1
+		},
+		{
+			"fieldname": "issue_key",
+			"fieldtype": "Data",
+			"hidden": 1,
+			"label": "问题唯一键",
+			"no_copy": 1,
+			"read_only": 1,
+			"reqd": 1,
+			"unique": 1
+		},
+		{
+			"default": "Open",
+			"fieldname": "issue_status",
+			"fieldtype": "Select",
+			"in_list_view": 1,
+			"label": "问题状态",
+			"options": "Open\nResolved",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "severity",
+			"fieldtype": "Select",
+			"in_list_view": 1,
+			"label": "严重程度",
+			"options": "Critical\nMajor\nMinor",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "failure_code",
+			"fieldtype": "Data",
+			"label": "失败代码",
+			"read_only": 1,
+			"search_index": 1
+		},
+		{ "fieldname": "failure_message", "fieldtype": "Data", "label": "失败说明", "read_only": 1 },
+		{
+			"fieldname": "observed_value_digest",
+			"fieldtype": "Data",
+			"hidden": 1,
+			"label": "观察值摘要",
+			"no_copy": 1,
+			"read_only": 1,
+			"reqd": 1
+		},
+		{ "fieldname": "rule_revision", "fieldtype": "Int", "label": "规则修订号", "read_only": 1, "reqd": 1 },
+		{
+			"fieldname": "rule_digest",
+			"fieldtype": "Data",
+			"hidden": 1,
+			"label": "规则摘要",
+			"no_copy": 1,
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "first_detected_at",
+			"fieldtype": "Datetime",
+			"in_list_view": 1,
+			"label": "首次发现时间",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "last_evaluated_at",
+			"fieldtype": "Datetime",
+			"label": "最近评估时间",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{ "fieldname": "resolved_at", "fieldtype": "Datetime", "label": "解决时间", "read_only": 1 },
+		{
+			"default": "1",
+			"fieldname": "occurrence_count",
+			"fieldtype": "Int",
+			"label": "发现次数",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "revision",
+			"fieldtype": "Int",
+			"label": "修订号",
+			"no_copy": 1,
+			"read_only": 1,
+			"reqd": 1
+		}
+	],
+	"index_web_pages_for_search": 0,
+	"links": [],
+	"modified": "2026-08-08 00:00:00.000000",
+	"modified_by": "Administrator",
+	"module": "HRP Master Data",
+	"name": "HRP Data Quality Issue",
+	"owner": "Administrator",
+	"permissions": [
+		{ "read": 1, "role": "System Manager" },
+		{ "read": 1, "role": "HRP System Manager" },
+		{ "read": 1, "role": "HRP Data Steward" }
+	],
+	"search_fields": "quality_rule,target_name,failure_code,company,hospital",
+	"sort_field": "last_evaluated_at",
+	"sort_order": "DESC",
+	"states": [],
+	"title_field": "target_name",
+	"track_changes": 1
+}

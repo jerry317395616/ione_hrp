@@ -2,6 +2,11 @@ from __future__ import annotations
 
 import frappe
 
+from ione_hrp.common.data_quality import (
+	DataQualityContractError,
+	build_data_quality_evaluate,
+	build_data_quality_rule_upsert,
+)
 from ione_hrp.common.external_code_mapping import (
 	ExternalCodeMappingContractError,
 	build_external_code_mapping_resolve,
@@ -14,6 +19,12 @@ from ione_hrp.common.master_data import (
 	build_master_data_request_review,
 	build_master_data_request_submit,
 	build_master_data_request_upsert,
+)
+from ione_hrp.hrp_master_data.services import (
+	evaluate_data_quality as evaluate_data_quality_service,
+)
+from ione_hrp.hrp_master_data.services import (
+	get_data_quality_issue as get_data_quality_issue_service,
 )
 from ione_hrp.hrp_master_data.services import (
 	get_master_data_request as get_master_data_request_service,
@@ -32,6 +43,9 @@ from ione_hrp.hrp_master_data.services import (
 )
 from ione_hrp.hrp_master_data.services import (
 	submit_master_data_request as submit_master_data_request_service,
+)
+from ione_hrp.hrp_master_data.services import (
+	upsert_data_quality_rule as upsert_data_quality_rule_service,
 )
 from ione_hrp.hrp_master_data.services import (
 	upsert_external_code_mapping as upsert_external_code_mapping_service,
@@ -271,3 +285,88 @@ def resolve_internal_code_mapping(
 			query,
 			correlation_id=correlation_id,
 		)
+
+
+@frappe.whitelist(methods=["POST"])
+def upsert_data_quality_rule(
+	code: str,
+	display_name: str,
+	master_data_domain: str,
+	company: str,
+	hospital: str,
+	target_field: str,
+	rule_type: str,
+	valid_from: str,
+	parameters: str | dict[str, object] | None = None,
+	severity: str = "Major",
+	enabled: bool | int | str = True,
+	valid_to: str | None = None,
+	organization_unit: str | None = None,
+	expected_revision: int | str = 0,
+	rule_name: str | None = None,
+	remarks: str | None = None,
+	correlation_id: str | None = None,
+) -> dict[str, object]:
+	with service_audit_scope(correlation_id):
+		try:
+			command = build_data_quality_rule_upsert(
+				rule_name=rule_name,
+				code=code,
+				display_name=display_name,
+				master_data_domain=master_data_domain,
+				company=company,
+				hospital=hospital,
+				organization_unit=organization_unit,
+				target_field=target_field,
+				rule_type=rule_type,
+				parameters=parameters,
+				severity=severity,
+				enabled=enabled,
+				valid_from=valid_from,
+				valid_to=valid_to,
+				expected_revision=expected_revision,
+				remarks=remarks,
+			)
+		except DataQualityContractError as exc:
+			raise_ione_error("INVALID_REQUEST", cause=exc)
+		return upsert_data_quality_rule_service(
+			command,
+			idempotency_key=None,
+			correlation_id=correlation_id,
+		)
+
+
+@frappe.whitelist(methods=["POST"])
+def evaluate_data_quality(
+	rule_name: str,
+	target_name: str,
+	effective_on: str,
+	expected_rule_revision: int | str,
+	correlation_id: str | None = None,
+) -> dict[str, object]:
+	with service_audit_scope(correlation_id):
+		try:
+			command = build_data_quality_evaluate(
+				rule_name=rule_name,
+				target_name=target_name,
+				effective_on=effective_on,
+				expected_rule_revision=expected_rule_revision,
+			)
+		except DataQualityContractError as exc:
+			raise_ione_error("INVALID_REQUEST", cause=exc)
+		return evaluate_data_quality_service(
+			command,
+			idempotency_key=None,
+			correlation_id=correlation_id,
+		)
+
+
+@frappe.whitelist(methods=["GET"])
+def get_data_quality_issue(
+	issue_name: str,
+	correlation_id: str | None = None,
+) -> dict[str, object]:
+	return get_data_quality_issue_service(
+		issue_name=issue_name,
+		correlation_id=correlation_id,
+	)

@@ -37,16 +37,21 @@ extend_doctype_class = {}
 doc_events = {}
 
 permission_query_conditions = {
+	"HRP Data Quality Issue": "ione_hrp.hrp_master_data.permissions.data_quality_query",
+	"HRP Data Quality Rule": "ione_hrp.hrp_master_data.permissions.data_quality_query",
 	"HRP External Code Mapping": "ione_hrp.hrp_master_data.permissions.external_code_mapping_query",
 	"HRP Master Data Request": "ione_hrp.hrp_master_data.permissions.master_data_request_query",
 }
 has_permission = {
+	"HRP Data Quality Issue": "ione_hrp.hrp_master_data.permissions.can_read_data_quality",
+	"HRP Data Quality Rule": "ione_hrp.hrp_master_data.permissions.can_read_data_quality",
 	"HRP External Code Mapping": "ione_hrp.hrp_master_data.permissions.can_read_external_code_mapping",
 	"HRP Master Data Request": "ione_hrp.hrp_master_data.permissions.can_read_master_data_request",
 }
 
 scheduler_events = {
 	"daily": [
+		"ione_hrp.hrp_master_data.services.data_quality.run_data_quality_rules",
 		"ione_hrp.setup.maintenance.daily_maintenance",
 	],
 }
