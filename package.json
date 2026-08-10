@@ -6,7 +6,6 @@
 	"engines": {
 		"node": ">=20.19.0"
 	},
-	"packageManager": "npm@11.17.0",
 	"scripts": {
 		"typecheck": "pyright --project pyrightconfig.json",
 		"lint:frontend": "eslint . --max-warnings 0",
