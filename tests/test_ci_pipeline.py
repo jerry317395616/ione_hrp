@@ -10,6 +10,7 @@ from scripts.repository_contract import validate_ci_pipeline
 ROOT = Path(__file__).resolve().parents[1]
 CI_FILES = (
 	".github/workflows/ci.yml",
+	"scripts/bootstrap_latest_develop.sh",
 	"scripts/ci_integration.sh",
 )
 
@@ -60,8 +61,8 @@ class CIPipelineTest(unittest.TestCase):
 			copy_ci_files(root)
 			workflow_path = root / ".github/workflows/ci.yml"
 			workflow = workflow_path.read_text(encoding="utf-8").replace(
-				"    if: always()\n",
-				"    if: success()\n",
+				"  required:\n    name: Required\n    if: always()\n",
+				"  required:\n    name: Required\n    if: success()\n",
 				1,
 			)
 			workflow_path.write_text(workflow, encoding="utf-8")
@@ -130,6 +131,22 @@ class CIPipelineTest(unittest.TestCase):
 			script_path.write_text(script, encoding="utf-8")
 			self.assertIn(
 				"CI integration script is missing: version_lock.py",
+				validate_ci_pipeline(root),
+			)
+
+	def test_rejects_bootstrap_without_clean_pinned_upstream_worktrees(self) -> None:
+		with tempfile.TemporaryDirectory() as temp:
+			root = Path(temp)
+			copy_ci_files(root)
+			script_path = root / "scripts/bootstrap_latest_develop.sh"
+			script = script_path.read_text(encoding="utf-8").replace(
+				'  git -C "$app_dir" clean -fd\n',
+				"",
+				1,
+			)
+			script_path.write_text(script, encoding="utf-8")
+			self.assertIn(
+				'locked Bench bootstrap is missing: git -C "$app_dir" clean -fd',
 				validate_ci_pipeline(root),
 			)
 

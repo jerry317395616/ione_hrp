@@ -28,6 +28,7 @@ from scripts.repository_contract import (
 	validate_immutable_ledger_contract,
 	validate_master_data_governance_contract,
 	validate_module_boundaries,
+	validate_numbering_contract,
 	validate_organization_hierarchy_contract,
 	validate_organization_mapping_contract,
 	validate_performance_baseline_contract,
@@ -191,6 +192,9 @@ class RepositoryContractTest(unittest.TestCase):
 
 	def test_current_data_quality_contract_is_mandatory(self) -> None:
 		self.assertEqual(validate_data_quality_contract(ROOT), [])
+
+	def test_current_numbering_contract_is_mandatory(self) -> None:
+		self.assertEqual(validate_numbering_contract(ROOT), [])
 
 	def test_rejects_direct_transaction_commit(self) -> None:
 		with tempfile.TemporaryDirectory() as temp:

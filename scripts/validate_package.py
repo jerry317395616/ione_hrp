@@ -31,6 +31,10 @@ def main() -> None:
 	if pyproject["project"]["name"] != "ione_hrp":
 		fail("pyproject project name mismatch")
 	load_lock(ROOT / "resolved_versions.lock.json")
+	manifest = json.loads((ROOT / "DELIVERY_MANIFEST.json").read_text(encoding="utf-8"))
+	counts = manifest.get("counts")
+	if not isinstance(counts, dict):
+		fail("delivery manifest counts are missing")
 
 	registry = load_module_registry(ROOT)
 	module_violations = validate_module_source_tree(ROOT, expected_module_count=36)
@@ -44,14 +48,31 @@ def main() -> None:
 
 	with (ROOT / "design" / "doctype_catalog.csv").open(encoding="utf-8-sig", newline="") as handle:
 		rows = list(csv.DictReader(handle))
-	if len(rows) != 399:
-		fail(f"expected 399 design DocTypes, got {len(rows)}")
+	expected_doctypes = counts.get("design_doctypes")
+	if len(rows) != expected_doctypes:
+		fail(f"expected {expected_doctypes} design DocTypes, got {len(rows)}")
 	if {row["app"] for row in rows} != {"ione_hrp"}:
 		fail("doctype catalog contains non-single-app values")
 
+	with (ROOT / "design" / "field_catalog.csv").open(encoding="utf-8-sig", newline="") as handle:
+		field_rows = list(csv.DictReader(handle))
+	expected_fields = counts.get("design_fields")
+	if len(field_rows) != expected_fields:
+		fail(f"expected {expected_fields} design fields, got {len(field_rows)}")
+
 	blueprint_files = list((ROOT / "doctype_blueprints").rglob("*.json"))
-	if len(blueprint_files) != 399:
-		fail(f"expected 399 blueprint files, got {len(blueprint_files)}")
+	expected_blueprints = counts.get("doctype_blueprints")
+	if len(blueprint_files) != expected_blueprints:
+		fail(f"expected {expected_blueprints} blueprint files, got {len(blueprint_files)}")
+
+	runtime_doctypes = []
+	for path in PKG.glob("*/doctype/*/*.json"):
+		payload = json.loads(path.read_text(encoding="utf-8"))
+		if payload.get("doctype") == "DocType":
+			runtime_doctypes.append(path)
+	expected_runtime_doctypes = counts.get("starter_doctypes")
+	if len(runtime_doctypes) != expected_runtime_doctypes:
+		fail(f"expected {expected_runtime_doctypes} runtime DocTypes, got {len(runtime_doctypes)}")
 
 	print(
 		json.dumps(
@@ -59,7 +80,9 @@ def main() -> None:
 				"status": "ok",
 				"modules": len(registry.modules),
 				"doctypes": len(rows),
+				"fields": len(field_rows),
 				"blueprints": len(blueprint_files),
+				"runtime_doctypes": len(runtime_doctypes),
 			},
 			ensure_ascii=False,
 		)

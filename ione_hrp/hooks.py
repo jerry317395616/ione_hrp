@@ -41,12 +41,16 @@ permission_query_conditions = {
 	"HRP Data Quality Rule": "ione_hrp.hrp_master_data.permissions.data_quality_query",
 	"HRP External Code Mapping": "ione_hrp.hrp_master_data.permissions.external_code_mapping_query",
 	"HRP Master Data Request": "ione_hrp.hrp_master_data.permissions.master_data_request_query",
+	"HRP Number Reservation": "ione_hrp.hrp_foundation.permissions.number_reservation_query",
+	"HRP Numbering Scheme": "ione_hrp.hrp_foundation.permissions.numbering_scheme_query",
 }
 has_permission = {
 	"HRP Data Quality Issue": "ione_hrp.hrp_master_data.permissions.can_read_data_quality",
 	"HRP Data Quality Rule": "ione_hrp.hrp_master_data.permissions.can_read_data_quality",
 	"HRP External Code Mapping": "ione_hrp.hrp_master_data.permissions.can_read_external_code_mapping",
 	"HRP Master Data Request": "ione_hrp.hrp_master_data.permissions.can_read_master_data_request",
+	"HRP Number Reservation": "ione_hrp.hrp_foundation.permissions.can_read_number_reservation",
+	"HRP Numbering Scheme": "ione_hrp.hrp_foundation.permissions.can_read_numbering_scheme",
 }
 
 scheduler_events = {

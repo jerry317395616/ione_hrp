@@ -1,0 +1,1 @@
+"""HRP number reservation DocType."""

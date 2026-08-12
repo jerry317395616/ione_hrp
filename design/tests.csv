@@ -67,7 +67,7 @@ TST-0065,API,Core,CORE-002 鉴权、幂等和错误契约,有效/无效令牌与
 TST-0066,API,Core,CORE-003 鉴权、幂等和错误契约,有效/无效令牌与重复Idempotency-Key,调用 POST /api/method/ione_hrp_core.api.v1.sod.validate 正常、重复、缺字段、越权四组请求,响应schema稳定；重复写不重复落账；越权403；校验错误422,pytest API client
 TST-0067,API,Core,CORE-004 鉴权、幂等和错误契约,有效/无效令牌与重复Idempotency-Key,调用 GET /api/method/ione_hrp_core.api.v1.master.get_mapping 正常、重复、缺字段、越权四组请求,响应schema稳定；重复写不重复落账；越权403；校验错误422,pytest API client
 TST-0068,API,Core,CORE-005 鉴权、幂等和错误契约,有效/无效令牌与重复Idempotency-Key,调用 POST /api/method/ione_hrp_core.api.v1.master.submit_change 正常、重复、缺字段、越权四组请求,响应schema稳定；重复写不重复落账；越权403；校验错误422,pytest API client
-TST-0069,API,Core,CORE-006 鉴权、幂等和错误契约,有效/无效令牌与重复Idempotency-Key,调用 POST /api/method/ione_hrp_core.api.v1.numbering.next 正常、重复、缺字段、越权四组请求,响应schema稳定；重复写不重复落账；越权403；校验错误422,pytest API client
+TST-0069,API,Core,CORE-006 鉴权、幂等和错误契约,有效/无效令牌与重复Idempotency-Key,调用 POST /api/method/ione_hrp.api.v1.core.numbering.next 正常、重复、缺字段、越权四组请求,响应schema稳定；重复写不重复分配编号；越权403；校验错误400,pytest API client
 TST-0070,API,Core,CORE-007 鉴权、幂等和错误契约,有效/无效令牌与重复Idempotency-Key,调用 GET /api/method/ione_hrp_core.api.v1.inbox.list 正常、重复、缺字段、越权四组请求,响应schema稳定；重复写不重复落账；越权403；校验错误422,pytest API client
 TST-0071,API,Core,CORE-008 鉴权、幂等和错误契约,有效/无效令牌与重复Idempotency-Key,调用 POST /api/method/ione_hrp_core.api.v1.delegation.create 正常、重复、缺字段、越权四组请求,响应schema稳定；重复写不重复落账；越权403；校验错误422,pytest API client
 TST-0072,API,Finance,FIN-001 鉴权、幂等和错误契约,有效/无效令牌与重复Idempotency-Key,调用 POST /api/method/ione_hrp_finance.api.v1.budget.check 正常、重复、缺字段、越权四组请求,响应schema稳定；重复写不重复落账；越权403；校验错误422,pytest API client

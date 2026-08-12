@@ -51,6 +51,16 @@ from ione_hrp.common.master_data import (
 	MASTER_DATA_SCHEMA_VERSION,
 	MASTER_DATA_TARGET_POLICIES,
 )
+from ione_hrp.common.numbering import (
+	MAX_DIMENSIONS,
+	MAX_SEQUENCE_DIGITS,
+	MAX_TEMPLATE_LENGTH,
+	MIN_SEQUENCE_DIGITS,
+	NUMBER_RESERVATION_DOCTYPE,
+	NUMBERING_SCHEMA_VERSION,
+	NUMBERING_SCHEME_DOCTYPE,
+	RESET_POLICIES,
+)
 from ione_hrp.common.organization import (
 	MAX_HIERARCHY_NODES,
 	ORGANIZATION_SCHEMA_VERSION,
@@ -505,6 +515,19 @@ def validate_ci_pipeline(root: Path) -> list[str]:
 	):
 		if required_token not in integration_script:
 			violations.append(f"CI integration script is missing: {required_token}")
+	bootstrap_path = root / "scripts" / "bootstrap_latest_develop.sh"
+	if not bootstrap_path.is_file():
+		violations.append("missing scripts/bootstrap_latest_develop.sh")
+	else:
+		bootstrap = bootstrap_path.read_text(encoding="utf-8")
+		for required_token in (
+			'if [[ -e "$BENCH_DIR" ]]',
+			'git -C "$app_dir" reset --hard HEAD',
+			'git -C "$app_dir" clean -fd',
+			'git -C "$app_dir" checkout --detach "$commit"',
+		):
+			if required_token not in bootstrap:
+				violations.append(f"locked Bench bootstrap is missing: {required_token}")
 	return violations
 
 
@@ -1736,6 +1759,7 @@ def validate_software_supply_chain_contract(root: Path) -> list[str]:
 		"evaluate_security_reports",
 		"SHA256SUMS",
 		"subprocess.run",
+		"redacted_gitleaks_diagnostics",
 	):
 		if token not in runner_text:
 			violations.append(f"software supply chain runner is missing: {token}")
@@ -3411,6 +3435,357 @@ def validate_data_quality_contract(root: Path) -> list[str]:
 	return violations
 
 
+def validate_numbering_contract(root: Path) -> list[str]:
+	module_root = root / APP_NAME / "hrp_foundation"
+	common_path = root / APP_NAME / "common" / "numbering.py"
+	service_path = module_root / "services" / "numbering.py"
+	permission_path = module_root / "permissions.py"
+	api_path = root / APP_NAME / "api" / "v1" / "core" / "numbering.py"
+	setup_path = root / APP_NAME / "setup" / "numbering.py"
+	install_path = root / APP_NAME / "setup" / "install.py"
+	hooks_path = root / APP_NAME / "hooks.py"
+	doctypes = {
+		NUMBERING_SCHEME_DOCTYPE: "hrp_numbering_scheme",
+		NUMBER_RESERVATION_DOCTYPE: "hrp_number_reservation",
+	}
+	runtime_paths = {
+		name: module_root / "doctype" / directory / f"{directory}.json"
+		for name, directory in doctypes.items()
+	}
+	controller_paths = {
+		name: module_root / "doctype" / directory / f"{directory}.py" for name, directory in doctypes.items()
+	}
+	blueprint_paths = {
+		name: root / "doctype_blueprints" / "hrp_foundation" / f"{directory}.json"
+		for name, directory in doctypes.items()
+	}
+	workspace_path = module_root / "workspace" / "hrp" / "hrp.json"
+	documentation_path = root / "architecture" / "unified_numbering.md"
+	adr_path = root / "architecture" / "adr" / "ADR-0017-atomic-unified-number-reservations.md"
+	task_path = root / "backlog" / "COD-023.md"
+	change_path = root / "changes" / "COD-023.json"
+	pure_test_path = root / "tests" / "test_numbering.py"
+	integration_test_path = module_root / "tests" / "test_numbering.py"
+	catalog_paths = (
+		root / "api" / "api_catalog.csv",
+		root / "api" / "api_catalog.yaml",
+		root / "api" / "openapi.yaml",
+	)
+	required_paths = (
+		common_path,
+		service_path,
+		permission_path,
+		api_path,
+		setup_path,
+		install_path,
+		hooks_path,
+		workspace_path,
+		documentation_path,
+		adr_path,
+		task_path,
+		change_path,
+		pure_test_path,
+		integration_test_path,
+		*runtime_paths.values(),
+		*controller_paths.values(),
+		*blueprint_paths.values(),
+		*catalog_paths,
+	)
+	missing = [str(path.relative_to(root)) for path in required_paths if not path.is_file()]
+	if missing:
+		return [f"missing numbering contract file: {path}" for path in missing]
+
+	violations: list[str] = []
+	expected_fields = {
+		NUMBERING_SCHEME_DOCTYPE: {
+			"code",
+			"display_name",
+			"company",
+			"hospital",
+			"organization_unit",
+			"enabled",
+			"template",
+			"dimension_keys",
+			"reset_policy",
+			"sequence_digits",
+			"start_number",
+			"template_digest",
+			"revision",
+			"valid_from",
+			"valid_to",
+			"remarks",
+		},
+		NUMBER_RESERVATION_DOCTYPE: {
+			"numbering_scheme",
+			"scheme_code",
+			"number",
+			"reservation_token",
+			"business_date",
+			"company",
+			"hospital",
+			"organization_unit",
+			"dimensions_json",
+			"dimensions_digest",
+			"reset_bucket",
+			"counter_key",
+			"sequence_value",
+			"scheme_revision",
+			"template_digest",
+			"allocated_by",
+			"correlation_id",
+			"request_id",
+		},
+	}
+	expected_roles = {
+		"System Manager",
+		"HRP System Manager",
+		"HRP User",
+		"HRP Auditor",
+		"HRP Integration User",
+	}
+	for name in doctypes:
+		runtime_text = runtime_paths[name].read_text(encoding="utf-8")
+		blueprint_text = blueprint_paths[name].read_text(encoding="utf-8")
+		for metadata, source in (
+			(json.loads(runtime_text), "runtime"),
+			(json.loads(blueprint_text), "blueprint"),
+		):
+			if metadata.get("name") != name or metadata.get("module") != "HRP Foundation":
+				violations.append(f"{name} {source} has the wrong owner")
+			fields = {
+				field.get("fieldname")
+				for field in metadata.get("fields", [])
+				if field.get("fieldname") and not str(field.get("fieldtype", "")).endswith("Break")
+			}
+			if fields != expected_fields[name]:
+				violations.append(f"{name} {source} fields must match the contract")
+			permissions = metadata.get("permissions", [])
+			if {permission.get("role") for permission in permissions} != expected_roles:
+				violations.append(f"{name} {source} has the wrong roles")
+			for permission in permissions:
+				if permission.get("read") != 1 or any(
+					permission.get(action)
+					for action in ("write", "create", "delete", "submit", "cancel", "amend")
+				):
+					violations.append(f"{name} {source} must remain read-only")
+		if "?" in blueprint_text:
+			violations.append(f"{name} blueprint contains replacement question marks")
+		runtime = json.loads(runtime_text)
+		if runtime.get("is_submittable") or runtime.get("allow_rename"):
+			violations.append(f"{name} must be non-submittable and non-renamable")
+	if (
+		json.loads(runtime_paths[NUMBERING_SCHEME_DOCTYPE].read_text(encoding="utf-8")).get("autoname")
+		!= "field:code"
+	):
+		violations.append("numbering scheme must use its stable code as name")
+	if (
+		json.loads(runtime_paths[NUMBER_RESERVATION_DOCTYPE].read_text(encoding="utf-8")).get("autoname")
+		!= "field:reservation_token"
+	):
+		violations.append("number reservation must use its token as name")
+
+	common_text = common_path.read_text(encoding="utf-8")
+	for token in (
+		f"NUMBERING_SCHEMA_VERSION = {NUMBERING_SCHEMA_VERSION}",
+		f"MAX_TEMPLATE_LENGTH = {MAX_TEMPLATE_LENGTH}",
+		f"MAX_DIMENSIONS = {MAX_DIMENSIONS}",
+		f"MIN_SEQUENCE_DIGITS = {MIN_SEQUENCE_DIGITS}",
+		f"MAX_SEQUENCE_DIGITS = {MAX_SEQUENCE_DIGITS}",
+		"class NumberingSchemeUpsert",
+		"class NumberAllocation",
+		"def counter_key_for",
+		"def render_number",
+		"def reservation_name_for",
+	):
+		if token not in common_text:
+			violations.append(f"numbering public contract is missing: {token}")
+	for policy in RESET_POLICIES:
+		if f'"{policy}"' not in common_text:
+			violations.append(f"numbering reset policy is missing: {policy}")
+	for forbidden in ("eval(", "exec(", "ast.literal_eval", "custom_sql", "custom_expression"):
+		if forbidden in common_text:
+			violations.append(f"numbering templates must not execute user code: {forbidden}")
+
+	for name, controller_path in controller_paths.items():
+		controller_text = controller_path.read_text(encoding="utf-8")
+		for token in ("numbering_service_write", "as_public_dict", "OPERATION_NOT_ALLOWED"):
+			if token not in controller_text:
+				violations.append(f"{name} controller is missing: {token}")
+		if "frappe.db.commit" in controller_text:
+			violations.append(f"{name} controller must not commit transactions")
+
+	service_text = service_path.read_text(encoding="utf-8")
+	for token in (
+		"class UpsertNumberingSchemeService",
+		"class AllocateNumberService",
+		"DomainService",
+		"INSERT INTO `tabSeries`",
+		"ON DUPLICATE KEY UPDATE",
+		"FOR UPDATE",
+		"HRP Number Reservation",
+		"frappe.generate_hash",
+		"dimensions_digest",
+		"template_digest",
+	):
+		if token not in service_text:
+			violations.append(f"numbering service is missing: {token}")
+	if "frappe.db.commit" in service_text:
+		violations.append("numbering services must not commit transactions")
+	update_branch = service_text.partition("name = command.scheme_name or command.code")[2].partition(
+		"class AllocateNumberService"
+	)[0]
+	revision_lock = update_branch.find("HRPNumberingScheme.lock_revision")
+	scope_lock = update_branch.find("_assert_scope(")
+	if revision_lock < 0 or scope_lock < 0 or revision_lock > scope_lock:
+		violations.append("numbering scheme updates must lock scheme before organization scope")
+
+	permission_text = permission_path.read_text(encoding="utf-8")
+	hooks_text = hooks_path.read_text(encoding="utf-8")
+	for token in (
+		"def numbering_scheme_query",
+		"def number_reservation_query",
+		"def can_read_numbering_scheme",
+		"def can_read_number_reservation",
+	):
+		if token not in permission_text:
+			violations.append(f"numbering permission contract is missing: {token}")
+	for name, query, permission in (
+		(NUMBERING_SCHEME_DOCTYPE, "numbering_scheme_query", "can_read_numbering_scheme"),
+		(NUMBER_RESERVATION_DOCTYPE, "number_reservation_query", "can_read_number_reservation"),
+	):
+		for token in (
+			f'"{name}": "ione_hrp.hrp_foundation.permissions.{query}"',
+			f'"{name}": "ione_hrp.hrp_foundation.permissions.{permission}"',
+		):
+			if token not in hooks_text:
+				violations.append(f"numbering permission hook is missing: {token}")
+
+	api_text = api_path.read_text(encoding="utf-8")
+	for method_name, http_method in (
+		("upsert_scheme", "POST"),
+		("next", "POST"),
+		("get_reservation", "GET"),
+	):
+		if f"def {method_name}(" not in api_text:
+			violations.append(f"numbering API is missing method: {method_name}")
+		if f'@frappe.whitelist(allow_guest=True, methods=["{http_method}"])' not in api_text:
+			violations.append(f"numbering API must expose controlled guest boundary: {method_name}")
+	if api_text.count("require_authenticated_user()") != 3:
+		violations.append("numbering APIs must authenticate before parsing or service access")
+
+	setup_text = setup_path.read_text(encoding="utf-8")
+	for token in (
+		"uniq_hrp_number_reservation_number",
+		"uniq_hrp_number_reservation_token",
+		"idx_hrp_number_reservation_scheme_date",
+		"idx_hrp_number_reservation_owner",
+		"idx_hrp_numbering_scheme_effectivity",
+	):
+		if token not in setup_text:
+			violations.append(f"numbering migration is missing: {token}")
+	if "ensure_numbering_governance()" not in install_path.read_text(encoding="utf-8"):
+		violations.append("numbering migration must run after install and migrate")
+
+	workspace = json.loads(workspace_path.read_text(encoding="utf-8"))
+	shortcut_links = {item.get("link_to") for item in workspace.get("shortcuts", [])}
+	sidebar_links = {item.get("link_to") for item in workspace.get("sidebar_items", [])}
+	if not set(doctypes).issubset(shortcut_links):
+		violations.append("HRP workspace must expose numbering shortcuts")
+	if not set(doctypes).issubset(sidebar_links):
+		violations.append("HRP sidebar must expose numbering DocTypes")
+
+	with (root / "design" / "doctype_catalog.csv").open(
+		encoding="utf-8-sig",
+		newline="",
+	) as stream:
+		doctype_rows = [row for row in csv.DictReader(stream) if row.get("doctype") in doctypes]
+	if {row.get("doctype") for row in doctype_rows} != set(doctypes):
+		violations.append("numbering DocType catalog rows are missing")
+	for row in doctype_rows:
+		if row.get("is_submittable") != "0" or row.get("allow_rename") != "0":
+			violations.append(f"{row.get('doctype')} catalog lifecycle is invalid")
+	with (root / "design" / "field_catalog.csv").open(
+		encoding="utf-8-sig",
+		newline="",
+	) as stream:
+		field_rows = [row for row in csv.DictReader(stream) if row.get("doctype") in doctypes]
+	for name, fields in expected_fields.items():
+		if {row.get("fieldname") for row in field_rows if row.get("doctype") == name} != fields:
+			violations.append(f"{name} field catalog must match runtime metadata")
+
+	endpoints = {
+		"/api/method/ione_hrp.api.v1.core.numbering.next": (
+			"post",
+			"System Manager or HRP System Manager or HRP User or HRP Integration User",
+			"Required for write",
+		),
+		"/api/method/ione_hrp.api.v1.core.numbering.upsert_scheme": (
+			"post",
+			"System Manager or HRP System Manager",
+			"Required for write",
+		),
+		"/api/method/ione_hrp.api.v1.core.numbering.get_reservation": (
+			"get",
+			"System Manager or HRP System Manager or HRP User or HRP Auditor or HRP Integration User",
+			"Read-only owner scoped",
+		),
+	}
+	for catalog_path in catalog_paths:
+		catalog_text = catalog_path.read_text(encoding="utf-8")
+		for endpoint in endpoints:
+			if endpoint not in catalog_text:
+				violations.append(
+					f"{catalog_path.relative_to(root)} is missing numbering endpoint {endpoint}"
+				)
+	openapi = yaml.safe_load((root / "api" / "openapi.yaml").read_text(encoding="utf-8"))
+	for endpoint, (method, role, idempotency) in endpoints.items():
+		path_contract = openapi.get("paths", {}).get(endpoint, {})
+		operation = path_contract.get(method, {})
+		if set(path_contract) != {method}:
+			violations.append(f"{endpoint} must expose only {method.upper()}")
+		if operation.get("x-required-role") != role:
+			violations.append(f"{endpoint} has the wrong numbering role contract")
+		if operation.get("x-idempotency") != idempotency:
+			violations.append(f"{endpoint} has the wrong idempotency contract")
+		if method == "post":
+			if operation.get("x-transaction-boundary") != "Single DB transaction":
+				violations.append(f"{endpoint} must use one database transaction")
+			if not any(
+				parameter.get("$ref") == "#/components/parameters/IdempotencyKey"
+				for parameter in operation.get("parameters", [])
+			):
+				violations.append(f"{endpoint} must declare Idempotency-Key")
+		elif operation.get("x-transaction-boundary") != "Read-only":
+			violations.append(f"{endpoint} must remain read-only")
+
+	pure_test_text = pure_test_path.read_text(encoding="utf-8")
+	integration_test_text = integration_test_path.read_text(encoding="utf-8")
+	for token in (
+		"test_template_rejects_expression_and_lowercase_literal",
+		"test_dimensions_reject_non_scalar_and_injection_values",
+		"test_counter_key_is_stable_and_scope_specific",
+		"test_render_number_rejects_exhausted_sequence",
+	):
+		if token not in pure_test_text:
+			violations.append(f"numbering pure tests are missing: {token}")
+	for token in (
+		"test_metadata_migration_workspace_and_service_only_write",
+		"test_scheme_is_idempotent_revisioned_and_format_locks_after_allocation",
+		"test_concurrent_scheme_identity_conflict_is_a_controlled_conflict",
+		"test_allocation_is_atomic_idempotent_and_globally_unique",
+		"test_dimension_and_reset_buckets_have_independent_sequences",
+		"test_cross_scheme_number_collision_rolls_back_counter_and_idempotency",
+		"test_reservation_is_immutable_and_permissions_limit_user_rows",
+		"test_audit_contains_digests_without_number_or_dimensions",
+		"test_http_write_requires_idempotency_header",
+		"test_http_create_allocate_replay_and_query",
+		"test_http_guest_is_rejected_before_numbering_lookup",
+	):
+		if token not in integration_test_text:
+			violations.append(f"numbering integration tests are missing: {token}")
+	return violations
+
+
 def validate_environment_profiles(root: Path) -> list[str]:
 	profile_path = root / APP_NAME / "config" / "environment_profiles.json"
 	manager_path = root / "scripts" / "environment_manager.py"
@@ -3674,6 +4049,7 @@ def collect_violations(root: Path) -> list[str]:
 	violations.extend(validate_master_data_governance_contract(root))
 	violations.extend(validate_external_code_mapping_contract(root))
 	violations.extend(validate_data_quality_contract(root))
+	violations.extend(validate_numbering_contract(root))
 	return violations
 
 

@@ -75,12 +75,12 @@
   path: /api/method/ione_hrp.api.v1.core.numbering.next
   description: 取得受控业务编号
   request_schema: scheme,dimensions,date
-  response_schema: number,reservation_token
-  required_role: HRP System User
+  response_schema: schema_version,number,reservation_token,scheme,date,dimensions,correlation_id,request_id,idempotency_replayed
+  required_role: System Manager or HRP System Manager or HRP User or HRP Integration User
   idempotency: Required for write
   async: 'No'
   transaction_boundary: Single DB transaction
-  audit: Always
+  audit: Redacted scheme revision template digest dimension digest bucket and sequence log
   version: v1
 - api_code: CORE-007
   app: ione_hrp
@@ -347,6 +347,34 @@
   async: 'No'
   transaction_boundary: Read-only
   audit: Redacted issue key status and revision log
+  version: v1
+- api_code: CORE-026
+  app: ione_hrp
+  domain_group: Core
+  method: POST
+  path: /api/method/ione_hrp.api.v1.core.numbering.upsert_scheme
+  description: 创建或修订受控业务编号方案
+  request_schema: code,display_name,company,hospital,organization_unit,template,reset_policy,sequence_digits,start_number,enabled,valid_from,valid_to,expected_revision,scheme_name,remarks
+  response_schema: schema_version,name,code,display_name,company,hospital,organization_unit,template,dimension_keys,reset_policy,sequence_digits,start_number,enabled,valid_from,valid_to,revision,remarks,changed,changed_fields,correlation_id,request_id,idempotency_replayed
+  required_role: System Manager or HRP System Manager
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Redacted template digest dimension count changed fields and revision log
+  version: v1
+- api_code: CORE-027
+  app: ione_hrp
+  domain_group: Core
+  method: GET
+  path: /api/method/ione_hrp.api.v1.core.numbering.get_reservation
+  description: 查询编号预留
+  request_schema: reservation_token
+  response_schema: schema_version,number,reservation_token,scheme,date,dimensions
+  required_role: System Manager or HRP System Manager or HRP User or HRP Auditor or HRP Integration User
+  idempotency: Read-only owner scoped
+  async: 'No'
+  transaction_boundary: Read-only
+  audit: Redacted scheme revision template digest and dimension digest log
   version: v1
 - api_code: FIN-001
   app: ione_hrp
