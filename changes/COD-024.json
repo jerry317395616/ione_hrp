@@ -36,6 +36,7 @@
     "ione_hrp/api/v1/core/**",
     "ione_hrp/common/access_scope.py",
     "ione_hrp/hooks.py",
+    "ione_hrp/hrp_foundation/tests/**",
     "ione_hrp/hrp_foundation/workspace/**",
     "ione_hrp/hrp_workflow_authorization/**",
     "ione_hrp/setup/**",
