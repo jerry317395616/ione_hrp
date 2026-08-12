@@ -5,11 +5,11 @@
   path: /api/method/ione_hrp.api.v1.core.scope.resolve
   description: 解析当前用户组织/数据权限
   request_schema: user,doctype,action
-  response_schema: scopes,filters,masking
+  response_schema: allowed,unrestricted,scopes,filters,masking,decision_digest
   required_role: Authenticated User
-  idempotency: Required for write
+  idempotency: Not required (read-only)
   async: 'No'
-  transaction_boundary: Single DB transaction
+  transaction_boundary: Read-only request
   audit: Always
   version: v1
 - api_code: CORE-002

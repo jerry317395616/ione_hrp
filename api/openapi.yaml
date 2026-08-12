@@ -642,7 +642,7 @@ paths:
       x-required-role: System Manager or HRP System Manager
       x-transaction-boundary: Single DB transaction owned by the request
       x-idempotency: Required for write; encrypted response snapshot
-  /api/method/ione_hrp_core.api.v1.scope.resolve:
+  /api/method/ione_hrp.api.v1.core.scope.resolve:
     post:
       operationId: core_001
       summary: 解析当前用户组织/数据权限
@@ -656,11 +656,6 @@ paths:
         required: false
         schema:
           type: string
-      - name: Idempotency-Key
-        in: header
-        required: true
-        schema:
-          type: string
       responses:
         '200':
           description: Success
@@ -670,15 +665,13 @@ paths:
                 $ref: '#/components/schemas/FrappeResponse'
         '403':
           description: Forbidden
-        '409':
-          description: Conflict / duplicate request
         '422':
           description: Business validation error
         '500':
           description: Internal error
       x-required-role: Authenticated User
-      x-transaction-boundary: Single DB transaction
-      x-idempotency: Required for write
+      x-transaction-boundary: Read-only request
+      x-idempotency: Not required (read-only)
       requestBody:
         required: true
         content:

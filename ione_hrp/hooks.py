@@ -37,6 +37,10 @@ extend_doctype_class = {}
 doc_events = {}
 
 permission_query_conditions = {
+	"HRP Hospital": "ione_hrp.hrp_workflow_authorization.permissions.hospital_query",
+	"HRP Organization Mapping": "ione_hrp.hrp_workflow_authorization.permissions.organization_mapping_query",
+	"HRP Organization Unit": "ione_hrp.hrp_workflow_authorization.permissions.organization_unit_query",
+	"HRP Organization Version": "ione_hrp.hrp_workflow_authorization.permissions.organization_version_query",
 	"HRP Data Quality Issue": "ione_hrp.hrp_master_data.permissions.data_quality_query",
 	"HRP Data Quality Rule": "ione_hrp.hrp_master_data.permissions.data_quality_query",
 	"HRP External Code Mapping": "ione_hrp.hrp_master_data.permissions.external_code_mapping_query",
@@ -45,6 +49,10 @@ permission_query_conditions = {
 	"HRP Numbering Scheme": "ione_hrp.hrp_foundation.permissions.numbering_scheme_query",
 }
 has_permission = {
+	"HRP Hospital": "ione_hrp.hrp_workflow_authorization.permissions.has_scoped_permission",
+	"HRP Organization Mapping": "ione_hrp.hrp_workflow_authorization.permissions.has_scoped_permission",
+	"HRP Organization Unit": "ione_hrp.hrp_workflow_authorization.permissions.has_scoped_permission",
+	"HRP Organization Version": "ione_hrp.hrp_workflow_authorization.permissions.has_scoped_permission",
 	"HRP Data Quality Issue": "ione_hrp.hrp_master_data.permissions.can_read_data_quality",
 	"HRP Data Quality Rule": "ione_hrp.hrp_master_data.permissions.can_read_data_quality",
 	"HRP External Code Mapping": "ione_hrp.hrp_master_data.permissions.can_read_external_code_mapping",

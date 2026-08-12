@@ -903,6 +903,31 @@ ione_hrp,HRP Master Data,HRP Dimension Value,26,source_name,来源单据,Dynamic
 ione_hrp,HRP Master Data,HRP Dimension Value,27,submitted_at,提交时间,Datetime,,0,0,0,1,0,,,,提交时间,Core
 ione_hrp,HRP Master Data,HRP Dimension Value,28,approved_at,批准时间,Datetime,,0,0,0,1,0,,,,批准时间,Core
 ione_hrp,HRP Master Data,HRP Dimension Value,29,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
+ione_hrp,HRP Workflow Authorization,HRP Access Scope,10,code,????,Data,,1,1,1,0,1,,,,????,Core
+ione_hrp,HRP Workflow Authorization,HRP Access Scope,11,display_name,????,Data,,1,0,1,0,1,,,,????,Core
+ione_hrp,HRP Workflow Authorization,HRP Access Scope,12,scope_level,????,Select,"Company
+Hospital
+Organization Unit",1,0,1,1,1,,,,????,Core
+ione_hrp,HRP Workflow Authorization,HRP Access Scope,13,enabled,??,Check,,0,0,1,0,1,,1,,??,Core
+ione_hrp,HRP Workflow Authorization,HRP Access Scope,14,company,??,Link,Company,1,0,1,0,1,,,,??,Core
+ione_hrp,HRP Workflow Authorization,HRP Access Scope,15,hospital,??,Link,HRP Hospital,0,0,1,0,0,,,,??,Core
+ione_hrp,HRP Workflow Authorization,HRP Access Scope,16,organization_unit,????,Link,HRP Organization Unit,0,0,1,0,0,,,,????,Core
+ione_hrp,HRP Workflow Authorization,HRP Access Scope,17,include_descendants,??????,Check,,0,0,0,0,0,,0,eval:doc.organization_unit,??????,Core
+ione_hrp,HRP Workflow Authorization,HRP Access Scope,18,valid_from,?????,Date,,0,0,0,0,0,,,,?????,Core
+ione_hrp,HRP Workflow Authorization,HRP Access Scope,19,valid_to,?????,Date,,0,0,0,0,0,,,,?????,Core
+ione_hrp,HRP Workflow Authorization,HRP Access Scope,20,members,????,Table,HRP Access Scope Member,1,0,0,0,0,,,,????,Core
+ione_hrp,HRP Workflow Authorization,HRP Access Scope,21,revision,???,Int,,1,0,0,1,0,,1,,???,Core
+ione_hrp,HRP Workflow Authorization,HRP Access Scope,22,policy_digest,????,Data,,1,0,0,1,0,,,,????,Core
+ione_hrp,HRP Workflow Authorization,HRP Access Scope,23,remarks,??,Small Text,,0,0,0,0,0,,,,??,Core
+ione_hrp,HRP Workflow Authorization,HRP Access Scope Member,10,user,??,Link,User,1,0,0,0,1,,,,??,Core
+ione_hrp,HRP Workflow Authorization,HRP Access Scope Member,11,target_doctype,??????,Link,DocType,0,0,0,0,1,,,,??????,Core
+ione_hrp,HRP Workflow Authorization,HRP Access Scope Member,12,allow_read,????,Check,,0,0,0,0,1,,1,,????,Core
+ione_hrp,HRP Workflow Authorization,HRP Access Scope Member,13,allow_create,????,Check,,0,0,0,0,0,,0,,????,Core
+ione_hrp,HRP Workflow Authorization,HRP Access Scope Member,14,allow_write,????,Check,,0,0,0,0,0,,0,,????,Core
+ione_hrp,HRP Workflow Authorization,HRP Access Scope Member,15,allow_submit,????,Check,,0,0,0,0,0,,0,,????,Core
+ione_hrp,HRP Workflow Authorization,HRP Access Scope Member,16,allow_cancel,????,Check,,0,0,0,0,0,,0,,????,Core
+ione_hrp,HRP Workflow Authorization,HRP Access Scope Member,17,allow_export,????,Check,,0,0,0,0,0,,0,,????,Core
+ione_hrp,HRP Workflow Authorization,HRP Access Scope Member,18,enabled,??,Check,,0,0,0,0,1,,1,,??,Core
 ione_hrp,HRP Workflow Authorization,HRP Approval Matrix,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
 ione_hrp,HRP Workflow Authorization,HRP Approval Matrix,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
 ione_hrp,HRP Workflow Authorization,HRP Approval Matrix,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core
@@ -1007,37 +1032,6 @@ ione_hrp,HRP Workflow Authorization,HRP Segregation Rule,22,valid_from,有效期
 ione_hrp,HRP Workflow Authorization,HRP Segregation Rule,23,valid_to,有效期结束,Date,,0,0,0,0,0,,,,有效期结束,Core
 ione_hrp,HRP Workflow Authorization,HRP Segregation Rule,24,owner_department,责任部门,Link,Department,0,0,0,0,0,,,,责任部门,Core
 ione_hrp,HRP Workflow Authorization,HRP Segregation Rule,25,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
-ione_hrp,HRP Workflow Authorization,HRP Access Scope,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
-ione_hrp,HRP Workflow Authorization,HRP Access Scope,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
-ione_hrp,HRP Workflow Authorization,HRP Access Scope,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core
-ione_hrp,HRP Workflow Authorization,HRP Access Scope,13,organization_unit,组织单元,Link,HRP Organization Unit,1,0,1,0,1,,,,组织单元,Core
-ione_hrp,HRP Workflow Authorization,HRP Access Scope,14,cost_center,成本中心,Link,Cost Center,0,0,1,0,0,,,,成本中心,Core
-ione_hrp,HRP Workflow Authorization,HRP Access Scope,15,fiscal_year,财政年度,Link,Fiscal Year,0,0,1,0,0,,,,财政年度,Core
-ione_hrp,HRP Workflow Authorization,HRP Access Scope,16,currency,币种,Link,Currency,0,0,0,0,0,,CNY,,币种,Core
-ione_hrp,HRP Workflow Authorization,HRP Access Scope,17,status,业务状态,Select,"Draft
-Under Review
-Approved
-Rejected
-In Progress
-Completed
-Cancelled
-Closed",0,0,1,0,1,,Draft,,业务状态,Core
-ione_hrp,HRP Workflow Authorization,HRP Access Scope,18,workflow_state,工作流状态,Link,Workflow State,0,0,1,1,0,,,,工作流状态,Core
-ione_hrp,HRP Workflow Authorization,HRP Access Scope,19,code,编码,Data,,1,1,1,0,1,,,,编码,Core
-ione_hrp,HRP Workflow Authorization,HRP Access Scope,20,display_name,名称,Data,,1,0,0,0,1,,,,名称,Core
-ione_hrp,HRP Workflow Authorization,HRP Access Scope,21,enabled,启用,Check,,0,0,1,0,0,,1,,启用,Core
-ione_hrp,HRP Workflow Authorization,HRP Access Scope,22,valid_from,有效期开始,Date,,0,0,0,0,0,,,,有效期开始,Core
-ione_hrp,HRP Workflow Authorization,HRP Access Scope,23,valid_to,有效期结束,Date,,0,0,0,0,0,,,,有效期结束,Core
-ione_hrp,HRP Workflow Authorization,HRP Access Scope,24,owner_department,责任部门,Link,Department,0,0,0,0,0,,,,责任部门,Core
-ione_hrp,HRP Workflow Authorization,HRP Access Scope,25,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
-ione_hrp,HRP Workflow Authorization,HRP Access Scope Member,10,sequence_no,序号,Int,,0,0,0,0,1,,1,,序号,Core
-ione_hrp,HRP Workflow Authorization,HRP Access Scope Member,11,reference_doctype,引用类型,Link,DocType,0,0,0,0,0,,,,引用类型,Core
-ione_hrp,HRP Workflow Authorization,HRP Access Scope Member,12,reference_name,引用单据,Dynamic Link,reference_doctype,0,0,1,0,0,,,,引用单据,Core
-ione_hrp,HRP Workflow Authorization,HRP Access Scope Member,13,description,说明,Small Text,,0,0,0,0,0,,,,说明,Core
-ione_hrp,HRP Workflow Authorization,HRP Access Scope Member,14,quantity,数量,Float,,0,0,0,0,0,6,,,数量,Core
-ione_hrp,HRP Workflow Authorization,HRP Access Scope Member,15,rate,单价,Currency,currency,0,0,0,0,0,6,,,单价,Core
-ione_hrp,HRP Workflow Authorization,HRP Access Scope Member,16,amount,金额,Currency,currency,0,0,0,1,1,2,,,金额,Core
-ione_hrp,HRP Workflow Authorization,HRP Access Scope Member,17,dimension_json,核算维度,Code,JSON,0,0,0,0,0,,,,核算维度,Core
 ione_hrp,HRP Workflow Authorization,HRP Workflow Extension,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
 ione_hrp,HRP Workflow Authorization,HRP Workflow Extension,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
 ione_hrp,HRP Workflow Authorization,HRP Workflow Extension,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core
