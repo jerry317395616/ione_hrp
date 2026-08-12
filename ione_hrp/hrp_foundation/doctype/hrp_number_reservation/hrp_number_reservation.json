@@ -1,0 +1,205 @@
+{
+	"actions": [],
+	"allow_rename": 0,
+	"autoname": "field:reservation_token",
+	"creation": "2026-08-08 00:00:00.000000",
+	"doctype": "DocType",
+	"engine": "InnoDB",
+	"field_order": [
+		"numbering_scheme",
+		"scheme_code",
+		"number",
+		"reservation_token",
+		"business_date",
+		"company",
+		"hospital",
+		"organization_unit",
+		"dimensions_json",
+		"dimensions_digest",
+		"reset_bucket",
+		"counter_key",
+		"sequence_value",
+		"scheme_revision",
+		"template_digest",
+		"allocated_by",
+		"correlation_id",
+		"request_id"
+	],
+	"fields": [
+		{
+			"fieldname": "numbering_scheme",
+			"fieldtype": "Link",
+			"in_list_view": 1,
+			"label": "编号方案",
+			"options": "HRP Numbering Scheme",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "scheme_code",
+			"fieldtype": "Data",
+			"label": "方案编码",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "number",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"label": "业务编号",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1,
+			"unique": 1
+		},
+		{
+			"fieldname": "reservation_token",
+			"fieldtype": "Data",
+			"label": "预留令牌",
+			"no_copy": 1,
+			"read_only": 1,
+			"reqd": 1,
+			"unique": 1
+		},
+		{
+			"fieldname": "business_date",
+			"fieldtype": "Date",
+			"in_list_view": 1,
+			"label": "业务日期",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "company",
+			"fieldtype": "Link",
+			"in_list_view": 1,
+			"label": "法人",
+			"options": "Company",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "hospital",
+			"fieldtype": "Link",
+			"in_list_view": 1,
+			"label": "医院",
+			"options": "HRP Hospital",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "organization_unit",
+			"fieldtype": "Link",
+			"label": "组织单元",
+			"options": "HRP Organization Unit",
+			"read_only": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "dimensions_json",
+			"fieldtype": "Code",
+			"label": "编号维度",
+			"options": "JSON",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "dimensions_digest",
+			"fieldtype": "Data",
+			"hidden": 1,
+			"label": "维度摘要",
+			"no_copy": 1,
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "reset_bucket",
+			"fieldtype": "Data",
+			"hidden": 1,
+			"label": "重置分桶",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "counter_key",
+			"fieldtype": "Data",
+			"hidden": 1,
+			"label": "计数器键",
+			"no_copy": 1,
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "sequence_value",
+			"fieldtype": "Int",
+			"label": "流水序号",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "scheme_revision",
+			"fieldtype": "Int",
+			"label": "方案修订号",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "template_digest",
+			"fieldtype": "Data",
+			"hidden": 1,
+			"label": "模板摘要",
+			"no_copy": 1,
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "allocated_by",
+			"fieldtype": "Link",
+			"label": "分配用户",
+			"options": "User",
+			"read_only": 1,
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "correlation_id",
+			"fieldtype": "Data",
+			"label": "关联 ID",
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "request_id",
+			"fieldtype": "Data",
+			"label": "请求 ID",
+			"read_only": 1,
+			"reqd": 1
+		}
+	],
+	"index_web_pages_for_search": 0,
+	"links": [],
+	"modified": "2026-08-08 00:00:00.000000",
+	"modified_by": "Administrator",
+	"module": "HRP Foundation",
+	"name": "HRP Number Reservation",
+	"naming_rule": "By fieldname",
+	"owner": "Administrator",
+	"permissions": [
+		{ "read": 1, "role": "System Manager" },
+		{ "read": 1, "role": "HRP System Manager" },
+		{ "read": 1, "role": "HRP User" },
+		{ "read": 1, "role": "HRP Auditor" },
+		{ "read": 1, "role": "HRP Integration User" }
+	],
+	"search_fields": "number,scheme_code,company,hospital,reservation_token",
+	"sort_field": "creation",
+	"sort_order": "DESC",
+	"states": [],
+	"title_field": "number",
+	"track_changes": 1
+}

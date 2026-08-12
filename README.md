@@ -23,8 +23,8 @@
 pyproject.toml                  Press/Frappe 应用元数据
 ione_hrp/                       单一 Frappe 应用源码
 architecture/                 单应用架构、模块注册表和版本策略
-design/                       399 个 DocType 与字段等机器可读设计
-doctype_blueprints/           按模块重组的 399 份 DocType 蓝图
+design/                       400 个 DocType 与字段等机器可读设计
+doctype_blueprints/           按模块重组的 400 份 DocType 蓝图
 api/ workflows/ backlog/      API、工作流和 Codex 任务
 scripts/                      初始化、安装、加模块、版本锁定和校验脚本
 AGENTS.md                      Codex 仓库级强制规则
@@ -91,6 +91,18 @@ SQL、Python 或任意正则，也不修改标准记录。`HRP Data Quality Issu
 问题。每日调度按规则排队，目标记录每批最多 200 条。两个 DocType 在 Desk 中只读，完整模型、
 安全边界、迁移和回滚规则见 `architecture/data_quality_rules.md` 与
 `architecture/adr/ADR-0016-declarative-master-data-quality-rules.md`。
+
+## 统一编号
+
+`HRP Numbering Scheme` 以声明式白名单模板定义日期、受控维度、流水号位数和重置周期；
+`HRP Number Reservation` 永久保存已发编号、预留令牌、方案修订和审计上下文。模板不允许
+SQL、Python 或任意表达式，首个预留产生后不能改变方案格式。
+
+`CORE-006` 在单一事务中按方案、日期分桶和规范维度原子递增 Frappe 序列，并写入全局唯一、
+不可修改和不可删除的预留记录。同一 `Idempotency-Key` 重放返回原编号而不再次递增；
+`CORE-026` 维护方案，`CORE-027` 按所有者或审计权限查询预留。完整并发、权限、审计、迁移和
+回滚规则见 `architecture/unified_numbering.md` 与
+`architecture/adr/ADR-0017-atomic-unified-number-reservations.md`。
 
 ## 非生产环境
 

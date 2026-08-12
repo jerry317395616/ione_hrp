@@ -37,9 +37,12 @@ pin_app() {
   local app_dir="$BENCH_DIR/apps/$app"
   local remote="origin"
   if ! git -C "$app_dir" remote get-url "$remote" >/dev/null 2>&1; then
-    remote="upstream"
+	remote="upstream"
   fi
   git -C "$app_dir" fetch --depth 1 "$remote" "$commit"
+  # bench get-app may generate lockfiles before the governed commit is pinned.
+  git -C "$app_dir" reset --hard HEAD
+  git -C "$app_dir" clean -fd
   git -C "$app_dir" checkout --detach "$commit"
   if [[ -n "$(git -C "$app_dir" status --porcelain)" ]]; then
     echo "Pinned app worktree is dirty: $app_dir" >&2

@@ -23,6 +23,7 @@ from scripts.security_supply_chain import (
 	build_child_environment,
 	build_plan,
 	normalize_artifact_directory,
+	redacted_gitleaks_diagnostics,
 	verify_tool_versions,
 )
 
@@ -400,6 +401,28 @@ class SecurityRunnerBoundaryTest(unittest.TestCase):
 		self.assertNotIn("PIP_INDEX_URL", child)
 		self.assertNotIn("GRYPE_DB_UPDATE_URL", child)
 		self.assertEqual(child["GRYPE_CHECK_FOR_APP_UPDATE"], "false")
+
+	def test_gitleaks_failure_diagnostics_are_bounded_and_redacted(self) -> None:
+		diagnostics = redacted_gitleaks_diagnostics(
+			[
+				{
+					"RuleID": "generic-api-key",
+					"File": "tests/example file.py",
+					"StartLine": 27,
+					"Commit": SOURCE_COMMIT,
+					"Secret": "must-not-appear",
+					"Match": "api_key=must-not-appear",
+				}
+			]
+		)
+		self.assertEqual(
+			diagnostics,
+			(
+				"GITLEAKS FINDING: rule=generic-api-key file=tests/example?file.py "
+				"line=27 commit=d4f1387e73e3",
+			),
+		)
+		self.assertNotIn("must-not-appear", diagnostics[0])
 
 	def test_tool_versions_are_verified_exactly(self) -> None:
 		outputs = (

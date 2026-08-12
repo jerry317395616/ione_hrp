@@ -173,6 +173,24 @@ def _load_report(path: Path, label: str) -> Any:
 		raise SecurityExecutionError(f"{label} did not produce valid JSON") from exc
 
 
+def redacted_gitleaks_diagnostics(report: object) -> tuple[str, ...]:
+	if not isinstance(report, list):
+		return ()
+	diagnostics: list[str] = []
+	for finding in report[:100]:
+		if not isinstance(finding, dict):
+			continue
+		rule = re.sub(r"[^A-Za-z0-9_.-]", "?", str(finding.get("RuleID", "unknown")))[:80]
+		path = re.sub(r"[^A-Za-z0-9_./-]", "?", str(finding.get("File", "unknown")))[:240]
+		commit = re.sub(r"[^0-9a-f]", "", str(finding.get("Commit", "")).casefold())[:12]
+		line = finding.get("StartLine")
+		line_number = line if isinstance(line, int) and line > 0 else "unknown"
+		diagnostics.append(
+			f"GITLEAKS FINDING: rule={rule} file={path} line={line_number} commit={commit or 'unknown'}"
+		)
+	return tuple(diagnostics)
+
+
 def _write_checksums(artifact_directory: Path, names: Sequence[str]) -> None:
 	lines = []
 	for name in sorted(names):
@@ -367,11 +385,12 @@ def run_security_pipeline(
 		environment=child_environment,
 		timeout_seconds=420,
 	)
+	gitleaks_report = _load_report(gitleaks_path, "Gitleaks")
 	summary = evaluate_security_reports(
 		policy=policy,
 		sbom=final_sbom,
 		bandit_report=_load_report(bandit_path, "Bandit"),
-		gitleaks_report=_load_report(gitleaks_path, "Gitleaks"),
+		gitleaks_report=gitleaks_report,
 		pip_audit_report=_load_report(pip_audit_path, "pip-audit"),
 		npm_audit_report=_load_report(npm_audit_path, "npm audit"),
 		grype_report=_load_report(grype_path, "Grype"),
@@ -389,6 +408,9 @@ def run_security_pipeline(
 		violations = summary["violations"]
 		if not isinstance(violations, list):
 			raise SecurityExecutionError("security summary violations are invalid")
+		if "secret_findings" in violations:
+			for diagnostic in redacted_gitleaks_diagnostics(gitleaks_report):
+				print(diagnostic, file=sys.stderr)
 		raise SecurityExecutionError("security gates failed: " + ",".join(str(item) for item in violations))
 	return summary
 

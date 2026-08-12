@@ -894,7 +894,7 @@ paths:
               type: object
               description: domain,operation,payload
               additionalProperties: true
-  /api/method/ione_hrp_core.api.v1.numbering.next:
+  /api/method/ione_hrp.api.v1.core.numbering.next:
     post:
       operationId: core_006
       summary: 取得受控业务编号
@@ -903,32 +903,52 @@ paths:
       security:
       - tokenAuth: []
       parameters:
-      - name: X-Correlation-ID
-        in: header
-        required: false
-        schema:
-          type: string
-      - name: Idempotency-Key
-        in: header
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
       responses:
         '200':
-          description: Success
+          description: 编号已原子分配或幂等重放
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/FrappeResponse'
+        '400':
+          description: Invalid scheme dimensions date or missing idempotency key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
         '403':
-          description: Forbidden
+          description: Number allocation role required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '404':
+          description: Numbering scheme or organization scope not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
         '409':
-          description: Conflict / duplicate request
-        '422':
-          description: Business validation error
+          description: Idempotency number uniqueness or operational-state conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
         '500':
-          description: Internal error
-      x-required-role: HRP System User
+          description: Persisted numbering configuration is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+      x-required-role: System Manager or HRP System Manager or HRP User or HRP Integration User
       x-transaction-boundary: Single DB transaction
       x-idempotency: Required for write
       requestBody:
@@ -937,8 +957,213 @@ paths:
           application/json:
             schema:
               type: object
-              description: scheme,dimensions,date
-              additionalProperties: true
+              additionalProperties: false
+              required:
+              - scheme
+              - dimensions
+              - date
+              properties:
+                scheme:
+                  type: string
+                  pattern: ^[A-Z][A-Z0-9_-]{0,63}$
+                dimensions:
+                  oneOf:
+                  - type: object
+                    maxProperties: 12
+                    additionalProperties:
+                      type: string
+                      pattern: ^[A-Z0-9][A-Z0-9_-]{0,31}$
+                  - type: string
+                    maxLength: 4096
+                date:
+                  type: string
+                  format: date
+  /api/method/ione_hrp.api.v1.core.numbering.upsert_scheme:
+    post:
+      operationId: core_026
+      summary: 创建或修订受控业务编号方案
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - code
+              - display_name
+              - company
+              - hospital
+              - template
+              - reset_policy
+              - sequence_digits
+              properties:
+                code:
+                  type: string
+                  pattern: ^[A-Z][A-Z0-9_-]{0,63}$
+                display_name:
+                  type: string
+                  maxLength: 140
+                company:
+                  type: string
+                  maxLength: 140
+                hospital:
+                  type: string
+                  maxLength: 140
+                organization_unit:
+                  type:
+                  - string
+                  - 'null'
+                  maxLength: 140
+                template:
+                  type: string
+                  maxLength: 120
+                reset_policy:
+                  type: string
+                  enum:
+                  - Never
+                  - Yearly
+                  - Monthly
+                  - Daily
+                sequence_digits:
+                  type: integer
+                  minimum: 2
+                  maximum: 12
+                start_number:
+                  type: integer
+                  minimum: 1
+                  default: 1
+                enabled:
+                  type: boolean
+                  default: true
+                valid_from:
+                  type:
+                  - string
+                  - 'null'
+                  format: date
+                valid_to:
+                  type:
+                  - string
+                  - 'null'
+                  format: date
+                expected_revision:
+                  type: integer
+                  minimum: 0
+                  default: 0
+                scheme_name:
+                  type:
+                  - string
+                  - 'null'
+                  maxLength: 140
+                remarks:
+                  type:
+                  - string
+                  - 'null'
+                  maxLength: 500
+      responses:
+        '200':
+          description: 编号方案已创建、修订或幂等重放
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '400':
+          description: Invalid scheme contract or missing idempotency key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '403':
+          description: Numbering administrator role required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '404':
+          description: Company hospital or organization unit not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '409':
+          description: Revision scope or stable-code conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '500':
+          description: Persisted numbering configuration is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+      x-required-role: System Manager or HRP System Manager
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+  /api/method/ione_hrp.api.v1.core.numbering.get_reservation:
+    get:
+      operationId: core_027
+      summary: 查询编号预留
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      - name: reservation_token
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 16
+          maxLength: 64
+      responses:
+        '200':
+          description: 返回调用者拥有或有权审计的编号预留
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '400':
+          description: Invalid reservation token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '403':
+          description: Reservation read role or ownership required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '404':
+          description: Reservation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+      x-required-role: System Manager or HRP System Manager or HRP User or HRP Auditor or HRP Integration User
+      x-transaction-boundary: Read-only
+      x-idempotency: Read-only owner scoped
   /api/method/ione_hrp_core.api.v1.inbox.list:
     get:
       operationId: core_007

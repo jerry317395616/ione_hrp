@@ -35,29 +35,43 @@ ione_hrp,HRP Foundation,HRP Feature Flag,26,source_name,来源单据,Dynamic Lin
 ione_hrp,HRP Foundation,HRP Feature Flag,27,submitted_at,提交时间,Datetime,,0,0,0,1,0,,,,提交时间,Core
 ione_hrp,HRP Foundation,HRP Feature Flag,28,approved_at,批准时间,Datetime,,0,0,0,1,0,,,,批准时间,Core
 ione_hrp,HRP Foundation,HRP Feature Flag,29,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
-ione_hrp,HRP Foundation,HRP Numbering Scheme,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
-ione_hrp,HRP Foundation,HRP Numbering Scheme,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
-ione_hrp,HRP Foundation,HRP Numbering Scheme,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core
-ione_hrp,HRP Foundation,HRP Numbering Scheme,13,organization_unit,组织单元,Link,HRP Organization Unit,1,0,1,0,1,,,,组织单元,Core
-ione_hrp,HRP Foundation,HRP Numbering Scheme,14,cost_center,成本中心,Link,Cost Center,0,0,1,0,0,,,,成本中心,Core
-ione_hrp,HRP Foundation,HRP Numbering Scheme,15,fiscal_year,财政年度,Link,Fiscal Year,0,0,1,0,0,,,,财政年度,Core
-ione_hrp,HRP Foundation,HRP Numbering Scheme,16,currency,币种,Link,Currency,0,0,0,0,0,,CNY,,币种,Core
-ione_hrp,HRP Foundation,HRP Numbering Scheme,17,status,业务状态,Select,"Draft
-Under Review
-Approved
-Rejected
-In Progress
-Completed
-Cancelled
-Closed",0,0,1,0,1,,Draft,,业务状态,Core
-ione_hrp,HRP Foundation,HRP Numbering Scheme,18,workflow_state,工作流状态,Link,Workflow State,0,0,1,1,0,,,,工作流状态,Core
-ione_hrp,HRP Foundation,HRP Numbering Scheme,19,code,编码,Data,,1,1,1,0,1,,,,编码,Core
-ione_hrp,HRP Foundation,HRP Numbering Scheme,20,display_name,名称,Data,,1,0,0,0,1,,,,名称,Core
-ione_hrp,HRP Foundation,HRP Numbering Scheme,21,enabled,启用,Check,,0,0,1,0,0,,1,,启用,Core
-ione_hrp,HRP Foundation,HRP Numbering Scheme,22,valid_from,有效期开始,Date,,0,0,0,0,0,,,,有效期开始,Core
-ione_hrp,HRP Foundation,HRP Numbering Scheme,23,valid_to,有效期结束,Date,,0,0,0,0,0,,,,有效期结束,Core
-ione_hrp,HRP Foundation,HRP Numbering Scheme,24,owner_department,责任部门,Link,Department,0,0,0,0,0,,,,责任部门,Core
-ione_hrp,HRP Foundation,HRP Numbering Scheme,25,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
+ione_hrp,HRP Foundation,HRP Numbering Scheme,10,code,方案编码,Data,,1,1,1,0,1,,,,方案编码,Core
+ione_hrp,HRP Foundation,HRP Numbering Scheme,11,display_name,方案名称,Data,,1,0,1,0,1,,,,方案名称,Core
+ione_hrp,HRP Foundation,HRP Numbering Scheme,12,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
+ione_hrp,HRP Foundation,HRP Numbering Scheme,13,hospital,医院,Link,HRP Hospital,1,0,1,0,1,,,,医院,Core
+ione_hrp,HRP Foundation,HRP Numbering Scheme,14,organization_unit,组织单元,Link,HRP Organization Unit,0,0,1,0,0,,,,组织单元,Core
+ione_hrp,HRP Foundation,HRP Numbering Scheme,15,enabled,启用,Check,,0,0,1,0,1,,1,,启用,Core
+ione_hrp,HRP Foundation,HRP Numbering Scheme,16,template,编号模板,Data,,1,0,0,0,0,,,,受控编号模板,Core
+ione_hrp,HRP Foundation,HRP Numbering Scheme,17,dimension_keys,维度键,Code,JSON,1,0,0,1,0,,,,从模板提取的规范维度键,Core
+ione_hrp,HRP Foundation,HRP Numbering Scheme,18,reset_policy,重置周期,Select,"Never
+Yearly
+Monthly
+Daily",1,0,0,0,1,,Never,,流水号重置周期,Core
+ione_hrp,HRP Foundation,HRP Numbering Scheme,19,sequence_digits,流水号位数,Int,,1,0,0,0,0,,6,,流水号固定位数,Core
+ione_hrp,HRP Foundation,HRP Numbering Scheme,20,start_number,起始序号,Int,,1,0,0,0,0,,1,,首次分配序号,Core
+ione_hrp,HRP Foundation,HRP Numbering Scheme,21,template_digest,模板摘要,Data,,1,0,0,1,0,,,,模板配置摘要,Core
+ione_hrp,HRP Foundation,HRP Numbering Scheme,22,revision,修订号,Int,,1,0,0,1,0,,,,乐观锁修订号,Core
+ione_hrp,HRP Foundation,HRP Numbering Scheme,23,valid_from,有效期开始,Date,,0,0,1,0,0,,,,有效期开始,Core
+ione_hrp,HRP Foundation,HRP Numbering Scheme,24,valid_to,有效期结束,Date,,0,0,1,0,0,,,,有效期结束,Core
+ione_hrp,HRP Foundation,HRP Numbering Scheme,25,remarks,说明,Small Text,,0,0,0,0,0,,,,说明,Core
+ione_hrp,HRP Foundation,HRP Number Reservation,10,numbering_scheme,编号方案,Link,HRP Numbering Scheme,1,0,1,1,1,,,,编号方案,Core
+ione_hrp,HRP Foundation,HRP Number Reservation,11,scheme_code,方案编码,Data,,1,0,1,1,0,,,,方案编码快照,Core
+ione_hrp,HRP Foundation,HRP Number Reservation,12,number,业务编号,Data,,1,1,1,1,1,,,,全局唯一业务编号,Core
+ione_hrp,HRP Foundation,HRP Number Reservation,13,reservation_token,预留令牌,Data,,1,1,0,1,0,,,,稳定预留令牌,Core
+ione_hrp,HRP Foundation,HRP Number Reservation,14,business_date,业务日期,Date,,1,0,1,1,1,,,,业务日期,Core
+ione_hrp,HRP Foundation,HRP Number Reservation,15,company,法人,Link,Company,1,0,1,1,1,,,,法人,Core
+ione_hrp,HRP Foundation,HRP Number Reservation,16,hospital,医院,Link,HRP Hospital,1,0,1,1,1,,,,医院,Core
+ione_hrp,HRP Foundation,HRP Number Reservation,17,organization_unit,组织单元,Link,HRP Organization Unit,0,0,1,1,0,,,,组织单元,Core
+ione_hrp,HRP Foundation,HRP Number Reservation,18,dimensions_json,编号维度,Code,JSON,1,0,0,1,0,,,,规范化编号维度,Core
+ione_hrp,HRP Foundation,HRP Number Reservation,19,dimensions_digest,维度摘要,Data,,1,0,0,1,0,,,,编号维度摘要,Core
+ione_hrp,HRP Foundation,HRP Number Reservation,20,reset_bucket,重置分桶,Data,,1,0,0,1,0,,,,流水号重置分桶,Core
+ione_hrp,HRP Foundation,HRP Number Reservation,21,counter_key,计数器键,Data,,1,0,0,1,0,,,,Frappe原子序列键,Core
+ione_hrp,HRP Foundation,HRP Number Reservation,22,sequence_value,流水序号,Int,,1,0,0,1,0,,,,实际流水序号,Core
+ione_hrp,HRP Foundation,HRP Number Reservation,23,scheme_revision,方案修订号,Int,,1,0,0,1,0,,,,分配时方案修订号,Core
+ione_hrp,HRP Foundation,HRP Number Reservation,24,template_digest,模板摘要,Data,,1,0,0,1,0,,,,分配时模板摘要,Core
+ione_hrp,HRP Foundation,HRP Number Reservation,25,allocated_by,分配用户,Link,User,1,0,1,1,0,,,,分配用户,Core
+ione_hrp,HRP Foundation,HRP Number Reservation,26,correlation_id,关联 ID,Data,,1,0,0,1,0,,,,关联 ID,Core
+ione_hrp,HRP Foundation,HRP Number Reservation,27,request_id,请求 ID,Data,,1,0,0,1,0,,,,请求 ID,Core
 ione_hrp,HRP Foundation,HRP Code Segment,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
 ione_hrp,HRP Foundation,HRP Code Segment,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
 ione_hrp,HRP Foundation,HRP Code Segment,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core
