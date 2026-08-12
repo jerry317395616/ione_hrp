@@ -7,16 +7,16 @@
     "custom_apps": 1,
     "modules": 36,
     "design_doctypes": 400,
-    "design_fields": 10047,
+    "design_fields": 10046,
     "doctype_blueprints": 400,
-    "starter_doctypes": 16,
-    "repository_contract_tests": 258,
-    "frappe_integration_tests": 174,
+    "starter_doctypes": 18,
+    "repository_contract_tests": 266,
+    "frappe_integration_tests": 183,
     "environment_profiles": 3,
     "fixture_rules": 3,
     "fixture_files": 3,
-    "architecture_decisions": 17,
-    "change_records": 23,
+    "architecture_decisions": 18,
+    "change_records": 24,
     "change_risk_rules": 5,
     "error_definitions": 12,
     "error_translations": 28
@@ -127,6 +127,13 @@
     "backlog/COD-021.md",
     "backlog/COD-022.md",
     "backlog/COD-023.md",
-    "backlog/backlog.csv"
+    "backlog/backlog.csv",
+    "architecture/access_scope.md",
+    "architecture/adr/ADR-0018-fail-closed-organization-access-scopes.md",
+    "ione_hrp/common/access_scope.py",
+    "ione_hrp/api/v1/core/scope.py",
+    "ione_hrp/setup/access_scope.py",
+    "ione_hrp/setup/workspaces.py",
+    "backlog/COD-024.md"
   ]
 }

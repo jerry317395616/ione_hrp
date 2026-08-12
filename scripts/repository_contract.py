@@ -14,6 +14,13 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 if str(REPOSITORY_ROOT) not in sys.path:
 	sys.path.insert(0, str(REPOSITORY_ROOT))
 
+from ione_hrp.common.access_scope import (
+	ACCESS_ACTIONS,
+	ACCESS_SCOPE_DOCTYPE,
+	ACCESS_SCOPE_LEVELS,
+	ACCESS_SCOPE_MEMBER_DOCTYPE,
+	ACCESS_SCOPE_SCHEMA_VERSION,
+)
 from ione_hrp.common.change_governance import (
 	ChangeGovernanceError,
 	inspect_change_governance,
@@ -3786,6 +3793,169 @@ def validate_numbering_contract(root: Path) -> list[str]:
 	return violations
 
 
+def validate_access_scope_contract(root: Path) -> list[str]:
+	module_root = root / APP_NAME / "hrp_workflow_authorization"
+	runtime_paths = {
+		ACCESS_SCOPE_DOCTYPE: module_root / "doctype" / "hrp_access_scope" / "hrp_access_scope.json",
+		ACCESS_SCOPE_MEMBER_DOCTYPE: (
+			module_root / "doctype" / "hrp_access_scope_member" / "hrp_access_scope_member.json"
+		),
+	}
+	blueprint_paths = {
+		name: root / "doctype_blueprints" / "hrp_workflow_authorization" / f"{directory}.json"
+		for name, directory in (
+			(ACCESS_SCOPE_DOCTYPE, "hrp_access_scope"),
+			(ACCESS_SCOPE_MEMBER_DOCTYPE, "hrp_access_scope_member"),
+		)
+	}
+	required_paths = (
+		root / APP_NAME / "common" / "access_scope.py",
+		module_root / "services" / "access_scope.py",
+		module_root / "permissions.py",
+		root / APP_NAME / "api" / "v1" / "core" / "scope.py",
+		root / APP_NAME / "setup" / "access_scope.py",
+		root / APP_NAME / "setup" / "workspaces.py",
+		root / "architecture" / "access_scope.md",
+		root / "tests" / "test_access_scope.py",
+		module_root / "tests" / "test_access_scope.py",
+		*runtime_paths.values(),
+		*blueprint_paths.values(),
+	)
+	missing = [str(path.relative_to(root)) for path in required_paths if not path.is_file()]
+	if missing:
+		return [f"missing access scope contract file: {path}" for path in missing]
+
+	violations: list[str] = []
+	expected_fields = {
+		ACCESS_SCOPE_DOCTYPE: {
+			"code",
+			"display_name",
+			"scope_level",
+			"enabled",
+			"company",
+			"hospital",
+			"organization_unit",
+			"include_descendants",
+			"valid_from",
+			"valid_to",
+			"members",
+			"revision",
+			"policy_digest",
+			"remarks",
+		},
+		ACCESS_SCOPE_MEMBER_DOCTYPE: {
+			"user",
+			"target_doctype",
+			"allow_read",
+			"allow_create",
+			"allow_write",
+			"allow_submit",
+			"allow_cancel",
+			"allow_export",
+			"enabled",
+		},
+	}
+	for name in runtime_paths:
+		for metadata, source in (
+			(json.loads(runtime_paths[name].read_text(encoding="utf-8")), "runtime"),
+			(json.loads(blueprint_paths[name].read_text(encoding="utf-8")), "blueprint"),
+		):
+			fields = {
+				field["fieldname"]
+				for field in metadata.get("fields", [])
+				if field.get("fieldname") and field.get("fieldtype") not in {"Section Break", "Column Break"}
+			}
+			if metadata.get("name") != name or metadata.get("module") != "HRP Workflow Authorization":
+				violations.append(f"{name} {source} has the wrong owner")
+			if fields != expected_fields[name]:
+				violations.append(f"{name} {source} fields must match the access-scope contract")
+		if "?" in blueprint_paths[name].read_text(encoding="utf-8"):
+			violations.append(f"{name} blueprint contains replacement question marks")
+
+	common_text = (root / APP_NAME / "common" / "access_scope.py").read_text(encoding="utf-8")
+	for token in (
+		f"ACCESS_SCOPE_SCHEMA_VERSION = {ACCESS_SCOPE_SCHEMA_VERSION}",
+		"build_access_scope_definition",
+		"build_scope_decision",
+		"fail_closed",
+		"decision_digest",
+	):
+		if token not in common_text:
+			violations.append(f"access scope public contract is missing: {token}")
+	for level in ACCESS_SCOPE_LEVELS:
+		if level not in common_text:
+			violations.append(f"access scope level is missing: {level}")
+	for action in ACCESS_ACTIONS:
+		if f'"{action}"' not in common_text:
+			violations.append(f"access scope action is missing: {action}")
+	for forbidden in ("eval(", "exec(", "frappe.safe_eval", "server_script"):
+		if forbidden in common_text:
+			violations.append(f"access scope contract must not execute user code: {forbidden}")
+
+	service_text = (module_root / "services" / "access_scope.py").read_text(encoding="utf-8")
+	for token in (
+		"def resolve_access_scope",
+		"ACCESS_SCOPE_ADMIN_ROLES",
+		"frappe.has_permission",
+		"_expand_organization_units",
+		"access_scope_resolved",
+	):
+		if token not in service_text:
+			violations.append(f"access scope service is missing: {token}")
+	if "frappe.db.commit(" in service_text:
+		violations.append("access scope service must remain read-only")
+
+	hooks_text = (root / APP_NAME / "hooks.py").read_text(encoding="utf-8")
+	permissions_text = (module_root / "permissions.py").read_text(encoding="utf-8")
+	for doctype, hook in (
+		("HRP Hospital", "hospital_query"),
+		("HRP Organization Version", "organization_version_query"),
+		("HRP Organization Unit", "organization_unit_query"),
+		("HRP Organization Mapping", "organization_mapping_query"),
+	):
+		if doctype not in hooks_text or hook not in hooks_text:
+			violations.append(f"access scope permission hook is missing: {doctype}")
+	for token in ("scope_permission_query", "has_scoped_permission", "frappe.db.escape"):
+		if token not in permissions_text:
+			violations.append(f"access scope permission helper is missing: {token}")
+
+	api_text = (root / APP_NAME / "api" / "v1" / "core" / "scope.py").read_text(encoding="utf-8")
+	if 'methods=["POST"]' not in api_text or "resolve_access_scope" not in api_text:
+		violations.append("CORE-001 must expose the reviewed read-only resolver")
+	endpoint = "/api/method/ione_hrp.api.v1.core.scope.resolve"
+	with (root / "api" / "api_catalog.csv").open(encoding="utf-8-sig", newline="") as handle:
+		catalog_rows = {row["path"]: row for row in csv.DictReader(handle)}
+	row = catalog_rows.get(endpoint)
+	if not row or row.get("api_code") != "CORE-001" or row.get("idempotency") != "Not required (read-only)":
+		violations.append("CORE-001 API catalog contract is invalid")
+	openapi = yaml.safe_load((root / "api" / "openapi.yaml").read_text(encoding="utf-8"))
+	operation = openapi.get("paths", {}).get(endpoint, {}).get("post", {})
+	if operation.get("x-transaction-boundary") != "Read-only request":
+		violations.append("CORE-001 OpenAPI operation must remain read-only")
+	if any(parameter.get("name") == "Idempotency-Key" for parameter in operation.get("parameters", [])):
+		violations.append("CORE-001 must not require an idempotency key")
+
+	pure_tests = (root / "tests" / "test_access_scope.py").read_text(encoding="utf-8")
+	integration_tests = (module_root / "tests" / "test_access_scope.py").read_text(encoding="utf-8")
+	for token in (
+		"test_member_identity_is_unique_and_digest_is_order_independent",
+		"test_filter_groups_use_only_reviewed_dimension_fields",
+		"test_decision_fails_closed_without_scope_or_base_permission",
+	):
+		if token not in pure_tests:
+			violations.append(f"access scope pure tests are missing: {token}")
+	for token in (
+		"test_metadata_indexes_and_owned_workspaces_are_idempotent",
+		"test_resolver_expands_descendants_and_respects_target_doctype",
+		"test_non_admin_cannot_resolve_another_user",
+		"test_permission_helpers_filter_lists_and_documents",
+		"test_http_resolve_is_read_only_and_needs_no_idempotency_key",
+	):
+		if token not in integration_tests:
+			violations.append(f"access scope integration tests are missing: {token}")
+	return violations
+
+
 def validate_environment_profiles(root: Path) -> list[str]:
 	profile_path = root / APP_NAME / "config" / "environment_profiles.json"
 	manager_path = root / "scripts" / "environment_manager.py"
@@ -4050,6 +4220,7 @@ def collect_violations(root: Path) -> list[str]:
 	violations.extend(validate_external_code_mapping_contract(root))
 	violations.extend(validate_data_quality_contract(root))
 	violations.extend(validate_numbering_contract(root))
+	violations.extend(validate_access_scope_contract(root))
 	return violations
 
 

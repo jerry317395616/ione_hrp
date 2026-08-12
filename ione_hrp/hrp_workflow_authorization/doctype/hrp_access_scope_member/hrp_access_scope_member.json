@@ -1,0 +1,93 @@
+{
+	"actions": [],
+	"allow_rename": 0,
+	"creation": "2026-08-12 00:00:00.000000",
+	"description": "访问范围内的用户、目标单据类型和允许操作。目标单据类型留空表示所有受范围治理的单据。",
+	"doctype": "DocType",
+	"editable_grid": 1,
+	"engine": "InnoDB",
+	"field_order": [
+		"user",
+		"target_doctype",
+		"allow_read",
+		"allow_create",
+		"allow_write",
+		"allow_submit",
+		"allow_cancel",
+		"allow_export",
+		"enabled"
+	],
+	"fields": [
+		{
+			"fieldname": "user",
+			"fieldtype": "Link",
+			"in_list_view": 1,
+			"label": "用户",
+			"options": "User",
+			"reqd": 1
+		},
+		{
+			"fieldname": "target_doctype",
+			"fieldtype": "Link",
+			"in_list_view": 1,
+			"label": "目标单据类型",
+			"options": "DocType"
+		},
+		{
+			"default": "1",
+			"fieldname": "allow_read",
+			"fieldtype": "Check",
+			"in_list_view": 1,
+			"label": "允许读取"
+		},
+		{
+			"default": "0",
+			"fieldname": "allow_create",
+			"fieldtype": "Check",
+			"label": "允许新增"
+		},
+		{
+			"default": "0",
+			"fieldname": "allow_write",
+			"fieldtype": "Check",
+			"label": "允许修改"
+		},
+		{
+			"default": "0",
+			"fieldname": "allow_submit",
+			"fieldtype": "Check",
+			"label": "允许提交"
+		},
+		{
+			"default": "0",
+			"fieldname": "allow_cancel",
+			"fieldtype": "Check",
+			"label": "允许撤销"
+		},
+		{
+			"default": "0",
+			"fieldname": "allow_export",
+			"fieldtype": "Check",
+			"label": "允许导出"
+		},
+		{
+			"default": "1",
+			"fieldname": "enabled",
+			"fieldtype": "Check",
+			"in_list_view": 1,
+			"label": "启用"
+		}
+	],
+	"index_web_pages_for_search": 0,
+	"istable": 1,
+	"links": [],
+	"modified": "2026-08-12 00:00:00.000000",
+	"modified_by": "Administrator",
+	"module": "HRP Workflow Authorization",
+	"name": "HRP Access Scope Member",
+	"owner": "Administrator",
+	"permissions": [],
+	"sort_field": "idx",
+	"sort_order": "ASC",
+	"states": []
+}

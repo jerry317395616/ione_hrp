@@ -104,6 +104,17 @@ SQL、Python 或任意表达式，首个预留产生后不能改变方案格式�
 回滚规则见 `architecture/unified_numbering.md` 与
 `architecture/adr/ADR-0017-atomic-unified-number-reservations.md`。
 
+## 访问范围与数据权限
+
+`HRP Access Scope` 按法人、医院或已发布组织单元定义范围，`HRP Access Scope Member` 按用户、
+目标 DocType 和读取、新增、修改、提交、撤销、导出操作授权。普通用户无匹配范围时默认拒绝，多个
+范围按并集合并，组织范围可安全展开同一版本的下级节点。
+
+`CORE-001` 是只读解析 API，返回结构化过滤组和决策摘要，不接受任意字段、SQL、Python 或表达式。
+解析始终先尊重 Frappe DocPerm，管理员全局范围也不能越过基础权限。医院和组织层级查询已接入统一
+helper；完整模型、安全、迁移和回滚规则见 `architecture/access_scope.md` 与
+`architecture/adr/ADR-0018-fail-closed-organization-access-scopes.md`。
+
 ## 非生产环境
 
 ```bash

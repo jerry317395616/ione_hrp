@@ -1,117 +1,107 @@
 {
-  "doctype": "DocType",
-  "name": "HRP Access Scope Member",
-  "module": "HRP Workflow Authorization",
-  "custom": 0,
-  "engine": "InnoDB",
-  "autoname": "",
-  "title_field": "",
-  "is_submittable": 0,
-  "istable": 1,
-  "issingle": 0,
-  "track_changes": 0,
+  "actions": [],
   "allow_rename": 0,
+  "creation": "2026-08-12 00:00:00.000000",
+  "description": "访问范围内的用户、目标单据类型和允许操作。目标单据类型留空表示所有受范围治理的单据。",
+  "doctype": "DocType",
   "editable_grid": 1,
-  "sort_field": "modified",
-  "sort_order": "DESC",
-  "index_web_pages_for_search": 0,
-  "description": "流程与授权领域的HRP访问范围成员对象；用于支撑业务闭环、权限、审计与对账。",
+  "engine": "InnoDB",
+  "field_order": [
+    "user",
+    "target_doctype",
+    "allow_read",
+    "allow_create",
+    "allow_write",
+    "allow_submit",
+    "allow_cancel",
+    "allow_export",
+    "enabled"
+  ],
   "fields": [
     {
-      "fieldname": "sequence_no",
-      "label": "序号",
-      "fieldtype": "Int",
-      "default": "1",
-      "in_list_view": 1,
-      "description": "序号"
-    },
-    {
-      "fieldname": "reference_doctype",
-      "label": "引用类型",
+      "fieldname": "user",
       "fieldtype": "Link",
-      "options": "DocType",
-      "description": "引用类型"
-    },
-    {
-      "fieldname": "reference_name",
-      "label": "引用单据",
-      "fieldtype": "Dynamic Link",
-      "options": "reference_doctype",
-      "search_index": 1,
-      "description": "引用单据"
-    },
-    {
-      "fieldname": "description",
-      "label": "说明",
-      "fieldtype": "Small Text",
-      "description": "说明"
-    },
-    {
-      "fieldname": "quantity",
-      "label": "数量",
-      "fieldtype": "Float",
-      "precision": "6",
-      "description": "数量"
-    },
-    {
-      "fieldname": "rate",
-      "label": "单价",
-      "fieldtype": "Currency",
-      "options": "currency",
-      "precision": "6",
-      "description": "单价"
-    },
-    {
-      "fieldname": "amount",
-      "label": "金额",
-      "fieldtype": "Currency",
-      "options": "currency",
-      "read_only": 1,
       "in_list_view": 1,
-      "precision": "2",
-      "description": "金额"
+      "label": "用户",
+      "options": "User",
+      "reqd": 1
     },
     {
-      "fieldname": "dimension_json",
-      "label": "核算维度",
-      "fieldtype": "Code",
-      "options": "JSON",
-      "description": "核算维度"
-    }
-  ],
-  "permissions": [
-    {
-      "role": "HRP System Manager",
-      "read": 1,
-      "write": 1,
-      "create": 1,
-      "delete": 0,
-      "submit": 0,
-      "cancel": 0,
-      "amend": 0
+      "fieldname": "target_doctype",
+      "fieldtype": "Link",
+      "in_list_view": 1,
+      "label": "目标单据类型",
+      "options": "DocType"
     },
     {
-      "role": "HRP Data Steward",
-      "read": 1,
-      "write": 1,
-      "create": 1,
-      "delete": 0,
-      "submit": 0,
-      "cancel": 0,
-      "amend": 0
+      "default": "1",
+      "fieldname": "allow_read",
+      "fieldtype": "Check",
+      "in_list_view": 1,
+      "label": "允许读取"
+    },
+    {
+      "default": "0",
+      "fieldname": "allow_create",
+      "fieldtype": "Check",
+      "label": "允许新增"
+    },
+    {
+      "default": "0",
+      "fieldname": "allow_write",
+      "fieldtype": "Check",
+      "label": "允许修改"
+    },
+    {
+      "default": "0",
+      "fieldname": "allow_submit",
+      "fieldtype": "Check",
+      "label": "允许提交"
+    },
+    {
+      "default": "0",
+      "fieldname": "allow_cancel",
+      "fieldtype": "Check",
+      "label": "允许撤销"
+    },
+    {
+      "default": "0",
+      "fieldname": "allow_export",
+      "fieldtype": "Check",
+      "label": "允许导出"
+    },
+    {
+      "default": "1",
+      "fieldname": "enabled",
+      "fieldtype": "Check",
+      "in_list_view": 1,
+      "label": "启用"
     }
   ],
+  "index_web_pages_for_search": 0,
+  "istable": 1,
   "links": [],
-  "actions": [],
+  "modified": "2026-08-12 00:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "HRP Workflow Authorization",
+  "name": "HRP Access Scope Member",
+  "owner": "Administrator",
+  "permissions": [],
+  "sort_field": "idx",
+  "sort_order": "ASC",
+  "states": [],
+  "custom": 0,
   "x_hrp": {
     "app": "ione_hrp",
     "retention_years": 10,
     "data_classification": "内部",
     "key_indexes": [
-      "company",
-      "organization_unit"
+      "user",
+      "target_doctype"
     ],
-    "standard_references": [],
+    "standard_references": [
+      "User Permission"
+    ],
     "domain_group": "Core",
     "module_package": "hrp_workflow_authorization"
   }

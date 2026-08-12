@@ -3,12 +3,14 @@ from __future__ import annotations
 import frappe
 
 from ione_hrp.common.constants import CORE_ROLES
+from ione_hrp.setup.access_scope import ensure_access_scope_governance
 from ione_hrp.setup.master_data import ensure_master_data_governance
 from ione_hrp.setup.modules import sync_module_defs, sync_module_settings
 from ione_hrp.setup.numbering import ensure_numbering_governance
 from ione_hrp.setup.organization import ensure_organization_hierarchy
 from ione_hrp.setup.settings import ensure_system_settings
 from ione_hrp.setup.versions import validate_runtime_versions
+from ione_hrp.setup.workspaces import sync_owned_workspaces
 
 
 def _ensure_roles() -> None:
@@ -33,7 +35,9 @@ def after_install() -> None:
 	ensure_organization_hierarchy()
 	ensure_master_data_governance()
 	ensure_numbering_governance()
+	ensure_access_scope_governance()
 	ensure_system_settings()
+	sync_owned_workspaces()
 
 
 def after_migrate() -> None:
@@ -44,7 +48,9 @@ def after_migrate() -> None:
 	ensure_organization_hierarchy()
 	ensure_master_data_governance()
 	ensure_numbering_governance()
+	ensure_access_scope_governance()
 	ensure_system_settings()
+	sync_owned_workspaces()
 
 
 def before_uninstall() -> None:
