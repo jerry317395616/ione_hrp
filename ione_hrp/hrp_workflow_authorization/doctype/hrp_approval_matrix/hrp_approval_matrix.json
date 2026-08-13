@@ -1,0 +1,226 @@
+{
+	"actions": [],
+	"allow_rename": 0,
+	"autoname": "field:code",
+	"creation": "2026-08-12 00:00:00.000000",
+	"description": "按单据类型、组织、生效日期、金额与声明式业务维度解析确定审批链。",
+	"doctype": "DocType",
+	"engine": "InnoDB",
+	"field_order": [
+		"identity_section",
+		"code",
+		"display_name",
+		"target_doctype",
+		"enabled",
+		"scope_section",
+		"company",
+		"hospital",
+		"organization_unit",
+		"include_descendants",
+		"priority",
+		"valid_from",
+		"valid_to",
+		"condition_section",
+		"dimensions_json",
+		"steps_section",
+		"steps",
+		"control_section",
+		"revision",
+		"policy_digest",
+		"remarks"
+	],
+	"fields": [
+		{
+			"fieldname": "identity_section",
+			"fieldtype": "Section Break",
+			"label": "审批矩阵"
+		},
+		{
+			"fieldname": "code",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"label": "矩阵编码",
+			"reqd": 1,
+			"search_index": 1,
+			"unique": 1
+		},
+		{
+			"fieldname": "display_name",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"label": "矩阵名称",
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "target_doctype",
+			"fieldtype": "Link",
+			"in_list_view": 1,
+			"label": "适用单据类型",
+			"options": "DocType",
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"default": "1",
+			"fieldname": "enabled",
+			"fieldtype": "Check",
+			"in_list_view": 1,
+			"label": "启用",
+			"search_index": 1
+		},
+		{
+			"fieldname": "scope_section",
+			"fieldtype": "Section Break",
+			"label": "适用范围"
+		},
+		{
+			"fieldname": "company",
+			"fieldtype": "Link",
+			"in_list_view": 1,
+			"label": "法人",
+			"options": "Company",
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "hospital",
+			"fieldtype": "Link",
+			"label": "医院",
+			"options": "HRP Hospital",
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "organization_unit",
+			"fieldtype": "Link",
+			"label": "组织单元",
+			"options": "HRP Organization Unit",
+			"search_index": 1
+		},
+		{
+			"default": "0",
+			"depends_on": "eval:doc.organization_unit",
+			"fieldname": "include_descendants",
+			"fieldtype": "Check",
+			"label": "包含下级组织"
+		},
+		{
+			"default": "0",
+			"fieldname": "priority",
+			"fieldtype": "Int",
+			"label": "优先级",
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "valid_from",
+			"fieldtype": "Date",
+			"label": "有效期开始",
+			"reqd": 1,
+			"search_index": 1
+		},
+		{
+			"fieldname": "valid_to",
+			"fieldtype": "Date",
+			"label": "有效期结束",
+			"search_index": 1
+		},
+		{
+			"fieldname": "condition_section",
+			"fieldtype": "Section Break",
+			"label": "精确匹配条件"
+		},
+		{
+			"description": "仅填写声明式 JSON 对象，例如 {\"purchase_method\":\"公开招标\"}；留空表示不限制额外维度。",
+			"fieldname": "dimensions_json",
+			"fieldtype": "Code",
+			"label": "业务维度",
+			"options": "JSON"
+		},
+		{
+			"fieldname": "steps_section",
+			"fieldtype": "Section Break",
+			"label": "审批步骤"
+		},
+		{
+			"fieldname": "steps",
+			"fieldtype": "Table",
+			"label": "审批步骤",
+			"options": "HRP Approval Matrix Row",
+			"reqd": 1
+		},
+		{
+			"fieldname": "control_section",
+			"fieldtype": "Section Break",
+			"label": "控制信息"
+		},
+		{
+			"default": "1",
+			"fieldname": "revision",
+			"fieldtype": "Int",
+			"label": "策略版本",
+			"no_copy": 1,
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "policy_digest",
+			"fieldtype": "Data",
+			"label": "策略摘要",
+			"no_copy": 1,
+			"read_only": 1,
+			"reqd": 1
+		},
+		{
+			"fieldname": "remarks",
+			"fieldtype": "Small Text",
+			"label": "备注"
+		}
+	],
+	"index_web_pages_for_search": 0,
+	"links": [],
+	"modified": "2026-08-12 00:00:00.000000",
+	"modified_by": "Administrator",
+	"module": "HRP Workflow Authorization",
+	"name": "HRP Approval Matrix",
+	"naming_rule": "By fieldname",
+	"owner": "Administrator",
+	"permissions": [
+		{
+			"create": 1,
+			"email": 1,
+			"export": 1,
+			"print": 1,
+			"read": 1,
+			"report": 1,
+			"role": "System Manager",
+			"share": 1,
+			"write": 1
+		},
+		{
+			"create": 1,
+			"email": 1,
+			"export": 1,
+			"print": 1,
+			"read": 1,
+			"report": 1,
+			"role": "HRP System Manager",
+			"share": 1,
+			"write": 1
+		},
+		{
+			"export": 1,
+			"print": 1,
+			"read": 1,
+			"report": 1,
+			"role": "HRP Auditor"
+		}
+	],
+	"search_fields": "code,display_name,target_doctype,company,hospital,organization_unit",
+	"sort_field": "priority",
+	"sort_order": "DESC",
+	"states": [],
+	"title_field": "display_name",
+	"track_changes": 1
+}

@@ -680,41 +680,101 @@ paths:
               type: object
               description: user,doctype,action
               additionalProperties: true
-  /api/method/ione_hrp_core.api.v1.approval.evaluate:
+  /api/method/ione_hrp.api.v1.core.approval.evaluate:
     post:
       operationId: core_002
-      summary: 计算动态审批链
+      summary: 按真实单据上下文确定性解析动态审批链
       tags:
       - ione_hrp
       security:
       - tokenAuth: []
       parameters:
-      - name: X-Correlation-ID
-        in: header
-        required: false
-        schema:
-          type: string
-      - name: Idempotency-Key
-        in: header
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/CorrelationId'
       responses:
         '200':
-          description: Success
+          description: 确定性审批决策
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/FrappeResponse'
+        '400':
+          description: Invalid approval context
+        '401':
+          description: Authentication required
         '403':
-          description: Forbidden
+          description: Approval role or organization scope required
+        '404':
+          description: Document or approval matrix not found
         '409':
-          description: Conflict / duplicate request
-        '422':
-          description: Business validation error
+          description: Document context conflict
         '500':
           description: Internal error
-      x-required-role: HRP Applicant
+      x-required-role: System Manager or HRP System Manager or HRP User or HRP Auditor or HRP Integration User
+      x-transaction-boundary: Read-only
+      x-idempotency: Read-only deterministic
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - doctype
+              - docname
+              - amount
+              - dimensions
+              properties:
+                doctype:
+                  type: string
+                  maxLength: 140
+                docname:
+                  type: string
+                  maxLength: 140
+                amount:
+                  oneOf:
+                  - type: number
+                    minimum: 0
+                  - type: string
+                dimensions:
+                  oneOf:
+                  - type: object
+                    maxProperties: 16
+                    additionalProperties:
+                      type: string
+                  - type: string
+                    maxLength: 16384
+  /api/method/ione_hrp.api.v1.core.approval.upsert:
+    post:
+      operationId: core_028
+      summary: 创建或修订受控审批矩阵
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: 审批矩阵已创建、修订或幂等重放
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '400':
+          description: Invalid request or missing idempotency key
+        '401':
+          description: Authentication required
+        '403':
+          description: Approval matrix administrator role required
+        '404':
+          description: Referenced organization resource not found
+        '409':
+          description: Revision or identity conflict
+        '500':
+          description: Persisted approval configuration is invalid
+      x-required-role: System Manager or HRP System Manager
       x-transaction-boundary: Single DB transaction
       x-idempotency: Required for write
       requestBody:
@@ -723,8 +783,135 @@ paths:
           application/json:
             schema:
               type: object
-              description: doctype,docname,amount,dimensions
-              additionalProperties: true
+              additionalProperties: false
+              required:
+              - code
+              - display_name
+              - target_doctype
+              - company
+              - hospital
+              - valid_from
+              - steps
+              properties:
+                code:
+                  type: string
+                  pattern: ^[A-Z][A-Z0-9_-]{0,63}$
+                display_name:
+                  type: string
+                  maxLength: 140
+                target_doctype:
+                  type: string
+                  maxLength: 140
+                company:
+                  type: string
+                  maxLength: 140
+                hospital:
+                  type: string
+                  maxLength: 140
+                organization_unit:
+                  type: string
+                  maxLength: 140
+                include_descendants:
+                  type: boolean
+                priority:
+                  type: integer
+                  minimum: 0
+                  maximum: 9999
+                dimensions:
+                  type: object
+                  maxProperties: 16
+                  additionalProperties:
+                    type: string
+                enabled:
+                  type: boolean
+                valid_from:
+                  type: string
+                  format: date
+                valid_to:
+                  type: string
+                  format: date
+                expected_revision:
+                  type: integer
+                  minimum: 0
+                matrix_name:
+                  type: string
+                  maxLength: 140
+                remarks:
+                  type: string
+                steps:
+                  type: array
+                  minItems: 1
+                  maxItems: 100
+                  items:
+                    type: object
+                    additionalProperties: false
+                    required:
+                    - sequence_no
+                    - step_name
+                    - threshold_amount
+                    - approver_type
+                    properties:
+                      sequence_no:
+                        type: integer
+                        minimum: 1
+                      step_name:
+                        type: string
+                        maxLength: 140
+                      threshold_amount:
+                        type: number
+                        minimum: 0
+                      approver_type:
+                        type: string
+                        enum:
+                        - Role
+                        - User
+                      approver_role:
+                        type: string
+                        maxLength: 140
+                      approver_user:
+                        type: string
+                        maxLength: 140
+                      approval_mode:
+                        type: string
+                        enum:
+                        - All
+                        - Any
+                      description:
+                        type: string
+  /api/method/ione_hrp.api.v1.core.approval.get:
+    get:
+      operationId: core_029
+      summary: 查询审批矩阵定义
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      - name: matrix_name
+        in: query
+        required: true
+        schema:
+          type: string
+          maxLength: 140
+      responses:
+        '200':
+          description: 审批矩阵定义
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '401':
+          description: Authentication required
+        '403':
+          description: Approval matrix read role required
+        '404':
+          description: Approval matrix not found
+        '500':
+          description: Persisted approval configuration is invalid
+      x-required-role: System Manager or HRP System Manager or HRP Auditor
+      x-transaction-boundary: Read-only
+      x-idempotency: Read-only deterministic
   /api/method/ione_hrp_core.api.v1.sod.validate:
     post:
       operationId: core_003

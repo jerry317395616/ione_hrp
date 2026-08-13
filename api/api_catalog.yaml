@@ -14,18 +14,18 @@
   version: v1
 - api_code: CORE-002
   app: ione_hrp
-  domain_group: Core
   method: POST
   path: /api/method/ione_hrp.api.v1.core.approval.evaluate
-  description: 计算动态审批链
+  description: 按真实单据上下文确定性解析动态审批链
   request_schema: doctype,docname,amount,dimensions
-  response_schema: approvers,steps,policy_version
-  required_role: HRP Applicant
-  idempotency: Required for write
+  response_schema: schema_version,doctype,docname,matrix,matrix_code,matrix_name,policy_version,policy_digest,approvers,steps,decision_digest,correlation_id,request_id,idempotency_replayed
+  required_role: System Manager or HRP System Manager or HRP User or HRP Auditor or HRP Integration User
+  idempotency: Read-only deterministic
   async: 'No'
-  transaction_boundary: Single DB transaction
-  audit: Always
+  transaction_boundary: Read-only
+  audit: Redacted decision policy version and approver counts
   version: v1
+  domain_group: Core
 - api_code: CORE-003
   app: ione_hrp
   domain_group: Core
@@ -376,6 +376,34 @@
   transaction_boundary: Read-only
   audit: Redacted scheme revision template digest and dimension digest log
   version: v1
+- api_code: CORE-028
+  app: ione_hrp
+  method: POST
+  path: /api/method/ione_hrp.api.v1.core.approval.upsert
+  description: 创建或修订受控审批矩阵
+  request_schema: code,display_name,target_doctype,company,hospital,organization_unit,include_descendants,priority,dimensions,enabled,valid_from,valid_to,steps,expected_revision,matrix_name,remarks
+  response_schema: schema_version,name,code,display_name,target_doctype,company,hospital,organization_unit,include_descendants,priority,dimensions,enabled,valid_from,valid_to,revision,steps,policy_digest,changed,changed_fields,correlation_id,request_id,idempotency_replayed
+  required_role: System Manager or HRP System Manager
+  idempotency: Required for write
+  async: 'No'
+  transaction_boundary: Single DB transaction
+  audit: Redacted policy digest revision and changed fields
+  version: v1
+  domain_group: Core
+- api_code: CORE-029
+  app: ione_hrp
+  method: GET
+  path: /api/method/ione_hrp.api.v1.core.approval.get
+  description: 查询审批矩阵定义
+  request_schema: matrix_name
+  response_schema: schema_version,name,code,display_name,target_doctype,company,hospital,organization_unit,include_descendants,priority,dimensions,enabled,valid_from,valid_to,revision,steps,policy_digest,correlation_id,request_id,idempotency_replayed
+  required_role: System Manager or HRP System Manager or HRP Auditor
+  idempotency: Read-only deterministic
+  async: 'No'
+  transaction_boundary: Read-only
+  audit: Redacted policy digest and revision
+  version: v1
+  domain_group: Core
 - api_code: FIN-001
   app: ione_hrp
   domain_group: Finance

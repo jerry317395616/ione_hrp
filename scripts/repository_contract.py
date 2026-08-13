@@ -21,6 +21,13 @@ from ione_hrp.common.access_scope import (
 	ACCESS_SCOPE_MEMBER_DOCTYPE,
 	ACCESS_SCOPE_SCHEMA_VERSION,
 )
+from ione_hrp.common.approval_matrix import (
+	APPROVAL_MATRIX_DOCTYPE,
+	APPROVAL_MATRIX_ROW_DOCTYPE,
+	APPROVAL_MATRIX_SCHEMA_VERSION,
+	APPROVAL_MODES,
+	APPROVER_TYPES,
+)
 from ione_hrp.common.change_governance import (
 	ChangeGovernanceError,
 	inspect_change_governance,
@@ -3956,6 +3963,228 @@ def validate_access_scope_contract(root: Path) -> list[str]:
 	return violations
 
 
+def validate_approval_matrix_contract(root: Path) -> list[str]:
+	module_root = root / APP_NAME / "hrp_workflow_authorization"
+	runtime_paths = {
+		APPROVAL_MATRIX_DOCTYPE: (
+			module_root / "doctype" / "hrp_approval_matrix" / "hrp_approval_matrix.json"
+		),
+		APPROVAL_MATRIX_ROW_DOCTYPE: (
+			module_root / "doctype" / "hrp_approval_matrix_row" / "hrp_approval_matrix_row.json"
+		),
+	}
+	blueprint_paths = {
+		name: root / "doctype_blueprints" / "hrp_workflow_authorization" / f"{directory}.json"
+		for name, directory in (
+			(APPROVAL_MATRIX_DOCTYPE, "hrp_approval_matrix"),
+			(APPROVAL_MATRIX_ROW_DOCTYPE, "hrp_approval_matrix_row"),
+		)
+	}
+	required_paths = (
+		root / APP_NAME / "common" / "approval_matrix.py",
+		module_root / "services" / "approval_matrix.py",
+		module_root / "permissions.py",
+		root / APP_NAME / "api" / "v1" / "core" / "approval.py",
+		root / APP_NAME / "setup" / "approval_matrix.py",
+		root / "architecture" / "approval_matrix.md",
+		root / "architecture" / "adr" / "ADR-0019-declarative-deterministic-approval-matrices.md",
+		root / "tests" / "test_approval_matrix.py",
+		module_root / "tests" / "test_approval_matrix.py",
+		*runtime_paths.values(),
+		*blueprint_paths.values(),
+	)
+	missing = [str(path.relative_to(root)) for path in required_paths if not path.is_file()]
+	if missing:
+		return [f"missing approval matrix contract file: {path}" for path in missing]
+
+	violations: list[str] = []
+	expected_fields = {
+		APPROVAL_MATRIX_DOCTYPE: {
+			"code",
+			"display_name",
+			"target_doctype",
+			"enabled",
+			"company",
+			"hospital",
+			"organization_unit",
+			"include_descendants",
+			"priority",
+			"valid_from",
+			"valid_to",
+			"dimensions_json",
+			"steps",
+			"revision",
+			"policy_digest",
+			"remarks",
+		},
+		APPROVAL_MATRIX_ROW_DOCTYPE: {
+			"sequence_no",
+			"step_name",
+			"threshold_amount",
+			"approver_type",
+			"approver_role",
+			"approver_user",
+			"approval_mode",
+			"description",
+		},
+	}
+	for name in runtime_paths:
+		for metadata, source in (
+			(json.loads(runtime_paths[name].read_text(encoding="utf-8")), "runtime"),
+			(json.loads(blueprint_paths[name].read_text(encoding="utf-8")), "blueprint"),
+		):
+			fields = {
+				field["fieldname"]
+				for field in metadata.get("fields", [])
+				if field.get("fieldname") and field.get("fieldtype") not in {"Section Break", "Column Break"}
+			}
+			if metadata.get("name") != name or metadata.get("module") != "HRP Workflow Authorization":
+				violations.append(f"{name} {source} has the wrong owner")
+			if fields != expected_fields[name]:
+				violations.append(f"{name} {source} fields must match the approval-matrix contract")
+		blueprint = json.loads(blueprint_paths[name].read_text(encoding="utf-8"))
+		runtime = json.loads(runtime_paths[name].read_text(encoding="utf-8"))
+		blueprint.pop("custom", None)
+		blueprint.pop("x_hrp", None)
+		if runtime != blueprint:
+			violations.append(f"{name} runtime and blueprint metadata must match")
+		if "?" in blueprint_paths[name].read_text(encoding="utf-8"):
+			violations.append(f"{name} blueprint contains replacement question marks")
+
+	common_text = (root / APP_NAME / "common" / "approval_matrix.py").read_text(encoding="utf-8")
+	for token in (
+		f"APPROVAL_MATRIX_SCHEMA_VERSION = {APPROVAL_MATRIX_SCHEMA_VERSION}",
+		"build_approval_matrix_definition",
+		"build_approval_evaluation",
+		"build_approval_decision",
+		"decision_digest",
+		"parallel approvers must share step policy",
+	):
+		if token not in common_text:
+			violations.append(f"approval matrix public contract is missing: {token}")
+	for value in (*APPROVER_TYPES, *APPROVAL_MODES):
+		if f'"{value}"' not in common_text:
+			violations.append(f"approval matrix option is missing: {value}")
+	for forbidden in ("eval(", "exec(", "frappe.safe_eval", "server_script", "frappe.db.sql("):
+		if forbidden in common_text:
+			violations.append(f"approval matrix contract must not execute user code: {forbidden}")
+
+	service_text = (module_root / "services" / "approval_matrix.py").read_text(encoding="utf-8")
+	for token in (
+		"class UpsertApprovalMatrixService",
+		"class EvaluateApprovalMatrixService",
+		"HRPApprovalMatrix.lock_revision",
+		"has_scoped_permission",
+		"frappe.has_permission",
+		"CONFIGURATION_INVALID",
+		"approval_matrix_evaluated",
+	):
+		if token not in service_text:
+			violations.append(f"approval matrix service is missing: {token}")
+	if "frappe.db.commit(" in service_text:
+		violations.append("approval matrix services must not commit transactions")
+	for forbidden in ("eval(", "exec(", "frappe.safe_eval", "server_script"):
+		if forbidden in service_text:
+			violations.append(f"approval matrix service must not execute user code: {forbidden}")
+
+	hooks_text = (root / APP_NAME / "hooks.py").read_text(encoding="utf-8")
+	permissions_text = (module_root / "permissions.py").read_text(encoding="utf-8")
+	if '"HRP Approval Matrix"' not in hooks_text:
+		violations.append('approval matrix permission contract is missing: "HRP Approval Matrix"')
+	for token in ("approval_matrix_query", "can_read_approval_matrix"):
+		if token not in hooks_text or token not in permissions_text:
+			violations.append(f"approval matrix permission contract is missing: {token}")
+
+	api_text = (root / APP_NAME / "api" / "v1" / "core" / "approval.py").read_text(encoding="utf-8")
+	for method_name in ("def upsert", "def evaluate", "def get"):
+		if method_name not in api_text:
+			violations.append(f"approval matrix API is missing method: {method_name}")
+	if api_text.count("require_authenticated_user()") != 3:
+		violations.append("approval matrix APIs must authenticate before parsing or service access")
+
+	setup_text = (root / APP_NAME / "setup" / "approval_matrix.py").read_text(encoding="utf-8")
+	install_text = (root / APP_NAME / "setup" / "install.py").read_text(encoding="utf-8")
+	for token in (
+		"idx_hrp_approval_matrix_resolution",
+		"idx_hrp_approval_matrix_organization",
+		"idx_hrp_approval_matrix_step",
+	):
+		if token not in setup_text:
+			violations.append(f"approval matrix migration is missing: {token}")
+	if install_text.count("ensure_approval_matrix_governance()") != 2:
+		violations.append("approval matrix migration must run after install and migrate")
+
+	workspace_text = (module_root / "workspace" / "hrp_authorization" / "hrp_authorization.json").read_text(
+		encoding="utf-8"
+	)
+	if "HRP Approval Matrix" not in workspace_text or "审批矩阵" not in workspace_text:
+		violations.append("authorization workspace must expose the approval matrix")
+
+	with (root / "design" / "field_catalog.csv").open(encoding="utf-8-sig", newline="") as handle:
+		field_rows = [row for row in csv.DictReader(handle) if row.get("doctype") in expected_fields]
+	for name, fields in expected_fields.items():
+		actual = {row["fieldname"] for row in field_rows if row["doctype"] == name}
+		if actual != fields:
+			violations.append(f"{name} field catalog must match the runtime contract")
+	if any("?" in row.get("label_cn", "") or "?" in row.get("description", "") for row in field_rows):
+		violations.append("approval matrix field catalog contains replacement question marks")
+
+	endpoints = {
+		"/api/method/ione_hrp.api.v1.core.approval.evaluate": (
+			"CORE-002",
+			"Read-only deterministic",
+			"Read-only",
+		),
+		"/api/method/ione_hrp.api.v1.core.approval.upsert": (
+			"CORE-028",
+			"Required for write",
+			"Single DB transaction",
+		),
+		"/api/method/ione_hrp.api.v1.core.approval.get": ("CORE-029", "Read-only deterministic", "Read-only"),
+	}
+	with (root / "api" / "api_catalog.csv").open(encoding="utf-8-sig", newline="") as handle:
+		catalog_rows = {row["path"]: row for row in csv.DictReader(handle)}
+	openapi = yaml.safe_load((root / "api" / "openapi.yaml").read_text(encoding="utf-8"))
+	for endpoint, (code, idempotency, boundary) in endpoints.items():
+		row = catalog_rows.get(endpoint)
+		if not row or row.get("api_code") != code or row.get("idempotency") != idempotency:
+			violations.append(f"{code} API catalog contract is invalid")
+		operation_name = "get" if code == "CORE-029" else "post"
+		operation = openapi.get("paths", {}).get(endpoint, {}).get(operation_name, {})
+		if operation.get("x-transaction-boundary") != boundary:
+			violations.append(f"{code} OpenAPI transaction boundary is invalid")
+		has_key = any(
+			parameter.get("$ref") == "#/components/parameters/IdempotencyKey"
+			for parameter in operation.get("parameters", [])
+		)
+		if has_key != (code == "CORE-028"):
+			violations.append(f"{code} OpenAPI idempotency header contract is invalid")
+
+	pure_tests = (root / "tests" / "test_approval_matrix.py").read_text(encoding="utf-8")
+	integration_tests = (module_root / "tests" / "test_approval_matrix.py").read_text(encoding="utf-8")
+	for token in (
+		"test_dimensions_are_declarative_bounded_and_canonical",
+		"test_parallel_approvers_share_policy_and_cannot_repeat",
+		"test_decision_deduplicates_users_and_has_a_stable_digest",
+		"test_evaluation_requires_full_context_and_money_precision",
+	):
+		if token not in pure_tests:
+			violations.append(f"approval matrix pure tests are missing: {token}")
+	for token in (
+		"test_metadata_indexes_permissions_and_workspace_are_idempotent",
+		"test_create_update_replay_and_stale_revision",
+		"test_evaluate_resolves_real_document_and_is_deterministic",
+		"test_evaluate_rejects_tampered_context_and_ambiguous_policy",
+		"test_configuration_rejects_missing_dimensions_and_invalid_validity",
+		"test_user_requires_role_scope_and_document_permission",
+		"test_http_upsert_requires_idempotency_and_evaluate_is_read_only",
+		"test_http_guest_is_rejected_before_contract_parsing",
+	):
+		if token not in integration_tests:
+			violations.append(f"approval matrix integration tests are missing: {token}")
+	return violations
+
+
 def validate_environment_profiles(root: Path) -> list[str]:
 	profile_path = root / APP_NAME / "config" / "environment_profiles.json"
 	manager_path = root / "scripts" / "environment_manager.py"
@@ -4221,6 +4450,7 @@ def collect_violations(root: Path) -> list[str]:
 	violations.extend(validate_data_quality_contract(root))
 	violations.extend(validate_numbering_contract(root))
 	violations.extend(validate_access_scope_contract(root))
+	violations.extend(validate_approval_matrix_contract(root))
 	return violations
 
 

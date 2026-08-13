@@ -125,7 +125,32 @@ def organization_mapping_query(user: str | None = None) -> str:
 	return scope_permission_query("HRP Organization Mapping", user)
 
 
+def approval_matrix_query(user: str | None = None) -> str:
+	user = user or frappe.session.user
+	if user != "Guest" and {"System Manager", "HRP System Manager", "HRP Auditor"}.intersection(
+		frappe.get_roles(user)
+	):
+		return ""
+	return "1=0"
+
+
+def can_read_approval_matrix(
+	doc: _ScopedDocument,
+	user: str | None = None,
+	ptype: str | None = None,
+	debug: bool = False,
+) -> bool:
+	del doc, debug
+	user = user or frappe.session.user
+	allowed = {"System Manager", "HRP System Manager"}
+	if ptype in (None, "read", "report", "export", "print", "email"):
+		allowed.add("HRP Auditor")
+	return user != "Guest" and bool(allowed.intersection(frappe.get_roles(user)))
+
+
 __all__ = [
+	"approval_matrix_query",
+	"can_read_approval_matrix",
 	"has_scoped_permission",
 	"hospital_query",
 	"organization_mapping_query",
