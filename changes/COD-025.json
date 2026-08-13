@@ -34,9 +34,10 @@
     "design/**",
     "doctype_blueprints/hrp_workflow_authorization/hrp_approval_matrix*.json",
     "ione_hrp/api/v1/core/approval.py",
-    "ione_hrp/common/approval_matrix.py",
-    "ione_hrp/hooks.py",
-    "ione_hrp/hrp_workflow_authorization/**",
+		"ione_hrp/common/approval_matrix.py",
+		"ione_hrp/hooks.py",
+		"ione_hrp/hrp_foundation/tests/test_change_governance.py",
+		"ione_hrp/hrp_workflow_authorization/**",
     "ione_hrp/setup/**",
     "scripts/repository_contract.py",
     "tests/**"
