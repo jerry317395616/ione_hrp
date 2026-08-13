@@ -4,6 +4,7 @@ import frappe
 
 from ione_hrp.common.constants import CORE_ROLES
 from ione_hrp.setup.access_scope import ensure_access_scope_governance
+from ione_hrp.setup.approval_matrix import ensure_approval_matrix_governance
 from ione_hrp.setup.master_data import ensure_master_data_governance
 from ione_hrp.setup.modules import sync_module_defs, sync_module_settings
 from ione_hrp.setup.numbering import ensure_numbering_governance
@@ -36,6 +37,7 @@ def after_install() -> None:
 	ensure_master_data_governance()
 	ensure_numbering_governance()
 	ensure_access_scope_governance()
+	ensure_approval_matrix_governance()
 	ensure_system_settings()
 	sync_owned_workspaces()
 
@@ -49,6 +51,7 @@ def after_migrate() -> None:
 	ensure_master_data_governance()
 	ensure_numbering_governance()
 	ensure_access_scope_governance()
+	ensure_approval_matrix_governance()
 	ensure_system_settings()
 	sync_owned_workspaces()
 

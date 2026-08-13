@@ -1,0 +1,97 @@
+{
+	"actions": [],
+	"allow_rename": 0,
+	"creation": "2026-08-12 00:00:00.000000",
+	"description": "审批链中的金额阈值、顺序、会签方式及审批角色或用户。",
+	"doctype": "DocType",
+	"editable_grid": 1,
+	"engine": "InnoDB",
+	"field_order": [
+		"sequence_no",
+		"step_name",
+		"threshold_amount",
+		"approver_type",
+		"approver_role",
+		"approver_user",
+		"approval_mode",
+		"description"
+	],
+	"fields": [
+		{
+			"default": "1",
+			"fieldname": "sequence_no",
+			"fieldtype": "Int",
+			"in_list_view": 1,
+			"label": "步骤序号",
+			"reqd": 1
+		},
+		{
+			"fieldname": "step_name",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"label": "步骤名称",
+			"reqd": 1
+		},
+		{
+			"default": "0",
+			"fieldname": "threshold_amount",
+			"fieldtype": "Currency",
+			"in_list_view": 1,
+			"label": "起始金额",
+			"precision": "2",
+			"reqd": 1
+		},
+		{
+			"default": "Role",
+			"fieldname": "approver_type",
+			"fieldtype": "Select",
+			"in_list_view": 1,
+			"label": "审批人类型",
+			"options": "Role\nUser",
+			"reqd": 1
+		},
+		{
+			"depends_on": "eval:doc.approver_type == 'Role'",
+			"fieldname": "approver_role",
+			"fieldtype": "Link",
+			"in_list_view": 1,
+			"label": "审批角色",
+			"mandatory_depends_on": "eval:doc.approver_type == 'Role'",
+			"options": "Role"
+		},
+		{
+			"depends_on": "eval:doc.approver_type == 'User'",
+			"fieldname": "approver_user",
+			"fieldtype": "Link",
+			"in_list_view": 1,
+			"label": "指定审批人",
+			"mandatory_depends_on": "eval:doc.approver_type == 'User'",
+			"options": "User"
+		},
+		{
+			"default": "All",
+			"fieldname": "approval_mode",
+			"fieldtype": "Select",
+			"label": "通过方式",
+			"options": "All\nAny",
+			"reqd": 1
+		},
+		{
+			"fieldname": "description",
+			"fieldtype": "Small Text",
+			"label": "步骤说明"
+		}
+	],
+	"index_web_pages_for_search": 0,
+	"istable": 1,
+	"links": [],
+	"modified": "2026-08-12 00:00:00.000000",
+	"modified_by": "Administrator",
+	"module": "HRP Workflow Authorization",
+	"name": "HRP Approval Matrix Row",
+	"owner": "Administrator",
+	"permissions": [],
+	"sort_field": "idx",
+	"sort_order": "ASC",
+	"states": []
+}

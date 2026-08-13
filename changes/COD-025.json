@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "task_id": "COD-025",
+  "title": "实现审批矩阵解析器",
+  "status": "In Progress",
+  "risk_level": "critical",
+  "change_types": [
+    "application",
+    "architecture",
+    "configuration",
+    "data",
+    "documentation",
+    "security"
+  ],
+  "affected_modules": [
+    "HRP Workflow Authorization",
+    "HRP Foundation",
+    "HRP Organization"
+  ],
+  "breaking_change": false,
+  "adr_ids": [
+    "ADR-0019"
+  ],
+  "path_globs": [
+    "README.md",
+    "DELIVERY_MANIFEST.json",
+    "SHA256SUMS.txt",
+    "VALIDATION_REPORT.json",
+    "api/**",
+    "architecture/approval_matrix.md",
+    "architecture/adr/ADR-0019-declarative-deterministic-approval-matrices.md",
+    "backlog/**",
+    "changes/COD-025.json",
+    "design/**",
+    "doctype_blueprints/hrp_workflow_authorization/hrp_approval_matrix*.json",
+    "ione_hrp/api/v1/core/approval.py",
+    "ione_hrp/common/approval_matrix.py",
+    "ione_hrp/hooks.py",
+    "ione_hrp/hrp_workflow_authorization/**",
+    "ione_hrp/setup/**",
+    "scripts/repository_contract.py",
+    "tests/**"
+  ],
+  "permissions_impact": "System Manager和HRP System Manager维护矩阵；HRP Auditor只读；业务用户仅评估自己有读权限和组织范围的真实单据；审批人同时需要目标写权限和组织写范围；Guest拒绝。",
+  "migration_impact": "新增HRP Approval Matrix及步骤子表和三个复合索引；同步权限与授权工作区；不修改现有ERPNext业务数据。",
+  "rollback_plan": "部署前完整备份Site；回滚应用提交并迁移，保留矩阵及步骤数据，不执行破坏性删除；紧急处置先停用矩阵。",
+  "security_impact": "默认拒绝；禁止SQL、Python、Server Script和表达式；真实单据上下文不可由调用方伪造；摘要审计不记录用户和组织原值。",
+  "test_plan": [
+    "纯契约覆盖维度白名单、阈值链、并行会签、去重和确定性摘要",
+    "DocType、中文标签、角色、索引和工作区重复迁移测试",
+    "幂等创建、乐观锁修订和不可变身份测试",
+    "真实单据金额、日期、组织和额外维度防篡改测试",
+    "角色及指定审批人的DocPerm与组织写范围测试",
+    "歧义矩阵和无审批人默认拒绝测试",
+    "CORE-002、CORE-028、CORE-029真实HTTP和Guest边界测试",
+    "仓库契约、格式、类型、安全、集成和生产备份回归"
+  ],
+  "owner": "I-ONE HRP Maintainers",
+  "created_on": "2026-08-13",
+  "updated_on": "2026-08-13"
+}

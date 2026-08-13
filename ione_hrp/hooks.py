@@ -37,6 +37,7 @@ extend_doctype_class = {}
 doc_events = {}
 
 permission_query_conditions = {
+	"HRP Approval Matrix": "ione_hrp.hrp_workflow_authorization.permissions.approval_matrix_query",
 	"HRP Hospital": "ione_hrp.hrp_workflow_authorization.permissions.hospital_query",
 	"HRP Organization Mapping": "ione_hrp.hrp_workflow_authorization.permissions.organization_mapping_query",
 	"HRP Organization Unit": "ione_hrp.hrp_workflow_authorization.permissions.organization_unit_query",
@@ -49,6 +50,7 @@ permission_query_conditions = {
 	"HRP Numbering Scheme": "ione_hrp.hrp_foundation.permissions.numbering_scheme_query",
 }
 has_permission = {
+	"HRP Approval Matrix": "ione_hrp.hrp_workflow_authorization.permissions.can_read_approval_matrix",
 	"HRP Hospital": "ione_hrp.hrp_workflow_authorization.permissions.has_scoped_permission",
 	"HRP Organization Mapping": "ione_hrp.hrp_workflow_authorization.permissions.has_scoped_permission",
 	"HRP Organization Unit": "ione_hrp.hrp_workflow_authorization.permissions.has_scoped_permission",

@@ -9,14 +9,14 @@
     "design_doctypes": 400,
     "design_fields": 10046,
     "doctype_blueprints": 400,
-    "starter_doctypes": 18,
-    "repository_contract_tests": 266,
-    "frappe_integration_tests": 183,
+    "starter_doctypes": 20,
+    "repository_contract_tests": 274,
+    "frappe_integration_tests": 193,
     "environment_profiles": 3,
     "fixture_rules": 3,
     "fixture_files": 3,
-    "architecture_decisions": 18,
-    "change_records": 24,
+    "architecture_decisions": 19,
+    "change_records": 25,
     "change_risk_rules": 5,
     "error_definitions": 12,
     "error_translations": 28
@@ -134,6 +134,12 @@
     "ione_hrp/api/v1/core/scope.py",
     "ione_hrp/setup/access_scope.py",
     "ione_hrp/setup/workspaces.py",
-    "backlog/COD-024.md"
+    "backlog/COD-024.md",
+    "architecture/approval_matrix.md",
+    "architecture/adr/ADR-0019-declarative-deterministic-approval-matrices.md",
+    "ione_hrp/common/approval_matrix.py",
+    "ione_hrp/api/v1/core/approval.py",
+    "ione_hrp/setup/approval_matrix.py",
+    "backlog/COD-025.md"
   ]
 }
