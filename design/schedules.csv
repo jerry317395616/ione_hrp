@@ -5,7 +5,7 @@ SCH-003,All,0 * * * *,monitor_interface_sla,检查接口SLA和积压,ione_hrp,Pl
 SCH-004,Daily,01:00,run_daily_reconciliation,运行库存、财务、银行和HIS日对账,ione_hrp,Platform
 SCH-005,Daily,02:00,refresh_daily_metrics,刷新日粒度指标,ione_hrp,Platform
 SCH-006,Daily,03:00,run_data_quality_rules,运行主数据和交易数据质量规则,ione_hrp,Core
-SCH-007,Daily,04:00,expire_delegations,失效到期委托,ione_hrp,Core
+SCH-007,Daily,04:00,ione_hrp.hrp_workflow_authorization.services.delegation.sync_delegation_statuses,激活到期计划并失效过期审批委托,ione_hrp,Core
 SCH-008,Daily,06:00,generate_due_alerts,生成合同、证照、设备和库存到期预警,ione_hrp,Core
 SCH-009,Daily,07:00,prepare_manager_inbox_digest,生成管理者待办摘要,ione_hrp,Portal
 SCH-010,Daily,08:00,sync_bank_statements,拉取银行流水,ione_hrp,Finance

@@ -22,6 +22,7 @@ from ione_hrp.hrp_workflow_authorization.doctype.hrp_approval_matrix.hrp_approva
 )
 from ione_hrp.hrp_workflow_authorization.permissions import has_scoped_permission
 from ione_hrp.hrp_workflow_authorization.services.access_scope import dimension_fields_for
+from ione_hrp.hrp_workflow_authorization.services.delegation import apply_active_delegations
 from ione_hrp.services.audit_context import emit_audit_event
 from ione_hrp.services.domain_service import DomainService
 from ione_hrp.services.errors import raise_ione_error, require_roles
@@ -522,6 +523,11 @@ class EvaluateApprovalMatrixService(DomainService[ApprovalEvaluation]):
 			raise_ione_error("CONFIGURATION_INVALID")
 		target_doc = frappe.get_doc(command.target_doctype, command.docname)
 		resolved = [(step, _resolve_approvers(step, target_doc)) for step in steps]
+		resolved = apply_active_delegations(
+			matrix=matrix,
+			target_doc=target_doc,
+			resolved_rows=resolved,
+		)
 		try:
 			decision = build_approval_decision(
 				evaluation=command,
@@ -539,6 +545,7 @@ class EvaluateApprovalMatrixService(DomainService[ApprovalEvaluation]):
 			policy_version=decision["policy_version"],
 			step_count=len(decision["steps"]),
 			approver_count=len(decision["approvers"]),
+			delegation_count=len(decision["delegations"]),
 		)
 		return cast(dict[str, object], decision)
 

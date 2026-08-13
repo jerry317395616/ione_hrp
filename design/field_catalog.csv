@@ -954,33 +954,29 @@ ione_hrp,HRP Workflow Authorization,HRP Approval Matrix Row,15,approver_user,指
 ione_hrp,HRP Workflow Authorization,HRP Approval Matrix Row,16,approval_mode,通过方式,Select,"All
 Any",1,0,0,0,0,,All,,通过方式,Core
 ione_hrp,HRP Workflow Authorization,HRP Approval Matrix Row,17,description,步骤说明,Small Text,,0,0,0,0,0,,,,步骤说明,Core
-ione_hrp,HRP Workflow Authorization,HRP Delegation,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
-ione_hrp,HRP Workflow Authorization,HRP Delegation,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
-ione_hrp,HRP Workflow Authorization,HRP Delegation,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core
-ione_hrp,HRP Workflow Authorization,HRP Delegation,13,organization_unit,组织单元,Link,HRP Organization Unit,1,0,1,0,1,,,,组织单元,Core
-ione_hrp,HRP Workflow Authorization,HRP Delegation,14,cost_center,成本中心,Link,Cost Center,0,0,1,0,0,,,,成本中心,Core
-ione_hrp,HRP Workflow Authorization,HRP Delegation,15,fiscal_year,财政年度,Link,Fiscal Year,0,0,1,0,0,,,,财政年度,Core
-ione_hrp,HRP Workflow Authorization,HRP Delegation,16,currency,币种,Link,Currency,0,0,0,0,0,,CNY,,币种,Core
-ione_hrp,HRP Workflow Authorization,HRP Delegation,17,status,业务状态,Select,"Draft
-Under Review
-Approved
-Rejected
-In Progress
-Completed
-Cancelled
-Closed",0,0,1,0,1,,Draft,,业务状态,Core
-ione_hrp,HRP Workflow Authorization,HRP Delegation,18,workflow_state,工作流状态,Link,Workflow State,0,0,1,1,0,,,,工作流状态,Core
-ione_hrp,HRP Workflow Authorization,HRP Delegation,19,posting_date,业务日期,Date,,1,0,1,0,1,,,,业务日期,Core
-ione_hrp,HRP Workflow Authorization,HRP Delegation,20,applicant,申请人,Link,User,1,0,1,0,0,,,,申请人,Core
-ione_hrp,HRP Workflow Authorization,HRP Delegation,21,employee,员工,Link,Employee,0,0,1,0,0,,,,员工,Core
-ione_hrp,HRP Workflow Authorization,HRP Delegation,22,subject,主题,Data,,1,0,0,0,1,,,,主题,Core
-ione_hrp,HRP Workflow Authorization,HRP Delegation,23,total_amount,总金额,Currency,currency,0,0,0,0,1,2,,,总金额,Core
-ione_hrp,HRP Workflow Authorization,HRP Delegation,24,external_id,外部ID,Data,,0,0,1,0,0,,,,外部ID,Core
-ione_hrp,HRP Workflow Authorization,HRP Delegation,25,source_doctype,来源类型,Link,DocType,0,0,0,0,0,,,,来源类型,Core
-ione_hrp,HRP Workflow Authorization,HRP Delegation,26,source_name,来源单据,Dynamic Link,source_doctype,0,0,1,0,0,,,,来源单据,Core
-ione_hrp,HRP Workflow Authorization,HRP Delegation,27,submitted_at,提交时间,Datetime,,0,0,0,1,0,,,,提交时间,Core
-ione_hrp,HRP Workflow Authorization,HRP Delegation,28,approved_at,批准时间,Datetime,,0,0,0,1,0,,,,批准时间,Core
-ione_hrp,HRP Workflow Authorization,HRP Delegation,29,remarks,备注,Small Text,,0,0,0,0,0,,,,备注,Core
+ione_hrp,HRP Workflow Authorization,HRP Delegation,10,matrix,审批矩阵,Link,HRP Approval Matrix,1,0,1,1,1,,,,锁定委托所依据的审批矩阵。,Core
+ione_hrp,HRP Workflow Authorization,HRP Delegation,11,matrix_revision,矩阵修订号,Int,,1,0,0,1,0,,,,锁定创建时的矩阵修订号。,Core
+ione_hrp,HRP Workflow Authorization,HRP Delegation,12,matrix_digest,矩阵策略摘要,Data,,1,0,0,1,0,,,,锁定创建时的矩阵策略摘要。,Core
+ione_hrp,HRP Workflow Authorization,HRP Delegation,13,target_doctype,适用单据类型,Link,DocType,1,0,1,1,0,,,,委托适用的业务单据类型。,Core
+ione_hrp,HRP Workflow Authorization,HRP Delegation,14,company,法人,Link,Company,1,0,1,1,1,,,,从审批矩阵继承的法人范围。,Core
+ione_hrp,HRP Workflow Authorization,HRP Delegation,15,hospital,医院,Link,HRP Hospital,1,0,1,1,0,,,,从审批矩阵继承的医院范围。,Core
+ione_hrp,HRP Workflow Authorization,HRP Delegation,16,organization_unit,组织单元,Link,HRP Organization Unit,0,0,1,1,0,,,,从审批矩阵继承的组织单元范围。,Core
+ione_hrp,HRP Workflow Authorization,HRP Delegation,17,include_descendants,包含下级组织,Check,,0,0,0,1,0,,0,,是否继承矩阵的下级组织范围。,Core
+ione_hrp,HRP Workflow Authorization,HRP Delegation,18,from_user,委托人,Link,User,1,0,1,1,1,,,,必须实际拥有相应矩阵审批责任。,Core
+ione_hrp,HRP Workflow Authorization,HRP Delegation,19,to_user,受托人,Link,User,1,0,1,1,1,,,,必须具有目标写权限及同等组织范围。,Core
+ione_hrp,HRP Workflow Authorization,HRP Delegation,20,step_sequence,限定审批步骤,Int,,0,0,1,1,0,,,,留空表示委托矩阵中的全部本人审批步骤。,Core
+ione_hrp,HRP Workflow Authorization,HRP Delegation,21,valid_from,开始日期,Date,,1,0,1,1,1,,,,委托生效日期。,Core
+ione_hrp,HRP Workflow Authorization,HRP Delegation,22,valid_to,结束日期,Date,,1,0,1,1,1,,,,委托结束日期，最长三百六十六天。,Core
+ione_hrp,HRP Workflow Authorization,HRP Delegation,23,status,状态,Select,"Scheduled
+Active
+Revoked
+Expired",1,0,1,1,1,,,,计划中、有效、已撤销或已失效。,Core
+ione_hrp,HRP Workflow Authorization,HRP Delegation,24,reason,委托原因,Small Text,,0,0,0,1,0,,,,创建委托的业务原因。,Core
+ione_hrp,HRP Workflow Authorization,HRP Delegation,25,policy_digest,委托策略摘要,Data,,1,0,0,1,0,,,,不可变委托定义的确定性摘要。,Core
+ione_hrp,HRP Workflow Authorization,HRP Delegation,26,revoked_at,撤销时间,Datetime,,0,0,0,1,0,,,,委托撤销时间。,Core
+ione_hrp,HRP Workflow Authorization,HRP Delegation,27,revoked_by,撤销人,Link,User,0,0,0,1,0,,,,执行撤销的用户。,Core
+ione_hrp,HRP Workflow Authorization,HRP Delegation,28,revocation_reason,撤销原因,Small Text,,0,0,0,1,0,,,,撤销委托的原因。,Core
+ione_hrp,HRP Workflow Authorization,HRP Delegation,29,expired_at,失效时间,Datetime,,0,0,0,1,0,,,,系统确认委托过期的时间。,Core
 ione_hrp,HRP Workflow Authorization,HRP Signing Authority,10,company,法人,Link,Company,1,0,1,0,1,,,,法人,Core
 ione_hrp,HRP Workflow Authorization,HRP Signing Authority,11,hospital,医院,Link,HRP Hospital,1,0,1,0,0,,,,医院,Core
 ione_hrp,HRP Workflow Authorization,HRP Signing Authority,12,campus,院区,Link,HRP Campus,0,0,1,0,0,,,,院区,Core

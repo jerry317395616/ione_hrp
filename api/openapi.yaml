@@ -1386,51 +1386,163 @@ paths:
       x-required-role: Authenticated User
       x-transaction-boundary: Single DB transaction
       x-idempotency: Not applicable
-  /api/method/ione_hrp_core.api.v1.delegation.create:
+  /api/method/ione_hrp.api.v1.core.delegation.create:
     post:
       operationId: core_008
-      summary: 创建审批委托
+      summary: 创建受控审批委托
       tags:
       - ione_hrp
       security:
       - tokenAuth: []
       parameters:
-      - name: X-Correlation-ID
-        in: header
-        required: false
-        schema:
-          type: string
-      - name: Idempotency-Key
-        in: header
-        required: true
-        schema:
-          type: string
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FrappeResponse'
-        '403':
-          description: Forbidden
-        '409':
-          description: Conflict / duplicate request
-        '422':
-          description: Business validation error
-        '500':
-          description: Internal error
-      x-required-role: HRP Department Manager
-      x-transaction-boundary: Single DB transaction
-      x-idempotency: Required for write
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              description: from_user,to_user,scope,start,end
-              additionalProperties: true
+              additionalProperties: false
+              required:
+              - matrix
+              - from_user
+              - to_user
+              - valid_from
+              - valid_to
+              properties:
+                matrix:
+                  type: string
+                  maxLength: 140
+                from_user:
+                  type: string
+                  maxLength: 140
+                to_user:
+                  type: string
+                  maxLength: 140
+                valid_from:
+                  type: string
+                  format: date
+                valid_to:
+                  type: string
+                  format: date
+                step_sequence:
+                  type: integer
+                  minimum: 1
+                  nullable: true
+                reason:
+                  type: string
+                  maxLength: 500
+                  nullable: true
+      responses:
+        '200':
+          description: 委托已创建或返回同一幂等结果
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '400':
+          description: Invalid request or missing idempotency key
+        '401':
+          description: Authentication required
+        '403':
+          description: Delegator ownership or target write scope required
+        '404':
+          description: Approval matrix or user not found
+        '409':
+          description: Overlapping or conflicting delegation
+        '500':
+          description: Persisted policy configuration is invalid
+      x-required-role: System Manager or HRP System Manager or HRP Department Manager
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+  /api/method/ione_hrp.api.v1.core.delegation.revoke:
+    post:
+      operationId: core_030
+      summary: 撤销审批委托
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - delegation
+              - reason
+              properties:
+                delegation:
+                  type: string
+                  maxLength: 140
+                reason:
+                  type: string
+                  minLength: 1
+                  maxLength: 500
+      responses:
+        '200':
+          description: 委托已撤销或返回同一幂等结果
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '400':
+          description: Invalid request or missing idempotency key
+        '401':
+          description: Authentication required
+        '403':
+          description: Delegator or administrator role required
+        '404':
+          description: Delegation not found
+        '409':
+          description: Delegation is not revocable
+        '500':
+          description: Internal error
+      x-required-role: System Manager or HRP System Manager or HRP Department Manager
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+  /api/method/ione_hrp.api.v1.core.delegation.get:
+    get:
+      operationId: core_031
+      summary: 查询审批委托
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      - name: delegation
+        in: query
+        required: true
+        schema:
+          type: string
+          maxLength: 140
+      responses:
+        '200':
+          description: 返回按角色和委托双方限制的委托定义
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '400':
+          description: Invalid request
+        '401':
+          description: Authentication required
+        '403':
+          description: Read role and principal access required
+        '404':
+          description: Delegation not found
+        '500':
+          description: Internal error
+      x-required-role: System Manager or HRP System Manager or HRP Department Manager or HRP User or HRP Auditor
+      x-transaction-boundary: Read-only
+      x-idempotency: Read-only owner scoped
   /api/method/ione_hrp_finance.api.v1.budget.check:
     post:
       operationId: fin_001

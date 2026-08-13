@@ -40,7 +40,12 @@ class ApprovalMatrixContractError(ValueError):
 	"""Raised when an approval matrix contains unsafe or ambiguous policy data."""
 
 
-class ResolvedApprover(TypedDict):
+class DelegatedApproverEvidence(TypedDict, total=False):
+	delegated_from: str
+	delegation: str
+
+
+class ResolvedApprover(DelegatedApproverEvidence):
 	user: str
 	source_type: ApproverType
 	source_value: str
@@ -64,6 +69,7 @@ class ApprovalDecision(TypedDict):
 	policy_version: int
 	policy_digest: str
 	approvers: list[str]
+	delegations: list[str]
 	steps: list[ResolvedApprovalStep]
 	decision_digest: str
 
@@ -530,6 +536,14 @@ def build_approval_decision(
 	if [step["sequence_no"] for step in steps] != list(range(1, len(steps) + 1)):
 		raise ApprovalMatrixContractError("active approval steps are not contiguous")
 	approvers = sorted({approver["user"] for step in steps for approver in step["approvers"]})
+	delegations = sorted(
+		{
+			str(delegation)
+			for step in steps
+			for approver in step["approvers"]
+			if (delegation := approver.get("delegation"))
+		}
+	)
 	decision: ApprovalDecision = {
 		"schema_version": APPROVAL_MATRIX_SCHEMA_VERSION,
 		"doctype": evaluation.target_doctype,
@@ -540,6 +554,7 @@ def build_approval_decision(
 		"policy_version": definition.revision,
 		"policy_digest": definition.policy_digest,
 		"approvers": approvers,
+		"delegations": delegations,
 		"steps": steps,
 		"decision_digest": "",
 	}
@@ -562,6 +577,7 @@ __all__ = [
 	"ApprovalMatrixDefinition",
 	"ApprovalMatrixStep",
 	"ApprovalMatrixUpsert",
+	"DelegatedApproverEvidence",
 	"ResolvedApprover",
 	"active_steps",
 	"build_approval_decision",

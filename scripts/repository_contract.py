@@ -39,6 +39,12 @@ from ione_hrp.common.data_quality import (
 	NAMED_PATTERNS,
 	RULE_TYPES,
 )
+from ione_hrp.common.delegation import (
+	DELEGATION_DOCTYPE,
+	DELEGATION_SCHEMA_VERSION,
+	DELEGATION_STATUSES,
+	MAX_DELEGATION_DAYS,
+)
 from ione_hrp.common.environment_profiles import (
 	EnvironmentProfileError,
 	load_environment_registry,
@@ -4185,6 +4191,219 @@ def validate_approval_matrix_contract(root: Path) -> list[str]:
 	return violations
 
 
+def validate_delegation_contract(root: Path) -> list[str]:
+	module_root = root / APP_NAME / "hrp_workflow_authorization"
+	runtime_path = module_root / "doctype" / "hrp_delegation" / "hrp_delegation.json"
+	blueprint_path = root / "doctype_blueprints" / "hrp_workflow_authorization" / "hrp_delegation.json"
+	required_paths = (
+		root / APP_NAME / "common" / "delegation.py",
+		module_root / "services" / "delegation.py",
+		module_root / "permissions.py",
+		root / APP_NAME / "api" / "v1" / "core" / "delegation.py",
+		root / APP_NAME / "setup" / "delegation.py",
+		module_root
+		/ "report"
+		/ "hrp_delegation_and_expiry_register"
+		/ "hrp_delegation_and_expiry_register.py",
+		root / "architecture" / "delegation.md",
+		root / "architecture" / "adr" / "ADR-0020-revision-locked-approval-delegation.md",
+		root / "tests" / "test_delegation.py",
+		module_root / "tests" / "test_delegation.py",
+		runtime_path,
+		blueprint_path,
+	)
+	missing = [str(path.relative_to(root)) for path in required_paths if not path.is_file()]
+	if missing:
+		return [f"missing delegation contract file: {path}" for path in missing]
+
+	violations: list[str] = []
+	expected_fields = {
+		"matrix",
+		"matrix_revision",
+		"matrix_digest",
+		"target_doctype",
+		"company",
+		"hospital",
+		"organization_unit",
+		"include_descendants",
+		"from_user",
+		"to_user",
+		"step_sequence",
+		"valid_from",
+		"valid_to",
+		"status",
+		"reason",
+		"policy_digest",
+		"revoked_at",
+		"revoked_by",
+		"revocation_reason",
+		"expired_at",
+	}
+	metadata_sources = (
+		(json.loads(runtime_path.read_text(encoding="utf-8")), "runtime"),
+		(json.loads(blueprint_path.read_text(encoding="utf-8")), "blueprint"),
+	)
+	for metadata, source in metadata_sources:
+		fields = {
+			field["fieldname"]
+			for field in metadata.get("fields", [])
+			if field.get("fieldname") and field.get("fieldtype") not in {"Section Break", "Column Break"}
+		}
+		if (
+			metadata.get("name") != DELEGATION_DOCTYPE
+			or metadata.get("module") != "HRP Workflow Authorization"
+		):
+			violations.append(f"delegation {source} has the wrong owner")
+		if fields != expected_fields:
+			violations.append(f"delegation {source} fields must match the controlled contract")
+		status = next(
+			(field for field in metadata.get("fields", []) if field.get("fieldname") == "status"),
+			{},
+		)
+		if tuple(str(status.get("options", "")).splitlines()) != DELEGATION_STATUSES:
+			violations.append(f"delegation {source} statuses must remain closed")
+		if metadata.get("is_submittable", 0) or metadata.get("allow_rename", 0):
+			violations.append(f"delegation {source} must not be submittable or renameable")
+	runtime = metadata_sources[0][0]
+	blueprint = dict(metadata_sources[1][0])
+	blueprint.pop("custom", None)
+	blueprint.pop("x_hrp", None)
+	if runtime != blueprint:
+		violations.append("delegation runtime and blueprint metadata must match")
+	if "?" in blueprint_path.read_text(encoding="utf-8"):
+		violations.append("delegation blueprint contains replacement question marks")
+
+	common_text = (root / APP_NAME / "common" / "delegation.py").read_text(encoding="utf-8")
+	for token in (
+		f"DELEGATION_SCHEMA_VERSION = {DELEGATION_SCHEMA_VERSION}",
+		f"MAX_DELEGATION_DAYS = {MAX_DELEGATION_DAYS}",
+		"build_delegation_create",
+		"build_delegation_definition",
+		"apply_delegation_grants",
+		"from_user and to_user must be different",
+		"multiple active delegations match one approval responsibility",
+	):
+		if token not in common_text:
+			violations.append(f"delegation public contract is missing: {token}")
+	for forbidden in ("eval(", "exec(", "frappe.safe_eval", "server_script", "frappe.db.sql("):
+		if forbidden in common_text:
+			violations.append(f"delegation contract must not execute user code: {forbidden}")
+
+	service_text = (module_root / "services" / "delegation.py").read_text(encoding="utf-8")
+	for token in (
+		"class CreateDelegationService",
+		"class RevokeDelegationService",
+		"_owns_matrix_step",
+		"_has_scope",
+		"_assert_no_conflict",
+		"_lock_matrix",
+		"matrix_revision",
+		"matrix_digest",
+		"apply_active_delegations",
+		"sync_delegation_statuses",
+		"delegation_created",
+		"delegation_revoked",
+	):
+		if token not in service_text:
+			violations.append(f"delegation service is missing: {token}")
+	if "frappe.db.commit(" in service_text:
+		violations.append("delegation services must not commit transactions")
+	for forbidden in ("eval(", "exec(", "frappe.safe_eval", "server_script"):
+		if forbidden in service_text:
+			violations.append(f"delegation service must not execute user code: {forbidden}")
+
+	controller_text = (module_root / "doctype" / "hrp_delegation" / "hrp_delegation.py").read_text(
+		encoding="utf-8"
+	)
+	for token in ("_require_service_write", "_validate_immutable_policy", "def on_trash"):
+		if token not in controller_text:
+			violations.append(f"delegation direct-write guard is missing: {token}")
+
+	hooks_text = (root / APP_NAME / "hooks.py").read_text(encoding="utf-8")
+	permissions_text = (module_root / "permissions.py").read_text(encoding="utf-8")
+	for token in ("delegation_query", "can_read_delegation"):
+		if token not in hooks_text or token not in permissions_text:
+			violations.append(f"delegation permission contract is missing: {token}")
+	if "sync_delegation_statuses" not in hooks_text:
+		violations.append("delegation daily lifecycle task is missing")
+
+	api_text = (root / APP_NAME / "api" / "v1" / "core" / "delegation.py").read_text(encoding="utf-8")
+	for method_name in ("def create", "def revoke", "def get"):
+		if method_name not in api_text:
+			violations.append(f"delegation API is missing method: {method_name}")
+	if api_text.count("require_authenticated_user()") != 3:
+		violations.append("delegation APIs must authenticate before parsing or service access")
+
+	setup_text = (root / APP_NAME / "setup" / "delegation.py").read_text(encoding="utf-8")
+	install_text = (root / APP_NAME / "setup" / "install.py").read_text(encoding="utf-8")
+	for token in ("idx_hrp_delegation_resolution", "idx_hrp_delegation_principals"):
+		if token not in setup_text:
+			violations.append(f"delegation migration is missing: {token}")
+	if install_text.count("ensure_delegation_governance()") != 2:
+		violations.append("delegation migration must run after install and migrate")
+
+	workspace_text = (module_root / "workspace" / "hrp_authorization" / "hrp_authorization.json").read_text(
+		encoding="utf-8"
+	)
+	for token in ("HRP Delegation", "审批委托", "HRP Delegation and Expiry Register"):
+		if token not in workspace_text:
+			violations.append(f"authorization workspace is missing delegation entry: {token}")
+
+	with (root / "design" / "field_catalog.csv").open(encoding="utf-8-sig", newline="") as handle:
+		field_rows = [row for row in csv.DictReader(handle) if row.get("doctype") == DELEGATION_DOCTYPE]
+	if {row["fieldname"] for row in field_rows} != expected_fields:
+		violations.append("delegation field catalog must match the runtime contract")
+	if any("?" in row.get("label_cn", "") or "?" in row.get("description", "") for row in field_rows):
+		violations.append("delegation field catalog contains replacement question marks")
+
+	endpoints = {
+		"/api/method/ione_hrp.api.v1.core.delegation.create": ("CORE-008", "post", True),
+		"/api/method/ione_hrp.api.v1.core.delegation.revoke": ("CORE-030", "post", True),
+		"/api/method/ione_hrp.api.v1.core.delegation.get": ("CORE-031", "get", False),
+	}
+	with (root / "api" / "api_catalog.csv").open(encoding="utf-8-sig", newline="") as handle:
+		catalog_rows = {row["path"]: row for row in csv.DictReader(handle)}
+	openapi = yaml.safe_load((root / "api" / "openapi.yaml").read_text(encoding="utf-8"))
+	for endpoint, (code, operation_name, writes) in endpoints.items():
+		row = catalog_rows.get(endpoint)
+		expected_idempotency = "Required for write" if writes else "Read-only owner scoped"
+		if not row or row.get("api_code") != code or row.get("idempotency") != expected_idempotency:
+			violations.append(f"{code} API catalog contract is invalid")
+		operation = openapi.get("paths", {}).get(endpoint, {}).get(operation_name, {})
+		expected_boundary = "Single DB transaction" if writes else "Read-only"
+		if operation.get("x-transaction-boundary") != expected_boundary:
+			violations.append(f"{code} OpenAPI transaction boundary is invalid")
+		has_key = any(
+			parameter.get("$ref") == "#/components/parameters/IdempotencyKey"
+			for parameter in operation.get("parameters", [])
+		)
+		if has_key != writes:
+			violations.append(f"{code} OpenAPI idempotency header contract is invalid")
+
+	pure_tests = (root / "tests" / "test_delegation.py").read_text(encoding="utf-8")
+	integration_tests = (module_root / "tests" / "test_delegation.py").read_text(encoding="utf-8")
+	for token in (
+		"test_create_rejects_self_invalid_range_and_excessive_duration",
+		"test_definition_digest_is_deterministic_and_locks_matrix_revision",
+		"test_grant_replaces_only_matching_step_and_adds_audit_evidence",
+		"test_ambiguous_grants_fail_closed",
+	):
+		if token not in pure_tests:
+			violations.append(f"delegation pure tests are missing: {token}")
+	for token in (
+		"test_metadata_indexes_permissions_workspace_and_direct_write_guard",
+		"test_create_replay_overlap_get_and_permission_filter",
+		"test_evaluation_applies_then_revocation_restores_original_approver",
+		"test_matrix_revision_change_invalidates_existing_delegation",
+		"test_status_job_activates_and_expires_without_touching_revoked_records",
+		"test_http_create_get_revoke_require_idempotency_for_writes",
+		"test_http_guest_is_rejected_before_contract_parsing",
+	):
+		if token not in integration_tests:
+			violations.append(f"delegation integration tests are missing: {token}")
+	return violations
+
+
 def validate_environment_profiles(root: Path) -> list[str]:
 	profile_path = root / APP_NAME / "config" / "environment_profiles.json"
 	manager_path = root / "scripts" / "environment_manager.py"
@@ -4451,6 +4670,7 @@ def collect_violations(root: Path) -> list[str]:
 	violations.extend(validate_numbering_contract(root))
 	violations.extend(validate_access_scope_contract(root))
 	violations.extend(validate_approval_matrix_contract(root))
+	violations.extend(validate_delegation_contract(root))
 	return violations
 
 

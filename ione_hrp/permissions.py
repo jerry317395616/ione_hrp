@@ -6,6 +6,7 @@ _ALLOWED_APP_ROLES = {
 	"System Manager",
 	"HRP System Manager",
 	"HRP User",
+	"HRP Department Manager",
 	"HRP Auditor",
 	"HRP Integration User",
 }

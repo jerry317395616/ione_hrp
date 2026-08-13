@@ -24,7 +24,8 @@ DataQualityIssue.Submitted,HRP Data Quality Issue,ione_hrp,on_submit,"name,compa
 DictionaryValue.Submitted,HRP Dictionary Value,ione_hrp,on_submit,"name,company,organization_unit,status,amount,version,correlation_id","integration,outbox,notifications,audit",At least once,Per aggregate,Core
 BusinessDimension.Submitted,HRP Business Dimension,ione_hrp,on_submit,"name,company,organization_unit,status,amount,version,correlation_id","integration,outbox,notifications,audit",At least once,Per aggregate,Core
 DimensionValue.Submitted,HRP Dimension Value,ione_hrp,on_submit,"name,company,organization_unit,status,amount,version,correlation_id","integration,outbox,notifications,audit",At least once,Per aggregate,Core
-Delegation.Submitted,HRP Delegation,ione_hrp,on_submit,"name,company,organization_unit,status,amount,version,correlation_id","integration,outbox,notifications,audit",At least once,Per aggregate,Core
+Delegation.Created,HRP Delegation,ione_hrp,受控服务创建,"name,matrix_revision,status,policy_digest,correlation_id","approval,audit",In transaction,Per aggregate,Core
+Delegation.Revoked,HRP Delegation,ione_hrp,受控服务撤销,"name,matrix_revision,status,policy_digest,correlation_id","approval,audit",In transaction,Per aggregate,Core
 WorkflowExtension.Submitted,HRP Workflow Extension,ione_hrp,on_submit,"name,company,organization_unit,status,amount,version,correlation_id","integration,outbox,notifications,audit",At least once,Per aggregate,Core
 SLAEscalation.Submitted,HRP SLA Escalation,ione_hrp,on_submit,"name,company,organization_unit,status,amount,version,correlation_id","integration,outbox,notifications,audit",At least once,Per aggregate,Core
 BudgetScenario.Submitted,HRP Budget Scenario,ione_hrp,on_submit,"name,company,organization_unit,status,amount,version,correlation_id","integration,outbox,notifications,audit",At least once,Per aggregate,Finance

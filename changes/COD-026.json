@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "task_id": "COD-026",
+  "title": "实现审批委托",
+  "status": "In Progress",
+  "risk_level": "critical",
+  "change_types": [
+    "application",
+    "architecture",
+    "configuration",
+    "data",
+    "documentation",
+    "security"
+  ],
+  "affected_modules": [
+    "HRP Workflow Authorization",
+    "HRP Foundation",
+    "HRP Organization"
+  ],
+  "breaking_change": false,
+  "adr_ids": [
+    "ADR-0020"
+  ],
+  "path_globs": [
+    "README.md",
+    "DELIVERY_MANIFEST.json",
+    "SHA256SUMS.txt",
+    "VALIDATION_REPORT.json",
+    "api/**",
+    "architecture/delegation.md",
+    "architecture/adr/ADR-0020-revision-locked-approval-delegation.md",
+    "backlog/**",
+    "changes/COD-026.json",
+    "design/**",
+    "doctype_blueprints/hrp_workflow_authorization/hrp_delegation.json",
+    "ione_hrp/api/v1/core/delegation.py",
+    "ione_hrp/common/approval_matrix.py",
+    "ione_hrp/common/constants.py",
+    "ione_hrp/common/delegation.py",
+    "ione_hrp/common/fixture_policy.py",
+    "ione_hrp/hooks.py",
+    "ione_hrp/hrp_foundation/tests/test_change_governance.py",
+    "ione_hrp/hrp_workflow_authorization/**",
+    "ione_hrp/permissions.py",
+    "ione_hrp/setup/**",
+    "ione_hrp/translations/zh.csv",
+    "scripts/repository_contract.py",
+    "tests/**"
+  ],
+  "permissions_impact": "管理员管理全部委托；科室负责人仅管理本人委托；普通用户仅查看委托双方相关记录；审计员只读。委托双方均需目标写权限和组织写范围。",
+  "migration_impact": "新增HRP Delegation运行DocType、两个复合索引、HRP Department Manager核心角色归属、中文工作区入口和报表；不修改现有ERPNext业务数据。",
+  "rollback_plan": "部署前完整备份Site；回滚应用提交并迁移，保留委托记录和表；紧急处置撤销有效委托或停用对应审批矩阵，禁止破坏性删除。",
+  "security_impact": "默认拒绝自我委托、重叠、转委托链、循环、过长有效期和权限提升；矩阵修订使旧委托失效；服务写入幂等且审计脱敏。",
+  "test_plan": [
+    "纯契约覆盖有效期、确定性摘要、步骤替换、歧义和撤销原因",
+    "DocType、中文标签、角色、索引、工作区和报表测试",
+    "幂等创建、重叠冲突、直接写保护和撤销测试",
+    "真实审批矩阵应用委托及矩阵修订失效测试",
+    "受托人DocPerm和组织写范围测试",
+    "每日激活与过期状态同步测试",
+    "CORE-008、CORE-030、CORE-031真实HTTP和Guest边界测试",
+    "仓库契约、格式、类型、安全、集成、备份与生产数据完整性回归"
+  ],
+  "owner": "I-ONE HRP Maintainers",
+  "created_on": "2026-08-13",
+  "updated_on": "2026-08-13"
+}

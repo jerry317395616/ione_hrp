@@ -31,7 +31,7 @@ class FixturePolicyTest(unittest.TestCase):
 			("1_custom_field.json", "2_property_setter.json", "3_custom_docperm.json"),
 		)
 		self.assertEqual(len(self.policy.rules[0].ownership_values), 36)
-		self.assertEqual(len(self.policy.rules[2].ownership_values), 4)
+		self.assertEqual(len(self.policy.rules[2].ownership_values), 5)
 		public = self.policy.as_public_dict()
 		self.assertNotIn("ownership_values", json.dumps(public))
 		self.assertEqual(get_frappe_fixture_hooks()[0]["dt"], "Custom Field")

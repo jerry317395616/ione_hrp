@@ -166,8 +166,8 @@ def load_fixture_policy(
 		raise FixturePolicyError("fixture_auto_order must be enabled")
 
 	modules = _read_modules(modules_path)
-	if len(core_roles) != 4 or len(set(core_roles)) != 4:
-		raise FixturePolicyError("Fixture ownership requires exactly four unique core roles")
+	if len(core_roles) != 5 or len(set(core_roles)) != 5:
+		raise FixturePolicyError("Fixture ownership requires exactly five unique core roles")
 	ownership_values = {"modules": modules, "core_roles": core_roles}
 
 	raw_rules = payload["rules"]
