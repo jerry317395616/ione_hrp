@@ -38,6 +38,7 @@ doc_events = {}
 
 permission_query_conditions = {
 	"HRP Approval Matrix": "ione_hrp.hrp_workflow_authorization.permissions.approval_matrix_query",
+	"HRP Delegation": "ione_hrp.hrp_workflow_authorization.permissions.delegation_query",
 	"HRP Hospital": "ione_hrp.hrp_workflow_authorization.permissions.hospital_query",
 	"HRP Organization Mapping": "ione_hrp.hrp_workflow_authorization.permissions.organization_mapping_query",
 	"HRP Organization Unit": "ione_hrp.hrp_workflow_authorization.permissions.organization_unit_query",
@@ -51,6 +52,7 @@ permission_query_conditions = {
 }
 has_permission = {
 	"HRP Approval Matrix": "ione_hrp.hrp_workflow_authorization.permissions.can_read_approval_matrix",
+	"HRP Delegation": "ione_hrp.hrp_workflow_authorization.permissions.can_read_delegation",
 	"HRP Hospital": "ione_hrp.hrp_workflow_authorization.permissions.has_scoped_permission",
 	"HRP Organization Mapping": "ione_hrp.hrp_workflow_authorization.permissions.has_scoped_permission",
 	"HRP Organization Unit": "ione_hrp.hrp_workflow_authorization.permissions.has_scoped_permission",
@@ -66,6 +68,7 @@ has_permission = {
 scheduler_events = {
 	"daily": [
 		"ione_hrp.hrp_master_data.services.data_quality.run_data_quality_rules",
+		"ione_hrp.hrp_workflow_authorization.services.delegation.sync_delegation_statuses",
 		"ione_hrp.setup.maintenance.daily_maintenance",
 	],
 }

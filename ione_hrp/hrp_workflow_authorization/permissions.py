@@ -148,9 +148,39 @@ def can_read_approval_matrix(
 	return user != "Guest" and bool(allowed.intersection(frappe.get_roles(user)))
 
 
+def delegation_query(user: str | None = None) -> str:
+	user = user or frappe.session.user
+	if user == "Guest":
+		return "1=0"
+	if {"System Manager", "HRP System Manager", "HRP Auditor"}.intersection(frappe.get_roles(user)):
+		return ""
+	table = _quoted_table("HRP Delegation")
+	escaped = frappe.db.escape(user)
+	return f"({table}.`from_user` = {escaped} OR {table}.`to_user` = {escaped})"
+
+
+def can_read_delegation(
+	doc: _ScopedDocument,
+	user: str | None = None,
+	ptype: str | None = None,
+	debug: bool = False,
+) -> bool:
+	del debug
+	user = user or frappe.session.user
+	if user == "Guest":
+		return False
+	if ptype not in (None, "read", "report", "export", "print", "email"):
+		return False
+	if {"System Manager", "HRP System Manager", "HRP Auditor"}.intersection(frappe.get_roles(user)):
+		return True
+	return user in {doc.get("from_user"), doc.get("to_user")}
+
+
 __all__ = [
 	"approval_matrix_query",
 	"can_read_approval_matrix",
+	"can_read_delegation",
+	"delegation_query",
 	"has_scoped_permission",
 	"hospital_query",
 	"organization_mapping_query",

@@ -183,7 +183,7 @@ GET /api/method/ione_hrp.api.v1.security.get_software_supply_chain_contract
 ## Fixtures 治理
 
 Fixture 只用于 `ione_hrp` 对标准 Frappe/ERPNext/HRMS 对象的受控配置扩展。
-当前白名单为模块归属的 Custom Field、Property Setter，以及四个 HRP 核心角色
+当前白名单为模块归属的 Custom Field、Property Setter，以及五个 HRP 核心角色
 归属的 Custom DocPerm。导出前先运行：
 
 ```bash
@@ -194,6 +194,16 @@ python scripts/fixture_manager.py validate
 实际导出只允许受管理的 development Site，经显式 `--yes` 后连续导出两次并
 校验确定性；生产、测试和演示 Site 均拒绝。完整白名单、敏感数据限制、审计、
 升级和回滚规则见 `architecture/fixtures.md`。
+
+## 审批委托
+
+`HRP Delegation` 将 COD-025 审批矩阵中的本人审批责任，在最长 366 天的受控有效期内
+委托给具备目标单据写权限和同等组织范围的启用系统用户。创建与撤销只能通过
+`CORE-008`、`CORE-030` 幂等服务执行；`CORE-031` 只允许管理员、审计员或委托双方读取。
+
+委托锁定矩阵修订号和策略摘要。矩阵修订后旧委托自动失效；重叠委托、转委托链、循环、
+自我委托和权限提升均默认拒绝。审批解析结果保留委托人、受托人和委托记录证据，但不直接
+批准或修改业务单据。完整模型、安全边界、运维与回滚规则见 `architecture/delegation.md`。
 
 ## ADR 与变更治理
 
