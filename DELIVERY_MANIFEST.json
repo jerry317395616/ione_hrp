@@ -9,14 +9,14 @@
     "design_doctypes": 400,
     "design_fields": 10046,
     "doctype_blueprints": 400,
-    "starter_doctypes": 21,
-    "repository_contract_tests": 279,
-    "frappe_integration_tests": 201,
+    "starter_doctypes": 22,
+    "repository_contract_tests": 284,
+    "frappe_integration_tests": 208,
     "environment_profiles": 3,
     "fixture_rules": 3,
     "fixture_files": 3,
-    "architecture_decisions": 20,
-    "change_records": 26,
+    "architecture_decisions": 21,
+    "change_records": 27,
     "change_risk_rules": 5,
     "error_definitions": 12,
     "error_translations": 28
@@ -146,6 +146,12 @@
     "ione_hrp/common/delegation.py",
     "ione_hrp/api/v1/core/delegation.py",
     "ione_hrp/setup/delegation.py",
-    "backlog/COD-026.md"
+    "backlog/COD-026.md",
+    "architecture/segregation_of_duties.md",
+    "architecture/adr/ADR-0021-declarative-fail-closed-segregation-of-duties.md",
+    "ione_hrp/common/segregation.py",
+    "ione_hrp/api/v1/core/sod.py",
+    "ione_hrp/setup/segregation.py",
+    "backlog/COD-027.md"
   ]
 }

@@ -1,14 +1,14 @@
 {
-  "status": "PASS_COD_026",
+  "status": "PASS_COD_027_PRE_PRODUCTION",
   "checks": {
     "python_compile": true,
     "pyproject_parse": true,
     "json_parse": true,
     "yaml_parse": true,
     "repository_contract": true,
-    "repository_contract_tests": 279,
-    "frappe_integration_tests": 183,
-    "frappe_integration_tests_defined": 201,
+    "repository_contract_tests": 284,
+    "frappe_integration_tests": 206,
+    "frappe_integration_tests_defined": 208,
     "quality_gate": true,
     "ci_pipeline": true,
     "ci_workflow": ".github/workflows/ci.yml",
@@ -84,8 +84,8 @@
     "fixture_system_manager_permission_verified": true,
     "fixture_guest_and_ordinary_user_rejected": true,
     "change_governance_schema_version": 1,
-    "change_governance_decision_count": 20,
-    "change_governance_change_record_count": 26,
+    "change_governance_decision_count": 21,
+    "change_governance_change_record_count": 27,
     "change_governance_risk_rule_count": 5,
     "change_governance_unit_tests": 15,
     "change_governance_integration_tests_defined": 5,
@@ -523,10 +523,34 @@
       "frappe": "883224ff626c4635a58c47133f1ba6101cdbd938",
       "erpnext": "372dff2ffa232f54595f48c2639d828c4a64ddde",
       "hrms": "2d9e4a0bc7a8d18c42c25cc7ff95eb52b460c6b1"
-    }
+    },
+    "cod_027_local_quality_passed": true,
+    "segregation_schema_version": 1,
+    "segregation_action_count": 10,
+    "segregation_unit_tests": 5,
+    "segregation_integration_tests_defined": 7,
+    "segregation_integration_tests_passed": 7,
+    "segregation_locked_full_app_tests_passed": 206,
+    "segregation_metadata_verified": true,
+    "segregation_workspace_verified": true,
+    "segregation_migration_idempotency_verified": true,
+    "segregation_default_deny_verified": true,
+    "segregation_actor_and_role_conflict_verified": true,
+    "segregation_minimum_permission_verified": true,
+    "segregation_idempotency_and_revision_lock_verified": true,
+    "segregation_http_contract_verified": true,
+    "segregation_arbitrary_code_enabled": false,
+    "segregation_production_doctypes_added": 1,
+    "segregation_production_indexes_verified": 0,
+    "segregation_production_guest_http_rejected": 0,
+    "segregation_production_error_log_count": -1,
+    "segregation_ci_pending": true,
+    "segregation_validation_bench": "/home/zyd/validation/cod-002-bench",
+    "segregation_validation_site": "cod002.localhost"
   },
   "not_run": [
+    "COD-027 GitHub required checks and production promotion",
     "full upstream Frappe/ERPNext/HRMS application test suites"
   ],
-  "reason_not_run": "COD-026 已通过本地门禁、GitHub 必需检查、锁定 MariaDB Bench 重复迁移、7 项委托专项测试、199 项 ione_hrp 全应用测试、完整生产备份、两遍生产迁移与数据完整性验收。完整上游 Frappe、ERPNext 与 HRMS 应用测试套件超出自定义应用变更范围。"
+  "reason_not_run": "COD-027 已通过本地质量门、锁定 MariaDB Bench 重复迁移、7 项职责分离专项测试和 206 项 ione_hrp 全应用测试；生产发布将在 GitHub 必需检查通过后执行，并写入完整备份、数据计数、Guest 边界与 Error Log 证据。完整上游 Frappe、ERPNext 与 HRMS 应用测试套件超出自定义应用变更范围。"
 }

@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "task_id": "COD-027",
+  "title": "实现不相容职责校验",
+  "status": "In Progress",
+  "risk_level": "critical",
+  "change_types": [
+    "application",
+    "architecture",
+    "configuration",
+    "data",
+    "documentation",
+    "security"
+  ],
+  "affected_modules": [
+    "HRP Workflow Authorization",
+    "HRP Foundation",
+    "HRP Organization"
+  ],
+  "breaking_change": false,
+  "adr_ids": [
+    "ADR-0021"
+  ],
+  "path_globs": [
+    "README.md",
+    "DELIVERY_MANIFEST.json",
+    "SHA256SUMS.txt",
+    "VALIDATION_REPORT.json",
+    "api/**",
+    "architecture/segregation_of_duties.md",
+    "architecture/adr/ADR-0021-declarative-fail-closed-segregation-of-duties.md",
+    "backlog/**",
+    "changes/COD-027.json",
+    "design/**",
+    "doctype_blueprints/hrp_workflow_authorization/hrp_segregation_rule.json",
+    "ione_hrp/api/v1/core/sod.py",
+    "ione_hrp/common/segregation.py",
+    "ione_hrp/hooks.py",
+    "ione_hrp/hrp_foundation/tests/test_change_governance.py",
+    "ione_hrp/hrp_workflow_authorization/**",
+    "ione_hrp/setup/**",
+    "scripts/repository_contract.py",
+    "tests/**"
+  ],
+  "permissions_impact": "System Manager和HRP System Manager维护并执行职责校验；HRP Auditor只读规则；被校验用户仍须目标DocPerm和组织范围；Guest与普通用户拒绝。",
+  "migration_impact": "新增HRP Segregation Rule运行DocType、两个复合索引和中文工作区入口；不修改现有ERPNext或HRP业务数据。",
+  "rollback_plan": "部署前完整备份Site；回滚应用提交并迁移，保留规则及表；紧急处置通过幂等修订停用规则，禁止破坏性删除。",
+  "security_impact": "真实单据派生组织和日期；冲突或缺少适用规则默认拒绝；禁止SQL、Python、Server Script和表达式；响应与审计不记录用户、组织或单据标识。",
+  "test_plan": [
+    "纯契约覆盖动作和字段白名单、列表边界、确定性摘要、责任人和角色冲突",
+    "DocType、中文标签、角色、索引和工作区重复迁移测试",
+    "幂等创建、乐观锁修订、不可变身份和直接写保护测试",
+    "真实单据组织和日期上下文及漏配默认拒绝测试",
+    "被校验用户DocPerm和组织范围测试",
+    "CORE-003、CORE-032、CORE-033真实HTTP和Guest边界测试",
+    "仓库契约、格式、类型、安全、集成、备份与生产数据完整性回归"
+  ],
+  "owner": "I-ONE HRP Maintainers",
+  "created_on": "2026-08-20",
+  "updated_on": "2026-08-20"
+}

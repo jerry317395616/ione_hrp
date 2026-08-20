@@ -217,21 +217,5 @@
 	"sort_order": "DESC",
 	"states": [],
 	"title_field": "display_name",
-	"track_changes": 1,
-	"custom": 0,
-	"x_hrp": {
-		"app": "ione_hrp",
-		"retention_years": 10,
-		"data_classification": "内部",
-		"key_indexes": [
-			"target_doctype",
-			"target_action",
-			"company",
-			"hospital",
-			"organization_unit"
-		],
-		"standard_references": [],
-		"domain_group": "Core",
-		"module_package": "hrp_workflow_authorization"
-	}
+	"track_changes": 1
 }

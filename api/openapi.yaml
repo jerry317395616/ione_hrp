@@ -912,41 +912,35 @@ paths:
       x-required-role: System Manager or HRP System Manager or HRP Auditor
       x-transaction-boundary: Read-only
       x-idempotency: Read-only deterministic
-  /api/method/ione_hrp_core.api.v1.sod.validate:
+  /api/method/ione_hrp.api.v1.core.sod.validate:
     post:
       operationId: core_003
-      summary: 校验不相容职责
+      summary: 按真实单据校验不相容职责
       tags:
       - ione_hrp
       security:
       - tokenAuth: []
       parameters:
-      - name: X-Correlation-ID
-        in: header
-        required: false
-        schema:
-          type: string
-      - name: Idempotency-Key
-        in: header
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
       responses:
         '200':
-          description: Success
+          description: Deterministic redacted segregation decision
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/FrappeResponse'
+        '401':
+          description: Authentication required
         '403':
-          description: Forbidden
+          description: System management role, DocPerm or organization scope required
         '409':
-          description: Conflict / duplicate request
+          description: Idempotency key reused with a different request
         '422':
-          description: Business validation error
+          description: Request or persisted policy is invalid
         '500':
           description: Internal error
-      x-required-role: HRP System Manager
+      x-required-role: System Manager or HRP System Manager
       x-transaction-boundary: Single DB transaction
       x-idempotency: Required for write
       requestBody:
@@ -955,8 +949,197 @@ paths:
           application/json:
             schema:
               type: object
-              description: user,action,doctype,docname
-              additionalProperties: true
+              additionalProperties: false
+              required:
+              - user
+              - action
+              - doctype
+              - docname
+              properties:
+                user:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                action:
+                  type: string
+                  enum:
+                  - amend
+                  - approve
+                  - cancel
+                  - create
+                  - pay
+                  - post
+                  - reconcile
+                  - release
+                  - review
+                  - submit
+                doctype:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                docname:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+  /api/method/ione_hrp.api.v1.core.sod.upsert_rule:
+    post:
+      operationId: core_032
+      summary: 创建或修订不相容职责规则
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Created, revised or idempotently replayed rule
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '401':
+          description: Authentication required
+        '403':
+          description: System management role required
+        '409':
+          description: Duplicate identity, stale revision or idempotency conflict
+        '422':
+          description: Rule violates the declarative policy contract
+        '500':
+          description: Internal error
+      x-required-role: System Manager or HRP System Manager
+      x-transaction-boundary: Single DB transaction
+      x-idempotency: Required for write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - code
+              - display_name
+              - target_doctype
+              - target_action
+              - company
+              - hospital
+              - valid_from
+              properties:
+                code:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                display_name:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                target_doctype:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                target_action:
+                  type: string
+                  enum:
+                  - amend
+                  - approve
+                  - cancel
+                  - create
+                  - pay
+                  - post
+                  - reconcile
+                  - release
+                  - review
+                  - submit
+                company:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                hospital:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                organization_unit:
+                  type: string
+                  maxLength: 140
+                  nullable: true
+                include_descendants:
+                  type: boolean
+                  default: false
+                actor_fields:
+                  type: array
+                  maxItems: 16
+                  uniqueItems: true
+                  items:
+                    type: string
+                    pattern: ^[a-z][a-z0-9_]{0,63}$
+                conflicting_roles:
+                  type: array
+                  maxItems: 16
+                  uniqueItems: true
+                  items:
+                    type: string
+                    minLength: 1
+                    maxLength: 140
+                enabled:
+                  type: boolean
+                  default: true
+                valid_from:
+                  type: string
+                  format: date
+                valid_to:
+                  type: string
+                  format: date
+                  nullable: true
+                expected_revision:
+                  type: integer
+                  minimum: 0
+                  default: 0
+                rule_name:
+                  type: string
+                  maxLength: 140
+                  nullable: true
+                remarks:
+                  type: string
+                  maxLength: 2000
+                  nullable: true
+  /api/method/ione_hrp.api.v1.core.sod.get_rule:
+    get:
+      operationId: core_033
+      summary: 查询不相容职责规则
+      tags:
+      - ione_hrp
+      security:
+      - tokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      - name: rule_name
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 140
+      responses:
+        '200':
+          description: Source-controlled rule definition and revision
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrappeResponse'
+        '401':
+          description: Authentication required
+        '403':
+          description: System management or auditor role required
+        '404':
+          description: Rule not found
+        '500':
+          description: Persisted rule is invalid
+      x-required-role: System Manager or HRP System Manager or HRP Auditor
+      x-transaction-boundary: Read-only
+      x-idempotency: Read-only deterministic
   /api/method/ione_hrp.api.v1.master_data.resolve_external_code_mapping:
     get:
       operationId: core_004

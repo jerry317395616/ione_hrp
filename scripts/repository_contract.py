@@ -94,6 +94,12 @@ from ione_hrp.common.performance_baseline import (
 	PerformanceBaselineContractError,
 	load_performance_baseline_registry,
 )
+from ione_hrp.common.segregation import (
+	MAX_SEGREGATION_SOURCES,
+	SEGREGATION_ACTIONS,
+	SEGREGATION_RULE_DOCTYPE,
+	SEGREGATION_SCHEMA_VERSION,
+)
 from ione_hrp.common.software_supply_chain import (
 	SoftwareSupplyChainContractError,
 	load_software_supply_chain_policy,
@@ -4404,6 +4410,204 @@ def validate_delegation_contract(root: Path) -> list[str]:
 	return violations
 
 
+def validate_segregation_contract(root: Path) -> list[str]:
+	module_root = root / APP_NAME / "hrp_workflow_authorization"
+	runtime_path = module_root / "doctype" / "hrp_segregation_rule" / "hrp_segregation_rule.json"
+	blueprint_path = root / "doctype_blueprints" / "hrp_workflow_authorization" / "hrp_segregation_rule.json"
+	required_paths = (
+		root / APP_NAME / "common" / "segregation.py",
+		module_root / "services" / "segregation.py",
+		module_root / "permissions.py",
+		root / APP_NAME / "api" / "v1" / "core" / "sod.py",
+		root / APP_NAME / "setup" / "segregation.py",
+		root / "architecture" / "segregation_of_duties.md",
+		root / "architecture" / "adr" / "ADR-0021-declarative-fail-closed-segregation-of-duties.md",
+		root / "tests" / "test_segregation.py",
+		module_root / "tests" / "test_segregation.py",
+		runtime_path,
+		blueprint_path,
+	)
+	missing = [str(path.relative_to(root)) for path in required_paths if not path.is_file()]
+	if missing:
+		return [f"missing segregation contract file: {path}" for path in missing]
+
+	violations: list[str] = []
+	expected_fields = {
+		"code",
+		"display_name",
+		"target_doctype",
+		"target_action",
+		"enabled",
+		"company",
+		"hospital",
+		"organization_unit",
+		"include_descendants",
+		"actor_fields_json",
+		"conflicting_roles_json",
+		"valid_from",
+		"valid_to",
+		"revision",
+		"policy_digest",
+		"remarks",
+	}
+	metadata_sources = (
+		(json.loads(runtime_path.read_text(encoding="utf-8")), "runtime"),
+		(json.loads(blueprint_path.read_text(encoding="utf-8")), "blueprint"),
+	)
+	for metadata, source in metadata_sources:
+		fields = {
+			field["fieldname"]
+			for field in metadata.get("fields", [])
+			if field.get("fieldname") and field.get("fieldtype") not in {"Section Break", "Column Break"}
+		}
+		if metadata.get("name") != SEGREGATION_RULE_DOCTYPE or metadata.get("module") != (
+			"HRP Workflow Authorization"
+		):
+			violations.append(f"segregation {source} has the wrong owner")
+		if fields != expected_fields:
+			violations.append(f"segregation {source} fields must match the controlled contract")
+		action = next(
+			(field for field in metadata.get("fields", []) if field.get("fieldname") == "target_action"),
+			{},
+		)
+		if tuple(str(action.get("options", "")).splitlines()) != SEGREGATION_ACTIONS:
+			violations.append(f"segregation {source} actions must remain closed")
+		if metadata.get("is_submittable", 0) or metadata.get("allow_rename", 0):
+			violations.append(f"segregation {source} must not be submittable or renameable")
+	runtime = metadata_sources[0][0]
+	blueprint = dict(metadata_sources[1][0])
+	blueprint.pop("custom", None)
+	blueprint.pop("x_hrp", None)
+	if runtime != blueprint:
+		violations.append("segregation runtime and blueprint metadata must match")
+	if "?" in blueprint_path.read_text(encoding="utf-8"):
+		violations.append("segregation blueprint contains replacement question marks")
+
+	common_text = (root / APP_NAME / "common" / "segregation.py").read_text(encoding="utf-8")
+	for token in (
+		f"SEGREGATION_SCHEMA_VERSION = {SEGREGATION_SCHEMA_VERSION}",
+		f"MAX_SEGREGATION_SOURCES = {MAX_SEGREGATION_SOURCES}",
+		"build_segregation_rule_definition",
+		"build_segregation_evaluation",
+		"build_segregation_decision",
+		"NO_APPLICABLE_RULE",
+		"a rule requires actor_fields or conflicting_roles",
+	):
+		if token not in common_text:
+			violations.append(f"segregation public contract is missing: {token}")
+	for forbidden in ("eval(", "exec(", "frappe.safe_eval", "server_script", "frappe.db.sql("):
+		if forbidden in common_text:
+			violations.append(f"segregation contract must not execute user code: {forbidden}")
+
+	service_text = (module_root / "services" / "segregation.py").read_text(encoding="utf-8")
+	for token in (
+		"class UpsertSegregationRuleService",
+		"class ValidateSegregationService",
+		"_document_context",
+		"_applicable_rules",
+		"has_scoped_permission",
+		"segregation_rule_created",
+		"segregation_validated",
+	):
+		if token not in service_text:
+			violations.append(f"segregation service is missing: {token}")
+	if "frappe.db.commit(" in service_text:
+		violations.append("segregation services must not commit transactions")
+	for forbidden in ("eval(", "exec(", "frappe.safe_eval", "server_script"):
+		if forbidden in service_text:
+			violations.append(f"segregation service must not execute user code: {forbidden}")
+
+	controller_text = (
+		module_root / "doctype" / "hrp_segregation_rule" / "hrp_segregation_rule.py"
+	).read_text(encoding="utf-8")
+	for token in ("_require_service_write", "lock_revision", "def on_trash", "Link", "User"):
+		if token not in controller_text:
+			violations.append(f"segregation direct-write or field guard is missing: {token}")
+
+	hooks_text = (root / APP_NAME / "hooks.py").read_text(encoding="utf-8")
+	permissions_text = (module_root / "permissions.py").read_text(encoding="utf-8")
+	for token in ("segregation_rule_query", "can_read_segregation_rule"):
+		if token not in hooks_text or token not in permissions_text:
+			violations.append(f"segregation permission contract is missing: {token}")
+
+	api_text = (root / APP_NAME / "api" / "v1" / "core" / "sod.py").read_text(encoding="utf-8")
+	for method_name in ("def validate", "def upsert_rule", "def get_rule"):
+		if method_name not in api_text:
+			violations.append(f"segregation API is missing method: {method_name}")
+	if api_text.count("require_authenticated_user()") != 3:
+		violations.append("segregation APIs must authenticate before parsing or service access")
+
+	setup_text = (root / APP_NAME / "setup" / "segregation.py").read_text(encoding="utf-8")
+	install_text = (root / APP_NAME / "setup" / "install.py").read_text(encoding="utf-8")
+	for token in ("idx_hrp_segregation_rule_resolution", "idx_hrp_segregation_rule_organization"):
+		if token not in setup_text:
+			violations.append(f"segregation migration is missing: {token}")
+	if install_text.count("ensure_segregation_governance()") != 2:
+		violations.append("segregation migration must run after install and migrate")
+
+	workspace_text = (module_root / "workspace" / "hrp_authorization" / "hrp_authorization.json").read_text(
+		encoding="utf-8"
+	)
+	for token in ("HRP Segregation Rule", "职责分离规则"):
+		if token not in workspace_text:
+			violations.append(f"authorization workspace is missing segregation entry: {token}")
+
+	with (root / "design" / "field_catalog.csv").open(encoding="utf-8-sig", newline="") as handle:
+		field_rows = [row for row in csv.DictReader(handle) if row.get("doctype") == SEGREGATION_RULE_DOCTYPE]
+	if {row["fieldname"] for row in field_rows} != expected_fields:
+		violations.append("segregation field catalog must match the runtime contract")
+	if any("?" in row.get("label_cn", "") or "?" in row.get("description", "") for row in field_rows):
+		violations.append("segregation field catalog contains replacement question marks")
+
+	endpoints = {
+		"/api/method/ione_hrp.api.v1.core.sod.validate": ("CORE-003", "post", True),
+		"/api/method/ione_hrp.api.v1.core.sod.upsert_rule": ("CORE-032", "post", True),
+		"/api/method/ione_hrp.api.v1.core.sod.get_rule": ("CORE-033", "get", False),
+	}
+	with (root / "api" / "api_catalog.csv").open(encoding="utf-8-sig", newline="") as handle:
+		catalog_rows = {row["path"]: row for row in csv.DictReader(handle)}
+	openapi = yaml.safe_load((root / "api" / "openapi.yaml").read_text(encoding="utf-8"))
+	for endpoint, (code, operation_name, writes) in endpoints.items():
+		row = catalog_rows.get(endpoint)
+		expected_idempotency = "Required for write" if writes else "Read-only deterministic"
+		if not row or row.get("api_code") != code or row.get("idempotency") != expected_idempotency:
+			violations.append(f"{code} API catalog contract is invalid")
+		operation = openapi.get("paths", {}).get(endpoint, {}).get(operation_name, {})
+		expected_boundary = "Single DB transaction" if writes else "Read-only"
+		if operation.get("x-transaction-boundary") != expected_boundary:
+			violations.append(f"{code} OpenAPI transaction boundary is invalid")
+		has_key = any(
+			parameter.get("$ref") == "#/components/parameters/IdempotencyKey"
+			for parameter in operation.get("parameters", [])
+		)
+		if has_key != writes:
+			violations.append(f"{code} OpenAPI idempotency header contract is invalid")
+
+	pure_tests = (root / "tests" / "test_segregation.py").read_text(encoding="utf-8")
+	integration_tests = (module_root / "tests" / "test_segregation.py").read_text(encoding="utf-8")
+	for token in (
+		"test_action_and_sources_are_closed_bounded_and_declarative",
+		"test_rule_requires_a_conflict_source_and_valid_scope",
+		"test_rule_digest_is_deterministic_and_revision_is_external",
+		"test_actor_and_role_conflicts_are_redacted_and_fail_closed",
+		"test_missing_rule_denies_while_nonconflicting_rule_allows",
+	):
+		if token not in pure_tests:
+			violations.append(f"segregation pure tests are missing: {token}")
+	for token in (
+		"test_metadata_indexes_permissions_workspace_and_direct_write_guard",
+		"test_upsert_replay_revision_get_and_permission_filter",
+		"test_validation_blocks_actor_and_role_conflicts_without_identity_leakage",
+		"test_validation_is_default_deny_and_allows_nonconflicting_scoped_user",
+		"test_validation_rejects_inactive_user_missing_scope_and_invalid_actor_field",
+		"test_http_rule_upsert_validate_and_get_require_expected_idempotency",
+		"test_http_guest_is_rejected_before_contract_parsing",
+	):
+		if token not in integration_tests:
+			violations.append(f"segregation integration tests are missing: {token}")
+	return violations
+
+
 def validate_environment_profiles(root: Path) -> list[str]:
 	profile_path = root / APP_NAME / "config" / "environment_profiles.json"
 	manager_path = root / "scripts" / "environment_manager.py"
@@ -4671,6 +4875,7 @@ def collect_violations(root: Path) -> list[str]:
 	violations.extend(validate_access_scope_contract(root))
 	violations.extend(validate_approval_matrix_contract(root))
 	violations.extend(validate_delegation_contract(root))
+	violations.extend(validate_segregation_contract(root))
 	return violations
 
 

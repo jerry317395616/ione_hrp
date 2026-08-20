@@ -10,6 +10,7 @@ from ione_hrp.setup.master_data import ensure_master_data_governance
 from ione_hrp.setup.modules import sync_module_defs, sync_module_settings
 from ione_hrp.setup.numbering import ensure_numbering_governance
 from ione_hrp.setup.organization import ensure_organization_hierarchy
+from ione_hrp.setup.segregation import ensure_segregation_governance
 from ione_hrp.setup.settings import ensure_system_settings
 from ione_hrp.setup.versions import validate_runtime_versions
 from ione_hrp.setup.workspaces import sync_owned_workspaces
@@ -40,6 +41,7 @@ def after_install() -> None:
 	ensure_access_scope_governance()
 	ensure_approval_matrix_governance()
 	ensure_delegation_governance()
+	ensure_segregation_governance()
 	ensure_system_settings()
 	sync_owned_workspaces()
 
@@ -55,6 +57,7 @@ def after_migrate() -> None:
 	ensure_access_scope_governance()
 	ensure_approval_matrix_governance()
 	ensure_delegation_governance()
+	ensure_segregation_governance()
 	ensure_system_settings()
 	sync_owned_workspaces()
 
