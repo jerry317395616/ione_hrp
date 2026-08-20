@@ -31,14 +31,14 @@
   domain_group: Core
   method: POST
   path: /api/method/ione_hrp.api.v1.core.sod.validate
-  description: 按真实单据校验不相容职责
+  description: 按真实单据实时校验不相容职责
   request_schema: user,action,doctype,docname
   response_schema: schema_version,action,allowed,rules_evaluated,conflicts,decision_digest,correlation_id,request_id,idempotency_replayed
   required_role: System Manager or HRP System Manager
-  idempotency: Required for write
+  idempotency: Read-only deterministic
   async: 'No'
-  transaction_boundary: Single DB transaction
-  audit: Redacted rule revision match fields roles counts and decision digest
+  transaction_boundary: Read-only
+  audit: Redacted conflicts and digest bound to every evaluated rule name revision and policy digest
   version: v1
 - api_code: CORE-004
   app: ione_hrp

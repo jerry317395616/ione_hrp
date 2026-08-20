@@ -280,13 +280,21 @@ def _rule_matches_unit(rule: HRPSegregationRule, organization_unit: str) -> bool
 	target = frappe.db.get_value(
 		"HRP Organization Unit",
 		organization_unit,
-		["organization_version", "lft", "rgt"],
+		["company", "hospital", "enabled", "organization_version", "lft", "rgt"],
 		as_dict=True,
 	)
-	if not root or not target or root.organization_version != target.organization_version:
+	if (
+		not root
+		or not target
+		or target.company != rule.company
+		or target.hospital != rule.hospital
+		or not bool(target.enabled)
+	):
+		raise_ione_error("CONFIGURATION_INVALID")
+	if root.organization_version != target.organization_version:
 		return False
 	if any(value is None for value in (root.lft, root.rgt, target.lft, target.rgt)):
-		return False
+		raise_ione_error("CONFIGURATION_INVALID")
 	return int(root.lft) <= int(target.lft) and int(target.rgt) <= int(root.rgt)
 
 
@@ -313,11 +321,12 @@ def _applicable_rules(
 	result: list[tuple[str, SegregationRuleDefinition]] = []
 	for row in rows:
 		doc = _rule_doc(str(row.name))
+		definition = doc.as_runtime_definition()
 		if doc.valid_to and str(doc.valid_to) < context.effective_on:
 			continue
 		if not _rule_matches_unit(doc, context.organization_unit):
 			continue
-		result.append((doc.name, doc.as_definition(revision=doc.revision)))
+		result.append((doc.name, definition))
 	return result
 
 
@@ -325,7 +334,7 @@ class ValidateSegregationService(DomainService[SegregationEvaluation]):
 	definition = DomainServiceDefinition(
 		name="hrp_workflow_authorization.segregation.validate",
 		version=1,
-		kind="command",
+		kind="query",
 		required_roles=SEGREGATION_ADMIN_ROLES,
 	)
 
@@ -384,13 +393,11 @@ class ValidateSegregationService(DomainService[SegregationEvaluation]):
 def validate_segregation(
 	command: SegregationEvaluation,
 	*,
-	idempotency_key: object | None,
 	correlation_id: object | None = None,
 ) -> dict[str, object]:
 	return _execution_payload(
 		ValidateSegregationService().execute(
 			command,
-			idempotency_key=idempotency_key,
 			correlation_id=correlation_id,
 		)
 	)

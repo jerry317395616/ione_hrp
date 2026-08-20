@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 import frappe
 from frappe.model.document import Document
 
+from ione_hrp.common.error_catalog import IoneApplicationError
 from ione_hrp.common.organization import normalize_positive_integer
 from ione_hrp.common.segregation import (
 	SegregationContractError,
@@ -134,6 +135,14 @@ class HRPSegregationRule(Document):
 		except SegregationContractError as exc:
 			raise_ione_error("INVALID_REQUEST", cause=exc)
 
+	def as_runtime_definition(self) -> SegregationRuleDefinition:
+		try:
+			definition = self.as_definition(revision=self.revision)
+		except IoneApplicationError as exc:
+			raise_ione_error("CONFIGURATION_INVALID", cause=exc)
+		self.assert_runtime_references(definition)
+		return definition
+
 	def _validate_references(self, definition: SegregationRuleDefinition) -> None:
 		for doctype, name in (
 			("Company", definition.company),
@@ -213,6 +222,15 @@ class HRPSegregationRule(Document):
 				raise_ione_error("CONFLICT")
 			if definition.include_descendants and (unit.lft is None or unit.rgt is None):
 				raise_ione_error("CONFIGURATION_INVALID")
+
+	def assert_runtime_references(self, definition: SegregationRuleDefinition) -> None:
+		"""Fail closed when a persisted rule no longer matches its trusted references."""
+		if str(self.policy_digest or "") != definition.policy_digest:
+			raise_ione_error("CONFIGURATION_INVALID")
+		try:
+			self._validate_references(definition)
+		except IoneApplicationError as exc:
+			raise_ione_error("CONFIGURATION_INVALID", cause=exc)
 
 	def _require_service_write(self) -> None:
 		if not getattr(self.flags, "segregation_rule_service_write", False):

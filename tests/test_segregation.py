@@ -96,6 +96,36 @@ class SegregationContractTests(unittest.TestCase):
 		self.assertEqual(allowed["conflicts"], [])
 		self.assertNotEqual(missing["decision_digest"], allowed["decision_digest"])
 
+	def test_allowed_decision_digest_binds_every_evaluated_rule_version_and_identity(self) -> None:
+		primary = _rule(code="PAY-PRIMARY")
+		guard = _rule(code="PAY-GUARD")
+		base_rules = [
+			("PAY-PRIMARY-RULE", primary, (), ()),
+			("PAY-GUARD-RULE", guard, (), ()),
+		]
+		base = build_segregation_decision(evaluation=_evaluation(), evaluated_rules=base_rules)
+		renamed = build_segregation_decision(
+			evaluation=_evaluation(),
+			evaluated_rules=[base_rules[0], ("PAY-GUARD-RULE-V2", guard, (), ())],
+		)
+		revised = build_segregation_decision(
+			evaluation=_evaluation(),
+			evaluated_rules=[base_rules[0], ("PAY-GUARD-RULE", _rule(code="PAY-GUARD", revision=4), (), ())],
+		)
+		policy_changed = build_segregation_decision(
+			evaluation=_evaluation(),
+			evaluated_rules=[
+				base_rules[0],
+				("PAY-GUARD-RULE", _rule(code="PAY-GUARD", remarks="BR-PAY-002"), (), ()),
+			],
+		)
+
+		decisions = (base, renamed, revised, policy_changed)
+		self.assertTrue(all(decision["allowed"] for decision in decisions))
+		self.assertTrue(all(decision["rules_evaluated"] == 2 for decision in decisions))
+		self.assertTrue(all(decision["conflicts"] == [] for decision in decisions))
+		self.assertEqual(len({decision["decision_digest"] for decision in decisions}), len(decisions))
+
 
 if __name__ == "__main__":
 	unittest.main()

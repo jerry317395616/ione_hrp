@@ -35,7 +35,7 @@ def validate(
 			)
 		except SegregationContractError as exc:
 			raise_ione_error("INVALID_REQUEST", cause=exc)
-		return validate_segregation(command, idempotency_key=None, correlation_id=correlation_id)
+		return validate_segregation(command, correlation_id=correlation_id)
 
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])

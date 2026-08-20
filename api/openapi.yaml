@@ -915,34 +915,59 @@ paths:
   /api/method/ione_hrp.api.v1.core.sod.validate:
     post:
       operationId: core_003
-      summary: 按真实单据校验不相容职责
+      summary: 按真实单据实时校验不相容职责
       tags:
       - ione_hrp
       security:
       - tokenAuth: []
       parameters:
       - $ref: '#/components/parameters/CorrelationId'
-      - $ref: '#/components/parameters/IdempotencyKey'
       responses:
         '200':
-          description: Deterministic redacted segregation decision
+          description: Live, deterministic and redacted segregation decision; never replayed from an idempotency snapshot
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FrappeResponse'
+                $ref: '#/components/schemas/SegregationValidationFrappeResponse'
+        '400':
+          description: Invalid request or correlation identifier
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
         '401':
           description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
         '403':
           description: System management role, DocPerm or organization scope required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
+        '404':
+          description: Target DocType, document or evaluated user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
         '409':
-          description: Idempotency key reused with a different request
-        '422':
-          description: Request or persisted policy is invalid
+          description: Evaluated user is disabled or is not a System User
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
         '500':
-          description: Internal error
+          description: Persisted rule references or document scope configuration is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IoneErrorResponse'
       x-required-role: System Manager or HRP System Manager
-      x-transaction-boundary: Single DB transaction
-      x-idempotency: Required for write
+      x-transaction-boundary: Read-only
+      x-idempotency: Read-only deterministic
       requestBody:
         required: true
         content:
@@ -5560,6 +5585,144 @@ components:
           type: array
           items:
             type: string
+    SegregationValidationFrappeResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - message
+      properties:
+        message:
+          $ref: '#/components/schemas/SegregationValidationResult'
+    SegregationValidationResult:
+      type: object
+      additionalProperties: false
+      required:
+      - schema_version
+      - action
+      - allowed
+      - rules_evaluated
+      - conflicts
+      - decision_digest
+      - correlation_id
+      - request_id
+      - idempotency_replayed
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        action:
+          type: string
+          enum:
+          - amend
+          - approve
+          - cancel
+          - create
+          - pay
+          - post
+          - reconcile
+          - release
+          - review
+          - submit
+        allowed:
+          type: boolean
+        rules_evaluated:
+          type: integer
+          minimum: 0
+          maximum: 100
+        conflicts:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/SegregationConflict'
+        decision_digest:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+          description: Binds the subject and document context, the redacted decision, and every evaluated rule name, revision and policy digest.
+        correlation_id:
+          type: string
+          pattern: ^[A-Za-z0-9][A-Za-z0-9._:/-]{0,139}$
+        request_id:
+          type: string
+          pattern: ^req-[A-Za-z0-9]{20}$
+        idempotency_replayed:
+          type: boolean
+          const: false
+          description: Compatibility field that is always false because authorization decisions are evaluated live.
+    SegregationConflict:
+      oneOf:
+      - $ref: '#/components/schemas/SegregationRuleConflict'
+      - $ref: '#/components/schemas/SegregationNoApplicableRuleConflict'
+    SegregationRuleConflict:
+      type: object
+      additionalProperties: false
+      required:
+      - rule
+      - code
+      - revision
+      - policy_digest
+      - reason
+      - matched_actor_fields
+      - matched_roles
+      properties:
+        rule:
+          type: string
+          minLength: 1
+          maxLength: 140
+        code:
+          type: string
+          minLength: 1
+          maxLength: 140
+        revision:
+          type: integer
+          minimum: 1
+        policy_digest:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        reason:
+          type: string
+          enum:
+          - ACTOR_AND_ROLE
+          - ACTOR_REUSE
+          - INCOMPATIBLE_ROLE
+        matched_actor_fields:
+          type: array
+          maxItems: 16
+          uniqueItems: true
+          items:
+            type: string
+            pattern: ^[a-z][a-z0-9_]{0,63}$
+        matched_roles:
+          type: array
+          maxItems: 16
+          uniqueItems: true
+          items:
+            type: string
+            minLength: 1
+            maxLength: 140
+    SegregationNoApplicableRuleConflict:
+      type: object
+      additionalProperties: false
+      required:
+      - rule
+      - code
+      - reason
+      - matched_actor_fields
+      - matched_roles
+      properties:
+        rule:
+          type: 'null'
+        code:
+          type: string
+          const: NO_APPLICABLE_RULE
+        reason:
+          type: string
+          const: NO_APPLICABLE_RULE
+        matched_actor_fields:
+          type: array
+          maxItems: 0
+        matched_roles:
+          type: array
+          maxItems: 0
     ModuleEnabledFrappeResponse:
       type: object
       additionalProperties: false

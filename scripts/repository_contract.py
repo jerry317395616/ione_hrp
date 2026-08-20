@@ -4490,6 +4490,10 @@ def validate_segregation_contract(root: Path) -> list[str]:
 		"build_segregation_rule_definition",
 		"build_segregation_evaluation",
 		"build_segregation_decision",
+		'"evaluated_policies"',
+		'"rule": name',
+		'"revision": definition.revision',
+		'"policy_digest": definition.policy_digest',
 		"NO_APPLICABLE_RULE",
 		"a rule requires actor_fields or conflicting_roles",
 	):
@@ -4505,6 +4509,7 @@ def validate_segregation_contract(root: Path) -> list[str]:
 		"class ValidateSegregationService",
 		"_document_context",
 		"_applicable_rules",
+		"doc.as_runtime_definition()",
 		"has_scoped_permission",
 		"segregation_rule_created",
 		"segregation_validated",
@@ -4513,6 +4518,11 @@ def validate_segregation_contract(root: Path) -> list[str]:
 			violations.append(f"segregation service is missing: {token}")
 	if "frappe.db.commit(" in service_text:
 		violations.append("segregation services must not commit transactions")
+	validation_service_text = service_text.split("class ValidateSegregationService", 1)[-1].split(
+		"def validate_segregation", 1
+	)[0]
+	if 'kind="query"' not in validation_service_text or "idempotency_key" in validation_service_text:
+		violations.append("segregation validation must remain a live query without durable replay")
 	for forbidden in ("eval(", "exec(", "frappe.safe_eval", "server_script"):
 		if forbidden in service_text:
 			violations.append(f"segregation service must not execute user code: {forbidden}")
@@ -4520,7 +4530,15 @@ def validate_segregation_contract(root: Path) -> list[str]:
 	controller_text = (
 		module_root / "doctype" / "hrp_segregation_rule" / "hrp_segregation_rule.py"
 	).read_text(encoding="utf-8")
-	for token in ("_require_service_write", "lock_revision", "def on_trash", "Link", "User"):
+	for token in (
+		"_require_service_write",
+		"lock_revision",
+		"def on_trash",
+		"as_runtime_definition",
+		"assert_runtime_references",
+		"Link",
+		"User",
+	):
 		if token not in controller_text:
 			violations.append(f"segregation direct-write or field guard is missing: {token}")
 
@@ -4560,28 +4578,100 @@ def validate_segregation_contract(root: Path) -> list[str]:
 		violations.append("segregation field catalog contains replacement question marks")
 
 	endpoints = {
-		"/api/method/ione_hrp.api.v1.core.sod.validate": ("CORE-003", "post", True),
+		"/api/method/ione_hrp.api.v1.core.sod.validate": ("CORE-003", "post", False),
 		"/api/method/ione_hrp.api.v1.core.sod.upsert_rule": ("CORE-032", "post", True),
 		"/api/method/ione_hrp.api.v1.core.sod.get_rule": ("CORE-033", "get", False),
 	}
 	with (root / "api" / "api_catalog.csv").open(encoding="utf-8-sig", newline="") as handle:
 		catalog_rows = {row["path"]: row for row in csv.DictReader(handle)}
+	catalog_yaml_rows = {
+		row["path"]: row
+		for row in yaml.safe_load((root / "api" / "api_catalog.yaml").read_text(encoding="utf-8"))
+	}
 	openapi = yaml.safe_load((root / "api" / "openapi.yaml").read_text(encoding="utf-8"))
 	for endpoint, (code, operation_name, writes) in endpoints.items():
 		row = catalog_rows.get(endpoint)
 		expected_idempotency = "Required for write" if writes else "Read-only deterministic"
-		if not row or row.get("api_code") != code or row.get("idempotency") != expected_idempotency:
-			violations.append(f"{code} API catalog contract is invalid")
-		operation = openapi.get("paths", {}).get(endpoint, {}).get(operation_name, {})
 		expected_boundary = "Single DB transaction" if writes else "Read-only"
+		if (
+			not row
+			or row.get("api_code") != code
+			or row.get("idempotency") != expected_idempotency
+			or row.get("transaction_boundary") != expected_boundary
+		):
+			violations.append(f"{code} API catalog contract is invalid")
+		yaml_row = catalog_yaml_rows.get(endpoint)
+		if (
+			not yaml_row
+			or yaml_row.get("api_code") != code
+			or yaml_row.get("idempotency") != expected_idempotency
+			or yaml_row.get("transaction_boundary") != expected_boundary
+		):
+			violations.append(f"{code} YAML API catalog contract is invalid")
+		operation = openapi.get("paths", {}).get(endpoint, {}).get(operation_name, {})
 		if operation.get("x-transaction-boundary") != expected_boundary:
 			violations.append(f"{code} OpenAPI transaction boundary is invalid")
+		if operation.get("x-idempotency") != expected_idempotency:
+			violations.append(f"{code} OpenAPI idempotency behavior is invalid")
 		has_key = any(
 			parameter.get("$ref") == "#/components/parameters/IdempotencyKey"
 			for parameter in operation.get("parameters", [])
 		)
 		if has_key != writes:
 			violations.append(f"{code} OpenAPI idempotency header contract is invalid")
+
+	validation_operation = openapi["paths"]["/api/method/ione_hrp.api.v1.core.sod.validate"]["post"]
+	validation_responses = validation_operation.get("responses", {})
+	if not {"200", "400", "401", "403", "404", "500"}.issubset(validation_responses):
+		violations.append("CORE-003 OpenAPI must document its real success and error responses")
+	if (
+		"422" in validation_responses
+		or "idempotency" in str(validation_responses.get("409", {}).get("description", "")).lower()
+	):
+		violations.append("CORE-003 OpenAPI must not expose write-idempotency response semantics")
+	response_ref = (
+		validation_responses.get("200", {})
+		.get("content", {})
+		.get("application/json", {})
+		.get("schema", {})
+		.get("$ref")
+	)
+	if response_ref != "#/components/schemas/SegregationValidationFrappeResponse":
+		violations.append("CORE-003 OpenAPI must use its strict success response schema")
+	schemas = openapi.get("components", {}).get("schemas", {})
+	response_schema = schemas.get("SegregationValidationFrappeResponse", {})
+	result_schema = schemas.get("SegregationValidationResult", {})
+	expected_result_fields = {
+		"schema_version",
+		"action",
+		"allowed",
+		"rules_evaluated",
+		"conflicts",
+		"decision_digest",
+		"correlation_id",
+		"request_id",
+		"idempotency_replayed",
+	}
+	if (
+		response_schema.get("additionalProperties") is not False
+		or response_schema.get("required") != ["message"]
+		or result_schema.get("additionalProperties") is not False
+		or set(result_schema.get("required", [])) != expected_result_fields
+		or result_schema.get("properties", {}).get("idempotency_replayed", {}).get("const") is not False
+	):
+		violations.append("CORE-003 strict success response fields are invalid")
+	digest_description = str(
+		result_schema.get("properties", {}).get("decision_digest", {}).get("description", "")
+	).lower()
+	if not all(token in digest_description for token in ("every", "rule name", "revision", "policy digest")):
+		violations.append("CORE-003 decision digest must bind every evaluated rule identity and revision")
+	for schema_name in (
+		"SegregationConflict",
+		"SegregationRuleConflict",
+		"SegregationNoApplicableRuleConflict",
+	):
+		if schema_name not in schemas:
+			violations.append(f"CORE-003 strict success response is missing {schema_name}")
 
 	pure_tests = (root / "tests" / "test_segregation.py").read_text(encoding="utf-8")
 	integration_tests = (module_root / "tests" / "test_segregation.py").read_text(encoding="utf-8")
@@ -4599,8 +4689,8 @@ def validate_segregation_contract(root: Path) -> list[str]:
 		"test_upsert_replay_revision_get_and_permission_filter",
 		"test_validation_blocks_actor_and_role_conflicts_without_identity_leakage",
 		"test_validation_is_default_deny_and_allows_nonconflicting_scoped_user",
-		"test_validation_rejects_inactive_user_missing_scope_and_invalid_actor_field",
-		"test_http_rule_upsert_validate_and_get_require_expected_idempotency",
+		"test_validation_rejects_invalid_user_scope_and_runtime_reference_drift",
+		"test_http_rule_upsert_requires_idempotency_while_validation_is_live",
 		"test_http_guest_is_rejected_before_contract_parsing",
 	):
 		if token not in integration_tests:

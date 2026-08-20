@@ -386,6 +386,17 @@ def build_segregation_decision(
 	decision["decision_digest"] = fingerprint_json(
 		{
 			"decision": decision,
+			"evaluated_policies": [
+				{
+					"rule": name,
+					"code": definition.code,
+					"revision": definition.revision,
+					"policy_digest": definition.policy_digest,
+				}
+				for name, definition, _actor_fields, _roles in sorted(
+					evaluated_rules, key=lambda item: item[0]
+				)
+			],
 			"subject": evaluation.user,
 			"doctype": evaluation.target_doctype,
 			"docname": evaluation.docname,
